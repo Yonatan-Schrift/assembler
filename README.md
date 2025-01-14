@@ -1,6 +1,5 @@
 # assembler
-## Brief
-This is my assembler for openuni 2025 labs. It's written in ANSI-C.
+This is my assembler for ***The Open University Of Israel*** labs project. It's written in ANSI-C.
 not really liking this for now D:
 
 ## Authors: 
