@@ -1,0 +1,38 @@
+this is a (not so) short list of shit we need to know for this project.
+
+* The assembly language is a specific variant for this course.
+
+There are 3 stages of creating and opening a code in a computer:
+1. Compiling
+2. Linking
+3. Loading
+this is only suppose to do the first part.
+
+this is an "imaginary" computer, it includes:
+1. CPU
+2. Registers
+3. RAM
+* Some of the ram will be used for stack.
+
+Registers: 
+1. The computer has 8 general registers:
+        r0, r1, r2, r3, r4, r5, r6, r7
+    The size of each register is 24 bits.
+        The least important one is bit 0 -> most important is bit 23.
+* the register name will always be written with a lowercase 'r'.
+
+2. There is another register called PSW (Program Status Word):
+    The PSW includes flags that show the status of the cpu at any given moment.
+
+RAM:
+1.  The size of the ram is 2^21 cells.
+        The cell addresses are 0 to 2^21-1.
+
+        The size of each cell is 24 bits (reminds you of something?)
+        The bits inside each cell are numbered in the same way as the registers.
+        
+    * A cell in the memory is also called "word".
+
+This computer only works with FULL positive or negative numbers.
+The arithmetics is done in the 2's complement method. (I have no clue what is the meaning of that)
+The computer has support for ascii characters.
