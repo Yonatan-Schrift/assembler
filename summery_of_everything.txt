@@ -154,7 +154,7 @@ our addressing methods are:
         The label represents a memory address with a name (WOAH THAT'S A VARIABLE)
 
         The declaration is done in this format:
-        {name}: .{data/string/extern} {value}
+        {name}: .{data/string/entry/extern} {value}
 
         for example:
             # Create var x, with value of 23.
@@ -226,3 +226,42 @@ Instruction cheat list:
           14  |      | rts  | returns from the subroutine back to normal. the location for "normal" should be in the stack | rts   # moves back to the line
           15  |      | stop | stops the program                                                                            | stop  # Immediately stops the program
         ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+The assembly language structure:
+* A program written in assembly is built from macroes and statements.
+
+Macroes:
+    Macroes are code snippets that contain statements.
+    In a program you can define macroes and use them in different places in the program.
+    The use of a macro will "paste" the code snippet instead of the macro name.
+
+    Defining a macro:
+    #   defining a macro named a_mc
+        mcro a_mc
+          inc r2
+          mov A,r1
+        mcroend
+    
+    using a macro:
+        (code)
+        .
+        .
+        a_mc
+        .
+        .
+        (code)
+    
+Assumptions and guidelines about macroes:
+* There are no nested macroes (There's no need to check)
+* The user cannot use the name of an instruction for a macro (Will return an error)
+* We can assume every macro is properly closed with mcroend (There's no need to check)
+* Defining the macro will always be before it's usage (There's no need to check)
+* The pre-compiler needs to create a file with the macroes pasted in the correct locations.
+
+to sum up, we need to check:
+1. A valid name (not the name of an instruction)
+2. There are no extra characters in the definition.
+
+If an error was found during the macro check, we need to stop and report the error to the user, and move on to the next file.
+
+Statements:
