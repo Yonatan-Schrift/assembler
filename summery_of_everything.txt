@@ -40,7 +40,7 @@ The instruction:
     Each instruction consists of an operation and 0 - 2 operands (arguments).
     You can have a source operand and destination operand.
 
-    Each instruction is coded to memory words (wtf?), 
+    Each instruction is coded to info-words (wtf?), 
     from 1 to a max of 3 words, based on the addressing method of the operand. 
 
 The BITs for an instruction:
@@ -66,7 +66,7 @@ Bits 12-11:
 Bits 10-8:
     These bits contain the number of register of the destination operand incase it's a register.
     otherwise they will be 0. (if the destination isn't a register)
-
+#info-words
 Bits 2-0:
     These bits are (A,R,E) -> used for addressing methods I think?
     in the first word of each instruction, A = 1, R = 0, E = 0.
@@ -75,6 +75,8 @@ Bits 2-0:
 The operations:
     We have 16 built in operations, even though you can code more.
     Each operation has a name (operation), a code (op-code), and a function (funct).
+
+    A cheat code appeares later in this file, explaining each operation.
 
     Operation  | Funct | Op-Code
     -----------------------------
@@ -98,3 +100,129 @@ The operations:
 
 MY FAVOURITE PART!!!! (I have no fucking clue what I'm doing)
 Addressing Methods:
+    In our assembly language there are 4 addressing methods, marked with numbers (0,1,2,3).
+    The usage of some of the methods requires extra information-words from the instruction.
+
+    Each operand of an instruction requries [AT LEAST] one extra info-word. 
+
+    If the instruction has 2 operands that requires and extra info-word, 
+    the info-word of the source operand will appear before the one for the destination
+
+    Each extra info-word is coded using one of 3 types (A,R,E). 
+    They explain the type of coding for the word, and they will be ON (1) if the word is given with that type.
+
+    BIT 2 (A): 
+        A, or Absolute, means the coding of the word requires no change during the loading and linking stages.
+    BIT 1 (R):
+        R, or Relocatable, means the word is a pointer that can be changed, it does require changes in the other stages.
+    BIT 0 (E):
+        E, or External, means the word is an external pointer, it does require changes in the other stages.
+    
+The info-word, is an extra to the instruction, it includes more info needed for the instruction
+it uses exactly 21 bits out of the 24, saved in bits 23-3. bits 2-0 are used for (A,R,E).
+
+our addressing methods are:
+    0. Immediate addressing:
+        The operand is included in the instruction itself.
+        This method is faster because there is no need to read the memory for the value of the operand.
+        
+        The operand is 21 bits in length, saved in bits 23-3.
+        BIT 2 (A) = 1
+        BIT 1 (R) = 0
+        BIT 0 (E) = 0
+
+        The operand will start with '#', afterwards there will be an integer.
+
+        Example: "mov #-1, r2"
+            The source operand is -1, destination operand is r2.
+            This instruction writes -1 into register r2.
+    
+    1. Direct addressing:
+        The info-word is a memory address to the operand.
+        This method is simple, as it provides direct memory access to the operand.
+
+        The address is 21 bits in length, saved in bits 23-3.
+        The address has no sign (+/-).
+
+        BITs 2-0 are depended on the address:
+            * If the address represents a line in the same file (internal address) 
+                BIT 1 (R) = 1, BITs 2 0 (A E) = 0
+            * If the address represents a line in a different file (external address)
+                BIT 0 (E) = 1, BITs 2 1 (A R) = 0
+        
+        The operand is a label that has been declared / will be declared in the file.
+        The label represents a memory address with a name (WOAH THAT'S A VARIABLE)
+
+        The declaration is done in this format:
+        {name}: .{data/string/extern} {value}
+
+        for example:
+            # Create var x, with value of 23.
+            x: .data 23
+            # Decrease the value of x by 1.
+            dec x
+        another example:
+            # This will jump (sort of loop) to the line where next is declared.
+            jmp next
+
+            # the address for next is coded in bits 23-3 of the word.
+    
+    2. Relative addressing:
+        This method is only relevant for instructions that performs a jump to a different instruction.
+        A.K.A only [jmp, bne, jsr].
+        This method CANNOT be used with other instructions.
+
+        in this method, the info word contains the length of the jump - from the current instruction to the next one (the one after the jump).
+        The length of the jump is represented by a signed integer with the length of 21 bits, saved in bits 23-3.
+        This length will be negative if the destination instruction comes before the source.
+
+        BITs 2-0:
+            BIT 2 (A) = 1, BITs 1 0 (R E) = 0.
+
+        The operand will start with & and a label: &next for example.
+        The label represents an instruction in the source file, you can't use labels from other files.
+
+    3. Direct Register addressing:
+        This method only has an operand: no info-words.
+        The operand is the name of a register.
+
+        example:
+            clr r1
+            # zero's (clears) the register r1.
+
+
+Instruction cheat list:
+    This list has 3 parts, split by the amount of operands each instruction requires.
+
+    First group (2 operands):
+        opcode| funct| name|                                explaination                                   | example
+        -----------------------------------------------------------------------------------------------------------------------------------------------------------
+           0  |      | mov | copy the source to the destination                                            | mov A, r1      # Copies A into r1 
+           1  |      | cmp | compares the two operands. if equal flag Z inside register PSW is set         | cmp A, r1      # PSW = 1 if equal
+           2  |  1   | add | adds the source to the destination.                                           | add A, r0      # r0 = r0 + A
+           2  |  2   | sub | subtructs the source from the destination.                                    | sub A, r1      # r1 = r1 - A
+           4  |      | lea | load effective address. loads the address from the source to the destination  | lea HELLO, r1  # the address for hello is set into r1.
+        -----------------------------------------------------------------------------------------------------------------------------------------------------------
+    
+    Second group (1 operands):
+        opcode| funct| name|                                explaination                                       | example
+        -----------------------------------------------------------------------------------------------------------------------------------------------------------
+           5  |  1   | clr | clears the operand                                                                | clr r2       # r2 = 0 
+           5  |  2   | not | flips each bit in the operand (1 -> 0 | 0 -> 1)                                   | not r2       # every bit inside r2 is flipped
+           5  |  3   | inc | increases the operand by 1                                                        | inc r2       # r2 += 1
+           5  |  4   | dec | decreases the operand by 1                                                        | dec r2       # r2 -= 1
+           9  |  1   | jmp | jumps (skips) to the instruction at the operand, continuing from the operand      | jmp &Line    # makes it so the next instruction is line
+           9  |  2   | bne | branch if no equal, only jumps if the Z flag is 0                                 | bne Line     # if flag Z inside PSW is 0 (if a previous cmp failed) jumps to line
+           9  |  3   | jsr | Jump to Subroutine, jumps but saves the previous location, letting you jump back  | jsr SUBR     # jumps to SUBR and saves the current line (+2) into the stack
+           12 |      | red | reads a character from stdin to the operand                                       | red r1       # Saves the next ascii char read into r1 
+           13 |      | prn | prints the character saved in the operand                                         | prn r1       # prints the character in r1 to stdout
+        -----------------------------------------------------------------------------------------------------------------------------------------------------------
+    
+    Third group (0 operands):
+        In these instructions there are no operands - BITs 17-8 should be cleared (0).
+
+        opcode| funct| name |                                explaination                                                  | example
+        ------------------------------------------------------------------------------------------------------------------------------------------------------------
+          14  |      | rts  | returns from the subroutine back to normal. the location for "normal" should be in the stack | rts   # moves back to the line
+          15  |      | stop | stops the program                                                                            | stop  # Immediately stops the program
+        ------------------------------------------------------------------------------------------------------------------------------------------------------------
