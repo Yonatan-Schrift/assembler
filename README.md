@@ -1,10 +1,9 @@
 # assembler
 This is my assembler for ***The Open University Of Israel*** labs project.  
 It's written in ANSI-C.  
-not really liking this for now D:  
+
+The file 'summery_of_everything.txt' has a good summery for the project.
 
 ## Authors: 
 - **Yonatan Schrift**
 - **Segev Shinar**
-
-
