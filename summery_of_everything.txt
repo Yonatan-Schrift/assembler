@@ -265,4 +265,3 @@ to sum up, we need to check:
 If an error was found during the macro check, we need to stop and report the error to the user, and move on to the next file.
 
 Statements:
-d
