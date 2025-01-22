@@ -265,3 +265,45 @@ to sum up, we need to check:
 If an error was found during the macro check, we need to stop and report the error to the user, and move on to the next file.
 
 Statements:
+    each line in the source file is a statement.
+    each line can be a max of 80 characters, not including '\n'
+There are 4 types of statements:
+    1. Empty line - self explanitory.
+    2. Comment line - a comment, starting with ';'
+    3. Directive statement - This line directs the assembler on what it should do:
+        This could be allocating memory and initiallizing variables,
+        But this statement is not meant to run when running the program (only during assembling).
+    4. Instructing statement - This type of statement is meant to run the main logic of the program.
+        The statement is built from: instruction-name, operands.
+
+Directive statements:
+    The structure of this statement is:
+    
+    at the start of the sentence there can be a label. The label will be explained later, and it's optional.
+    after the label (if exists), a directive name will be, and it's parameters.
+    a directive has to begin with a '.' (dot), and only have lowercase letters afterwards.
+
+    The code created from directive statements has no (A,R,E) values.
+
+    there are 4 types of directive statements:
+        1. '.data' - the parameters of .data are integers (1 or more) that are divided by commas ',':
+            exmaple: .data 7, -43, +5, 9
+            * NOTE: the commas do not have to "touch" the numbers. you can have any amount of whitespaces between them.
+            .data instructs the assembler to:
+                I. allocate space inside data image for the parameters.
+                II. Increase the data counter.
+                III. set the value of the first param to the label (if exists).
+            Examples:
+                XYZ: .data 7, -57, +17, 9
+                #the data image will be assigned 4 info-words, including these 4 numbers.
+                #the label will be 7.
+
+                in this case, if we use:
+                mov XYZ, r1
+                # r1 = 7 now.
+                lea XYZ, r1
+                # r1 = &XYZ (The pointer to the value of XYZ '7' inside the memory).
+
+        2. '.string' - this instruction has 1 parameter, a valid string, coded in ascii.
+            at the end of the string there will be '\0' (0 value) that signals the end of the string.
+            the counter 
