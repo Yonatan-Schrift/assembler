@@ -306,4 +306,112 @@ Directive statements:
 
         2. '.string' - this instruction has 1 parameter, a valid string, coded in ascii.
             at the end of the string there will be '\0' (0 value) that signals the end of the string.
-            the counter 
+            the data counter will be incremented by the length of the string (+1 for the null terminator).
+            if a label is defined in the line -> it recives the memory address of the start of the string.
+
+            Example:
+                STR: .string "abcdef"
+
+                this will save a squence of 7 info words into the data image.
+                the ascii value of each letter will be set to each info word in order, and then 0 for null termination.
+                the label STR is saved with the address for this string.
+        
+        3. '.entry' - basically means the label parameter can be used in other files.
+            this instruction does nothing special in the source file, it only makes the label GLOBAL!
+
+            Example:
+                           .entry HELLO
+                    HELLO: add #1, r1
+                
+                This means that other files can use the HELLO label.
+
+        4. '.extern' - this instruction has 1 parameter, a name of a label defined in another file.
+            this instruction lets the assembler know that this label exists in another file and the current file will use it.
+
+            Example:
+                    # Remeber we created HELLO in line (323).
+                    .extern HELLO
+
+                    this will use the HELLO label: "add #1, r1".
+                    yeah that's it.
+
+# Finally done with directive statements
+Instruction Statements:
+    the instruction statement is built from these parts:
+        1. *optional* label
+        2. operation name
+        3. between 0 - 2 operands.
+    
+        if a label is defined it will be added to the symbols table.
+        the value of the label will be the address for the first info-word.
+
+        the operation name will be in lowercase and one of the 16 operations described above (line 195).
+        then the operands will be. the operands and op-name need to have at least one whitespace between them.
+        when there are 2 operands, they NEED to have a comma ',' between them, they CAN also have whitespaces between them.
+        
+        Examples:
+            2 operands:
+                label: opcode source-operand, target-operand
+                HELLO: add    r7, B
+            
+            1 operand:
+                label: opcode target-operand
+                HELLO: clr r7
+            
+            0 operands:
+                label: opcode
+                END: stop
+  
+                
+# I think this is a new part, not sure
+Explaination of each part of the statement:
+
+Label:
+    A label is a symbolic representation of a memory address.
+    the label is a symbol defined in the start of an instruction statement, '.data' and '.string' statements.
+    A valid label starts with a letter (lowercase or uppercase) and a series of letters or numbers.
+    the maximum size of a label is 31 characters.
+    The label must have a ':' closing it, it is not a part of the 31 characters.
+    
+    A label CANNOT be declared more than once. uppercase and lowercase letters are different.
+    op-names or register names CANNOT be the name of a label.
+
+    Examples of labels:
+        hEllo:
+        HELLO:
+        x:
+        XYZ:
+        D0rD1vid:
+
+    the label recieves it's value based on its declaration:
+        1.  '.data' and '.string' will recieve the current data counter.
+        2.  instruction labels will recieve the instruction counter.
+    
+Numbers:
+    A valid number starts with an optional sign (+ / -), and a series of digits afterwards.
+    our cool-ass assembly language doesn't support fractions or any other type of numbers.
+
+    Examples:
+        67, -85, 1, +70
+
+Strings:
+    A valid string is a series of ascii characters that are in quotes.
+    (same as any other language)
+
+    Examples:
+        "Eitam", "Hello World"
+
+
+
+
+FINALLY DONE WITH EXPLAINING.
+time for the actual logic:
+
+    pre-assembler -> first-pass -> second-pass -> done!
+
+Easy right???
+
+in words we can all understand:
+
+    pre-assembler -> first-pass  -> second-pass -> done!
+    check-macros  -> save-labels -> create-code -> done!
