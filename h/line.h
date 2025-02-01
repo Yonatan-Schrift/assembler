@@ -4,11 +4,18 @@
 #include <stdio.h>
 
 /**
- * Reads a single line from a file into a buffer
- * @param file The file pointer to read from
- * @param buffer The buffer to store the line in
- * @return Number of characters read, or FAIL_CODE if reading failed
+ * Reads a line from standard input character by character.
+ * Dynamically allocates memory for the line string, doubling the buffer size when needed.
+ *
+ * @return A pointer to the dynamically allocated string containing the line,
+ *         or NULL if:
+ *         - Memory allocation fails
+ *         - EOF is encountered with no input
+ *
+ * @note The returned string must be freed by the caller when no longer needed
+ * 
+ *          Code taken from maman22 by Yonatan Schrift
  */
-int readLine(FILE *file, char *buffer);
+char *read_line(void);
 
 #endif /* LINE_H */

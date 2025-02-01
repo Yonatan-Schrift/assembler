@@ -18,10 +18,9 @@ int pre_comp(FILE *file) {
     return SUCCESS_CODE;
 }
 
-int save_macro(hashmap_t *map, Macro *macro) {
-
+int save_macro(hashmap_t *map, Macro *macro) 
+{
     insert(map, macro);
-
     return SUCCESS_CODE;
 }
 

@@ -1,6 +1,6 @@
 
-#define MAX_LINE_LENGTH 80
-
+#define MAX_LINE_LENGTH 81
+#define MAX_ARGS 2
 
 /* Error and Success codes */
 

@@ -16,3 +16,18 @@ char *copy_string(const char *origin)
 
     return copy;
 }
+
+/**
+ *  This method removes everything after a character in a string.
+ *  This is used for removing comments while proccessing the code.
+*/
+void remove_after_delim(char *origin, char delim)
+{
+    char *pos;
+
+    pos = strchr(origin, delim);
+    if (pos != NULL)
+    {
+        *pos = '\0';
+    }
+}

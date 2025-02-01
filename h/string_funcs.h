@@ -14,4 +14,6 @@
  */
 char *copy_string(const char *origin);
 
+void remove_after_delim(char *origin, char delim);
+
 #endif /* STRING_FUNCS_H */

@@ -1,5 +1,6 @@
 # VsCode folder
 .vscode
+.clang-format
 
 # Prerequisites
 *.d
