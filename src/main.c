@@ -21,7 +21,6 @@
 */
 int main(int argc, char *argv[]) {
     FILE *file;
-    char line[MAX_LINE_LENGTH + 1];
 
     /* Checks if recieved the correct amount of arguments (only 1, the filename) */
     if (argc > REQ_ARGUMENT_COUNT) {
@@ -40,9 +39,7 @@ int main(int argc, char *argv[]) {
         return FAIL_CODE;
     }
 
-    while (readLine(file, line) >= 0) {
-        printf("Read line: %s\n", line);
-    }
+    pre_comp(file);
     
     /* Close the file */
     fclose(file); 

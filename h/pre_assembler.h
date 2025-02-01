@@ -1,9 +1,17 @@
-
-
+#ifndef PRE_ASSEMBLER_H
+#define PRE_ASSEMBLER_H
 
 typedef struct Macro {
     char *name;
     char *body;
-    struct Macro *next;
 } Macro;
 
+
+
+
+
+
+
+
+
+#endif /* PRE_ASSEMBLER_H */

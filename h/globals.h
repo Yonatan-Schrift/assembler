@@ -3,5 +3,7 @@
 
 
 /* Error and Success codes */
-#define FAIL_CODE 1
+
 #define SUCCESS_CODE 0
+#define FAIL_CODE -1
+#define LINE_TOO_LONG -2

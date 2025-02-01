@@ -1,23 +1,5 @@
 
-#define TABLE_SIZE 101 /* Starting size for the hashmap */
-#define LOAD_FACTOR_THRESHOLD 0.75 /* The percentage for resizing the hashmap  */
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include "../h/pre_assembler.h"
-
-typedef struct HashNode {
-    char *key;
-    Macro *value;
-    struct HashNode *next;
-} HashNode;
-
-typedef struct hashmap {
-    HashNode **table;
-    int size;
-    int count;
-} hashmap_t;
+#include "../h/hashmap.h"
 
 /* Hash Function */
 unsigned int hash(char *key, int table_size) {
@@ -42,6 +24,7 @@ void init_hashmap(hashmap_t *map, int initial_size) {
     }
 }
 
+/* Resize the hashmap when reaching the threshold */
 void resize(hashmap_t *map) {
     int i;
 
@@ -71,11 +54,14 @@ void resize(hashmap_t *map) {
 
     free(map->table);
     map->table = new_table;
-    map->size = new_size;  // Update the table size
+    map->size = new_size; /* Update the table size */
 }
 
-void insert(hashmap_t *map, char *key, Macro *value) {
+/* Insert a macro into the hashmap */
+void insert(hashmap_t *map, Macro *macroItem) {
     /* Check if resizing is necessary */
+    char *key = macroItem->name;
+
     if ((float)map->count / map->size > LOAD_FACTOR_THRESHOLD) {
         resize(map);
     }
@@ -85,14 +71,15 @@ void insert(hashmap_t *map, char *key, Macro *value) {
     if(new_node == NULL) {
         return;
     }
-    new_node->key = (char*)strdup(key);       /* I need to create strdup */
-    new_node->value = value;
+    new_node->key = copy_string(key);
+    new_node->value = macroItem;
     new_node->next = map->table[index];  /* Insert at the head of the list */
     map->table[index] = new_node;
 
     map->count++;  /* Increment the element count */
 }
 
+/* Lookup a macro via key */
 Macro *lookup(hashmap_t *map, char *key) {
     unsigned int index = hash(key, map->size);
     HashNode *node = map->table[index];
@@ -106,6 +93,8 @@ Macro *lookup(hashmap_t *map, char *key) {
     return NULL; /* Return NULL if key is not found */
 }
 
+/* Free the hashmap */
+/* Might need to also free the macro here, not sure */
 void free_hashmap(hashmap_t *map) {
     int i;
     HashNode *node, *temp;
