@@ -427,3 +427,13 @@ pre-assembler algorithm:
     7. if the first word is "mcro_end", remove it, turn off flag is_macro, and go to 1.
     8. (is_macro is on) copy the line into the macro table and delete it from the file, go to 6.
     9. done: save the new file.
+
+first-pass:
+    The IC (Instruction Counter) starts at 100 (decimal) and increments based on instruction length.
+    each instruction is loaded into memory at the address indicated by the IC.
+    The assembler maintains a table mapping each operation name to a machine code representation.
+    operands are also encoded based on different addressing modes. For example register-to-register, memory-to-register.
+    Labels are stored in a symbol table with their addresses.
+    If a label is referenced before being defined the assembler initially cannot determine its address.
+    this is resolved in the second-pass when all labels have been assigned addresses.
+    (basically the first-pass assigns addresses and identifies labels ).
