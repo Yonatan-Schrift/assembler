@@ -16,4 +16,12 @@ char *copy_string(const char *origin);
 
 void remove_after_delim(char *origin, char delim);
 
+/**
+ * @brief Calculates the length of a NULL-terminated array of strings
+ * 
+ * @param args Pointer to array of string pointers (char*), must be NULL-terminated
+ * @return Number of strings in array before NULL terminator, or FAILED_CODE if args is NULL
+ */
+int string_array_len(char **args);
+
 #endif /* STRING_FUNCS_H */

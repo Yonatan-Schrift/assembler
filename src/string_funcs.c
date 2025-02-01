@@ -31,3 +31,20 @@ void remove_after_delim(char *origin, char delim)
         *pos = '\0';
     }
 }
+
+int string_array_len(char **args)
+{
+    int count = 0;
+
+    if (args == NULL)
+    {
+        return EXIT_FAILURE;
+    }
+
+    /* Count strings until NULL terminator is found */
+    while (args[count] != NULL)
+    {
+        count++;
+    }
+    return count;
+}

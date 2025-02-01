@@ -10,7 +10,7 @@
 typedef struct Line {
 	char *label;
 	char *command;
-	char *arguments[MAX_ARGS];
+	char **arguments;
 	int arg_count;
 } Line;
 
@@ -76,10 +76,10 @@ char *read_line(void) {
  */
 Line *split_line(char *line) {
 	Line *output;
-	char *input_copy, *token, *cln_arg, **args;
+	char *input_copy, *token, *cln_arg, **args, **new_args;
 	char *delims = " ,\t\n";
-    
-    
+	size_t i, max_args = MAX_ARGS;
+
 	if (line == NULL) {
 		return NULL;
 	}
@@ -93,34 +93,49 @@ Line *split_line(char *line) {
 		/* Something failed gotta check what */
 		return output;
 	}
+	args = malloc(sizeof(char *) * max_args);
 
-    /* Initialize all fields */
-    output->arg_count = 0;
-    output->command = NULL;
-    output->label = NULL;
-    memset(output->arguments, 0, sizeof(char*) * MAX_ARGS);
+	/* Initialize all fields */
+	output->arg_count = 0;
+	output->command = NULL;
+	output->label = NULL;
+	output->arguments = args;
 
 	/* removing the comments from the line. */
 	remove_after_delim(input_copy, ';');
 
 	/* Extract label if found */
 	token = strtok(input_copy, delims);
-    
+
 	if (token && strchr(token, ':')) {
 		output->label = copy_string(token);
+
 		token = strtok(NULL, delims);
 	}
 
+	/* Extract command if exists */
 	if (token) {
 		output->command = copy_string(token);
+
 		token = strtok(NULL, delims);
 	}
 
-    while (token && (output->arg_count < MAX_ARGS)) {
-        output->arguments[output->arg_count] = copy_string(token);
-        output->arg_count++;
-        token = strtok(NULL, delims);
-    }
+	for (i = 0; token; token = strtok(NULL, delims), i++) {
+		if (i >= max_args) {
+			new_args = realloc(args, sizeof(char *) * max_args * 2);
+			if (!new_args) {
+				/* Handle memory allocation failure */
+				free(args);
+                free(input_copy);
+				return output;
+			}
+			args = new_args;
+			output->arguments = args;
+			max_args *= 2;
+		}
+		args[i] = token;
+	}
 
+	free(input_copy);
 	return output;
 }
