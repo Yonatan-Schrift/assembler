@@ -1,5 +1,7 @@
 
 #include "../h/hashmap.h"
+#include "../h/pre_assembler.h"
+
 
 /* Hash Function */
 unsigned int hash(char *key, int table_size) {

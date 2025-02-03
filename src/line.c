@@ -4,17 +4,8 @@
 #include "../h/argument_funcs.h"
 #include "../h/globals.h"
 #include "../h/string_funcs.h"
-#include <stdlib.h>
-#include <string.h>
 
-typedef struct Line {
-	char *label;
-	char *command;
-	char **arguments;
-	int arg_count;
-} Line;
-
-char *read_line(void) {
+char *read_line(FILE *file) {
 	char cur;
 	char *buffer, *line;
 	size_t capacity, index;
@@ -34,7 +25,7 @@ char *read_line(void) {
 	}
 
 	/* Read input character by character */
-	while ((cur = getchar()) != EOF && cur != '\n') {
+	while ((cur = fgetc(file)) != EOF && cur != '\n') {
 		/* Line too long */
 		if (index >= MAX_LINE_LENGTH) {
 			free(line);
@@ -65,15 +56,6 @@ char *read_line(void) {
 	return line;
 }
 
-/**
- * Steps for splitting:
- *
- * 1. remove comments
- * 2. split into:
- *               label     - if ':' is found
- *               command   - first word after label (or first word if label not found)
- *               arguments - everything after the command
- */
 Line *split_line(char *line) {
 	Line *output;
 	char *input_copy, *token, *cln_arg, **args, **new_args;
@@ -96,7 +78,6 @@ Line *split_line(char *line) {
 	args = malloc(sizeof(char *) * max_args);
 
 	/* Initialize all fields */
-	output->arg_count = 0;
 	output->command = NULL;
 	output->label = NULL;
 	output->arguments = args;
@@ -122,7 +103,7 @@ Line *split_line(char *line) {
 
 	for (i = 0; token; token = strtok(NULL, delims), i++) {
 		if (i >= max_args) {
-			new_args = realloc(args, sizeof(char *) * max_args * 2);
+			new_args = realloc(args, sizeof(char *) * (max_args * 2));
 			if (!new_args) {
 				/* Handle memory allocation failure */
 				free(args);
@@ -135,7 +116,7 @@ Line *split_line(char *line) {
 		}
 		args[i] = token;
 	}
-
+	
 	free(input_copy);
 	return output;
 }
