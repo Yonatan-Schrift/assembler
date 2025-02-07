@@ -438,3 +438,30 @@ first-pass:
     If a label is referenced before being defined the assembler initially cannot determine its address.
     this is resolved in the second-pass when all labels have been assigned addresses.
     (basically the first-pass assigns addresses and identifies labels ).
+
+first-pass algorithm:
+    1. Initialize 100 -> IC, 0 -> DC
+    2. Read the next line from the source file. if there is none, go to 17
+    3. Is the first word in the line is a symbol? if not, go to 5
+    4. Turn on flag: is_symbol
+    5. Is the instruction .data or .string? if not, go to 8
+    6. If you have defined a symbol (label), put it in the symbols table with the .data attribute. His value will be DC.
+       If the symbol is already in the table rerun an error.
+    7. Recognize the data type, encode them in the memory, and update the DC based on there length. Go back to 2
+    8. Is it an .extra or .entry instruction? if not, go to 11
+    9. If it's an .entry instruction. Go back to 2 (the instruction will be processed in the second-pass)
+    10.If this is an .extern instruction, insert the symbol that appears as the operand of the instruction into the symbol table with the value 0
+       and the .external attribute. Go back to 2
+    11.This is an instruction line. If a symbol is defined, insert it into the symbol table with the .code attribute. The value of the symbol will be IC 
+       (if the symbol already exists in the table, report an error).
+    12.Search for the operation name in the operations name table. If it is not found, report an error with the instruction name.
+    13.Analyze the operand structure of the instruction and calculate the total number of words that the instruction occupies in machine code
+       (we will call this number L).
+    14.Now build the binary code for the first word of the instruction
+       and for each additional word of information that encodes an operand in immediate addressing mode.
+    15.Save the IC and L values along with the machine code data of the instruction.
+    16.Update IC + L -> IC, and go back to 2
+    17.The source file is processed in full. If errors were found in the first-pass, stop here.
+    18.Save the final values of IC and DC (called ICF and DCF). We will use them to build the output files after the second-pass.
+    19.Update the symbol table with the value of ICF for every symbol with the .data attribute (see explanation for this later).
+    20.Start the second-pass.
