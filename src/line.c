@@ -120,3 +120,21 @@ Line *split_line(char *line) {
 	free(input_copy);
 	return output;
 }
+
+void free_line(Line *line) {
+	int i;
+	
+	if (!line) return;
+
+	free(line->command);
+	free(line->label);
+
+	if (line->arguments) {
+        for (i = 0; line->arguments[i] != NULL; i++) {
+            free(line->arguments[i]);
+        }
+        free(line->arguments);
+    }
+
+	free(line);
+}

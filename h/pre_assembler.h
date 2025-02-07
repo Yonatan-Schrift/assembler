@@ -7,6 +7,9 @@
 #include "hashmap.h"
 #include <stdio.h>
 
+#define MACRO_FOUND 1
+#define MACRO_NOT_FOUND 0
+
 #define INITIAL_MACRO_SIZE 256 
 #define MACRO_GROWTH_FACTOR 2
 
@@ -15,9 +18,8 @@ typedef struct Macro {
     char *body;
 } Macro;
 
-int pre_comp(FILE *file);
+int pre_comp(char *src_path);
 Macro *parse_macro(char *input, FILE *file);
-int save_macro(hashmap_t *map, Macro *macro);
 int check_macro_name(char *name);
 
 
