@@ -7,7 +7,6 @@
 
 char *is_macro_start(char *line);
 char *is_macro(char *input, hashmap_t *map);
-void do_stuff();
 
 /**
  * Missing some stuff:
@@ -19,7 +18,7 @@ void do_stuff();
 */
 
 int pre_comp(char *src_path) {
-	char *line, *new_path;
+	char *line, *new_path, *name;
 	FILE *file;
 	hashmap_t *map;
     Macro *macro;
@@ -48,19 +47,22 @@ int pre_comp(char *src_path) {
 	while ((line = read_line(file)) >= 0) {    
 		printf("Read line: %s\n", line);
 
-        if((macro = parse_macro(line, file)) != NULL) {
+        if((macro = parse_macro(line, new_path, file)) != NULL) {
+			printf("Deleting line\n");
+			delete_line(new_path, line);
 			/* A macro definition was found */
             insert(map, macro);
         }
-        if(is_macro(line, map)) {
-            paste_macro(line); 
+        else if((name = is_macro(line, map)) != NULL) {
+			delete_line(new_path, line);
+            paste_macro(name, line, new_path, map); 
         }
 	}
 
 	return SUCCESS_CODE;
 }
 
-Macro *parse_macro(char *input, FILE *file) {
+Macro *parse_macro(char *input, char *filename, FILE *file) {
 	Macro *output;
 	Line *line;
 	char *macro_body, *macro_name;
@@ -125,6 +127,7 @@ Macro *parse_macro(char *input, FILE *file) {
 		length += line_length;
 		macro_body[length++] = '\n'; /* Preserve line breaks */
 		macro_body[length] = '\0';	 /* Null terminate */
+		delete_line(filename, input);
 	}
     output->body = macro_body;
 
@@ -191,4 +194,12 @@ char *is_macro(char *input, hashmap_t *map) {
 	return name;
 }
 
-void paste_macro();
+void paste_macro(char *name, char *search_text, char *filename, hashmap_t *map) {
+	char *body;
+
+	body = lookup(map, name)->body;
+
+	if(insert_text_at_line(filename, search_text, body) != SUCCESS_CODE) {
+		return;
+	}
+}

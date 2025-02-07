@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
         return FAIL_CODE;
     }
 
-    pre_comp(file);
+    pre_comp(argv[1]);
     
     /* Close the file */
     fclose(file); 

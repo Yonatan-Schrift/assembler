@@ -19,9 +19,12 @@ typedef struct Macro {
 } Macro;
 
 int pre_comp(char *src_path);
-Macro *parse_macro(char *input, FILE *file);
+
+Macro *parse_macro(char *input, char *filename, FILE *file);
+
 int check_macro_name(char *name);
 
+void paste_macro(char *name, char *search_text, char *filename, hashmap_t *map);
 
 
 
