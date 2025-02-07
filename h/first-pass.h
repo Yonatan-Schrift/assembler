@@ -30,6 +30,5 @@ int findSymbol(char *name);
 void insertSymbol(char *name, int value, int instruction);
 void processLine(char *line);
 void processSourceFile(FILE *sourceFile);
-void freeSymbolTable(void);
 
 #endif
