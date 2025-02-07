@@ -48,4 +48,8 @@ char *read_line(FILE *file);
  */
 Line *split_line(char *line);
 
+/** 
+ * A cool ass method for freeing a line.
+ */
+void free_line(Line *line);
 #endif /* LINE_H */
