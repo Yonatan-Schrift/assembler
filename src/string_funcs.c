@@ -32,7 +32,7 @@ void remove_after_delim(char *origin, char delim)
     }
 }
 
-int string_array_len(char **args)
+int string_array_len(const char **args)
 {
     int count = 0;
 

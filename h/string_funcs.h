@@ -1,6 +1,8 @@
 #ifndef STRING_FUNCS_H
 #define STRING_FUNCS_H
 
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
 /**
  * @brief Creates a new copy of a string in dynamically allocated memory
  * 
@@ -22,6 +24,6 @@ void remove_after_delim(char *origin, char delim);
  * @param args Pointer to array of string pointers (char*), must be NULL-terminated
  * @return Number of strings in array before NULL terminator, or FAILED_CODE if args is NULL
  */
-int string_array_len(char **args);
+int string_array_len(const char **args);
 
 #endif /* STRING_FUNCS_H */

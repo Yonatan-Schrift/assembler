@@ -3,6 +3,7 @@
 
 #define MACRO_START_STRING "mcro"
 #define MACRO_END_STRING "mcroend"
+#define STOP_STRING "STOP"
 
 #include "hashmap.h"
 #include <stdio.h>
@@ -22,7 +23,7 @@ int pre_comp(char *src_path);
 
 Macro *parse_macro(char *input, char *filename, FILE *file);
 
-int check_macro_name(char *name);
+int is_opcode(char *name);
 
 void paste_macro(char *name, char *search_text, char *filename, hashmap_t *map);
 

@@ -419,12 +419,12 @@ in words we can all understand:
 
 pre-assembler algorithm:
     1. Read a line from the source file.  if there is none, go to 9
-    2. if the first word in the line is a macro name (such as a_mc), replace it with the actual code from the macro.             # missing this part (@segev do this shit or gay)  
+    2. if the first word in the line is a macro name (such as a_mc), replace it with the actual code from the macro.            
     3. if the first word isn't "mcro", go to 6.
     4. turn on flag: is_macro
     5. insert the macro name (such as a_mc) into a table for the macroes.
     6. read the next line from the source. if there is none, go to 9.
-    7. if the first word is "mcro_end", remove it, turn off flag is_macro, and go to 1.
+    7. if the first word is "mcroend", remove it, turn off flag is_macro, and go to 1.
     8. (is_macro is on) copy the line into the macro table and delete it from the file, go to 6.
     9. done: save the new file.
 

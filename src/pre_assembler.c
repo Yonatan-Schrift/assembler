@@ -43,10 +43,19 @@ int pre_comp(char *src_path) {
 		printf("Read line: %s\n", line);
 
 		if ((macro = parse_macro(line, new_path, file)) != NULL) {
+
+			/* Checking if the macro name is allowed, if not, delete the file and stop the pre_assembler. */
+			if (strcmp(macro->name, STOP_STRING) == 0) {
+				fclose(file);
+				remove(new_path);
+				free(macro);
+				free_hashmap(map);
+
+				return SUCCESS_CODE;
+			}
 			delete_line(new_path, line);
 			/* A macro definition was found */
 			insert(map, (void *)macro, macro->name);
-
 		} else if ((name = is_macro(line, map)) != NULL) {
 			paste_macro(name, line, new_path, map);
 			delete_line(new_path, line);
@@ -57,6 +66,7 @@ int pre_comp(char *src_path) {
 	free_hashmap(map);
 	free(new_path);
 
+	printf("\nPRECOMPILE SUCCESS\n");
 	return SUCCESS_CODE;
 }
 
@@ -86,6 +96,14 @@ Macro *parse_macro(char *input, char *filename, FILE *file) {
 		free(macro_body);
 		free(output);
 		return NULL;
+	}
+
+	if (is_opcode(macro_name) == TRUE) {
+		printf("\nNOT ALLOWED MACRO NAME \"%s\"\n", macro_name);
+		free(macro_body);
+
+		output->name = STOP_STRING;
+		return output;
 	}
 
 	output->name = macro_name; /* Saving the first argument as the macro name  */
@@ -127,17 +145,23 @@ Macro *parse_macro(char *input, char *filename, FILE *file) {
 		macro_body[length] = '\0';	 /* Null terminate */
 		delete_line(filename, input);
 	}
+
 	output->body = macro_body;
 
 	return output;
 }
 
-/* need to add the list tbh */
-int check_macro_name(char *name) {
-	/* if(strcmp(name, "LIST OF NOT ALLOWED NAMES")) {
-		return FALSE;
-	} */
-	return TRUE;
+int is_opcode(char *name) {
+	int i, opcode_count;
+	const char *op_codes[] = OP_NAMES;
+	opcode_count = ARRAY_SIZE(op_codes);
+
+	for (i = 0; i < opcode_count; i++) {
+		if (strcmp(name, op_codes[i]) == 0) {
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 char *is_macro_start(char *input) {
@@ -158,13 +182,6 @@ char *is_macro_start(char *input) {
 	}
 
 	name = line->arguments[0];
-	if (check_macro_name(name) == FALSE) {
-		free_line(line);
-
-		printerror("NOT ALLOWED MACRO NAME"); /* need to make this */
-
-		return NULL;
-	}
 
 	free_line(line);
 	return name;
