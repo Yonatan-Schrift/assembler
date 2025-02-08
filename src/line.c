@@ -122,7 +122,7 @@ Line *split_line(char *line) {
 }
 
 void free_line(Line *line) {
-	int i;
+	/* int i; */
 	
 	if (!line) return;
 
@@ -130,11 +130,29 @@ void free_line(Line *line) {
 	free(line->label);
 
 	if (line->arguments) {
-        for (i = 0; line->arguments[i] != NULL; i++) {
+        /* for (i = 0; line->arguments[i] != NULL; i++) {
             free(line->arguments[i]);
-        }
+        } */
         free(line->arguments);
     }
 
 	free(line);
+}
+
+int isEmpty(char *line) {
+	const char *p = line;
+
+    /* Treat a NULL pointer as empty if desired */
+    if (line == NULL) {
+        return TRUE;
+    }
+
+    while (*p != '\0') {
+        /* Cast to unsigned char to avoid undefined behavior with isspace */
+        if (!isspace((unsigned char)*p)) {
+            return FALSE;  
+        }
+        p++;
+    }
+    return TRUE;  /* Line is empty */
 }

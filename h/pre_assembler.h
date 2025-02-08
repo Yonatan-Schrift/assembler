@@ -2,7 +2,7 @@
 #define PRE_ASSEMBLER_H
 
 #define MACRO_START_STRING "mcro"
-#define MACRO_END_STRING "mcro_end"
+#define MACRO_END_STRING "mcroend"
 
 #include "hashmap.h"
 #include <stdio.h>

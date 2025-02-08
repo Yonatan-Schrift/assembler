@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 typedef struct Line {
 	char *label;
@@ -52,4 +53,7 @@ Line *split_line(char *line);
  * A cool ass method for freeing a line.
  */
 void free_line(Line *line);
+
+int isEmpty(char *line);
+
 #endif /* LINE_H */

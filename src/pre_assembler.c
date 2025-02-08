@@ -1,19 +1,19 @@
 
 #include "../h/pre_assembler.h"
+#include "../h/file_funcs.h"
 #include "../h/globals.h"
 #include "../h/hashmap.h"
 #include "../h/line.h"
-#include "../h/file_funcs.h"
 
 void printerror(char *error) {
-	printf("%s", error);
+	printf("%s\n", error);
 }
 
 int pre_comp(char *src_path) {
 	char *line, *new_path, *name;
 	FILE *file;
 	hashmap_t *map;
-    Macro *macro;
+	Macro *macro;
 
 	map = (hashmap_t *)malloc(sizeof(hashmap_t));
 	if (map == NULL) {
@@ -21,7 +21,7 @@ int pre_comp(char *src_path) {
 		return FAIL_CODE;
 	}
 
-	new_path = copy_file(src_path, ".am"); 
+	new_path = copy_file(src_path, ".am");
 	if (new_path == NULL) {
 		free_hashmap(map);
 		return FAIL_CODE;
@@ -36,19 +36,21 @@ int pre_comp(char *src_path) {
 
 	init_hashmap(map, TABLE_SIZE);
 
-	while ((line = read_line(file))) {    
+	while ((line = read_line(file)) != NULL) {
+		if (isEmpty(line) == TRUE) {
+			continue;
+		}
 		printf("Read line: %s\n", line);
 
-        if((macro = parse_macro(line, new_path, file)) != NULL) {
-			printf("Deleting line\n");
+		if ((macro = parse_macro(line, new_path, file)) != NULL) {
 			delete_line(new_path, line);
 			/* A macro definition was found */
-            insert(map, (void*)macro, macro->name);
-        }
-        else if((name = is_macro(line, map)) != NULL) {
+			insert(map, (void *)macro, macro->name);
+
+		} else if ((name = is_macro(line, map)) != NULL) {
+			paste_macro(name, line, new_path, map);
 			delete_line(new_path, line);
-            paste_macro(name, line, new_path, map); 
-        }
+		}
 	}
 
 	fclose(file);
@@ -80,7 +82,7 @@ Macro *parse_macro(char *input, char *filename, FILE *file) {
 		return NULL;
 	}
 
-	if((macro_name = is_macro_start(input)) == NULL) {
+	if ((macro_name = is_macro_start(input)) == NULL) {
 		free(macro_body);
 		free(output);
 		return NULL;
@@ -98,6 +100,7 @@ Macro *parse_macro(char *input, char *filename, FILE *file) {
 
 		if (strcmp(line->command, MACRO_END_STRING) == 0) {
 			/* IS_MACRO = FALSE; */
+			delete_line(filename, MACRO_END_STRING);
 			free_line(line);
 			break;
 		}
@@ -124,17 +127,17 @@ Macro *parse_macro(char *input, char *filename, FILE *file) {
 		macro_body[length] = '\0';	 /* Null terminate */
 		delete_line(filename, input);
 	}
-    output->body = macro_body;
+	output->body = macro_body;
 
 	return output;
 }
 
 /* need to add the list tbh */
 int check_macro_name(char *name) {
-    if(strcmp(name, "LIST OF NOT ALLOWED NAMES")) {
-        return FALSE;
-    }
-    return TRUE;
+	/* if(strcmp(name, "LIST OF NOT ALLOWED NAMES")) {
+		return FALSE;
+	} */
+	return TRUE;
 }
 
 char *is_macro_start(char *input) {
@@ -153,12 +156,12 @@ char *is_macro_start(char *input) {
 		free_line(line);
 		return NULL;
 	}
-	
+
 	name = line->arguments[0];
-	if(check_macro_name(name) == FALSE) {
+	if (check_macro_name(name) == FALSE) {
 		free_line(line);
 
-		printerror("NOT ALLOWED MACRO NAME"); 	/* need to make this */
+		printerror("NOT ALLOWED MACRO NAME"); /* need to make this */
 
 		return NULL;
 	}
@@ -178,12 +181,12 @@ char *is_macro(char *input, hashmap_t *map) {
 
 	line = split_line(input);
 
-	if (lookup(map ,line->command) == NULL) {
+	if ((Macro *)lookup(map, line->command) == NULL) {
 		/* Didn't find a macro */
 		free_line(line);
 		return NULL;
 	}
-	name = line->command;
+	name = copy_string(line->command);
 
 	free_line(line);
 	return name;
@@ -191,10 +194,9 @@ char *is_macro(char *input, hashmap_t *map) {
 
 void paste_macro(char *name, char *search_text, char *filename, hashmap_t *map) {
 	char *body;
+	body = ((Macro *)lookup(map, name))->body;
 
-	body = ((Macro*)lookup(map, name))->body;
-
-	if(insert_text_at_line(filename, search_text, body) != SUCCESS_CODE) {
+	if (insert_text_at_line(filename, search_text, body) != SUCCESS_CODE) {
 		return;
 	}
 }
