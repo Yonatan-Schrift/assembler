@@ -58,7 +58,7 @@ char *read_line(FILE *file) {
 
 Line *split_line(char *line) {
 	Line *output;
-	char *input_copy, *token, *cln_arg, **args, **new_args;
+	char *input_copy, *token, **args, **new_args;
 	char *delims = " ,\t\n";
 	size_t i, max_args = MAX_ARGS;
 

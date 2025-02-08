@@ -5,6 +5,10 @@
 #include "../h/line.h"
 #include "../h/file_funcs.h"
 
+void printerror(char *error) {
+	printf("%s", error);
+}
+
 int pre_comp(char *src_path) {
 	char *line, *new_path, *name;
 	FILE *file;
@@ -32,7 +36,7 @@ int pre_comp(char *src_path) {
 
 	init_hashmap(map, TABLE_SIZE);
 
-	while ((line = read_line(file)) >= 0) {    
+	while ((line = read_line(file))) {    
 		printf("Read line: %s\n", line);
 
         if((macro = parse_macro(line, new_path, file)) != NULL) {
@@ -57,10 +61,9 @@ int pre_comp(char *src_path) {
 Macro *parse_macro(char *input, char *filename, FILE *file) {
 	Macro *output;
 	Line *line;
-	char *macro_body, *macro_name;
+	char *macro_body, *macro_name, *new_macro_body;
 	int IS_MACRO = FALSE;
-	size_t buffer_size = INITIAL_MACRO_SIZE;
-	size_t length = 0;
+	size_t line_length, buffer_size = INITIAL_MACRO_SIZE, length = 0;
 
 	/* Check for NULL input */
 	if (input == NULL) {
@@ -99,12 +102,12 @@ Macro *parse_macro(char *input, char *filename, FILE *file) {
 			break;
 		}
 
-		size_t line_length = strlen(input);
+		line_length = strlen(input);
 
 		/*  Ensure enough space in buffer */
 		while (length + line_length + 2 > buffer_size) { /* +2 for '\n' and '\0' */
 			buffer_size *= MACRO_GROWTH_FACTOR;
-			char *new_macro_body = (char *)realloc(macro_body, buffer_size);
+			new_macro_body = (char *)realloc(macro_body, buffer_size);
 			if (new_macro_body == NULL) {
 				free(macro_body);
 				free(output);

@@ -1,15 +1,19 @@
+# Compiler and flags
 CC = gcc
 CFLAGS = -Wall -ansi -pedantic -std=c90 -g
-GLOBAL_DEPS = globals.h # Global dependencies
 
 TARGET = main
 
-SRCS := $(wildcard ./src/*.c)
-OBJS := $(SRCS:.c=.o)
+SOURCES = $(wildcard src/*.c)
+OBJECTS = $(SOURCES:.c=.o)
 
 all: $(TARGET)
 
-%.o: %.c $(GLOBAL_DEPS)
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJECTS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
 clean:
 	rm -f $(TARGET) $(OBJECTS)

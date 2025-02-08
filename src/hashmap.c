@@ -62,13 +62,15 @@ void resize(hashmap_t *map) {
 /* Insert a macro into the hashmap */
 void insert(hashmap_t *map, void *value, char *key) {
     /* Check if resizing is necessary */
+    HashNode *new_node;
+    unsigned int index;
 
     if ((float)map->count / map->size > LOAD_FACTOR_THRESHOLD) {
         resize(map);
     }
 
-    unsigned int index = hash(key, map->size);
-    HashNode *new_node = (HashNode *)malloc(sizeof(HashNode));
+    index = hash(key, map->size);
+    new_node = (HashNode *)malloc(sizeof(HashNode));
     if(new_node == NULL) {
         return;
     }
