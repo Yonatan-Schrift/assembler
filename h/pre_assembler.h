@@ -26,7 +26,8 @@ int check_macro_name(char *name);
 
 void paste_macro(char *name, char *search_text, char *filename, hashmap_t *map);
 
+char *is_macro_start(char *input);
 
-
+char *is_macro(char *input, hashmap_t *map);
 
 #endif /* PRE_ASSEMBLER_H */

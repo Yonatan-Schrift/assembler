@@ -9,12 +9,10 @@
 #define TABLE_SIZE 101 /* Starting size for the hashmap */
 #define LOAD_FACTOR_THRESHOLD 0.75 /* The percentage for resizing the hashmap  */
 
-struct Macro;
-
 /* Hashmap node structure */
 typedef struct HashNode {
     char *key;
-    struct Macro *value;
+    void *value;
     struct HashNode *next;
 } HashNode;
 
@@ -28,8 +26,8 @@ typedef struct hashmap {
 /* Function declarations */
 unsigned int hash(char *key, int table_size);
 void init_hashmap(hashmap_t *map, int initial_size);
-void insert(hashmap_t *map, struct Macro *value);
-struct Macro *lookup(hashmap_t *map, char *key);
+void insert(hashmap_t *map, void *value, char *key);
+void *lookup(hashmap_t *map, char *key);
 void free_hashmap(hashmap_t *map);
 
 #endif /* HASHMAP_H */

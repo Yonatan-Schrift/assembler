@@ -5,18 +5,6 @@
 #include "../h/line.h"
 #include "../h/file_funcs.h"
 
-char *is_macro_start(char *line);
-char *is_macro(char *input, hashmap_t *map);
-
-/**
- * Missing some stuff:
- * @Segev2101 you need to add do_stuff (change the name) and is_macro inside pre_assembler.
- * one checks for if a macro is found (it's ez trust) and do_stuff copies the code from the macro into the text.
- * 
- * also missing editing the text file itself removing anything that resambles the macro.
- *  
-*/
-
 int pre_comp(char *src_path) {
 	char *line, *new_path, *name;
 	FILE *file;
@@ -51,13 +39,17 @@ int pre_comp(char *src_path) {
 			printf("Deleting line\n");
 			delete_line(new_path, line);
 			/* A macro definition was found */
-            insert(map, macro);
+            insert(map, (void*)macro, macro->name);
         }
         else if((name = is_macro(line, map)) != NULL) {
 			delete_line(new_path, line);
             paste_macro(name, line, new_path, map); 
         }
 	}
+
+	fclose(file);
+	free_hashmap(map);
+	free(new_path);
 
 	return SUCCESS_CODE;
 }
@@ -197,7 +189,7 @@ char *is_macro(char *input, hashmap_t *map) {
 void paste_macro(char *name, char *search_text, char *filename, hashmap_t *map) {
 	char *body;
 
-	body = lookup(map, name)->body;
+	body = ((Macro*)lookup(map, name))->body;
 
 	if(insert_text_at_line(filename, search_text, body) != SUCCESS_CODE) {
 		return;

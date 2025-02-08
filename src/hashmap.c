@@ -60,9 +60,8 @@ void resize(hashmap_t *map) {
 }
 
 /* Insert a macro into the hashmap */
-void insert(hashmap_t *map, Macro *macroItem) {
+void insert(hashmap_t *map, void *value, char *key) {
     /* Check if resizing is necessary */
-    char *key = macroItem->name;
 
     if ((float)map->count / map->size > LOAD_FACTOR_THRESHOLD) {
         resize(map);
@@ -74,7 +73,7 @@ void insert(hashmap_t *map, Macro *macroItem) {
         return;
     }
     new_node->key = copy_string(key);
-    new_node->value = macroItem;
+    new_node->value = value;
     new_node->next = map->table[index];  /* Insert at the head of the list */
     map->table[index] = new_node;
 
@@ -82,7 +81,7 @@ void insert(hashmap_t *map, Macro *macroItem) {
 }
 
 /* Lookup a macro via key */
-Macro *lookup(hashmap_t *map, char *key) {
+void *lookup(hashmap_t *map, char *key) {
     unsigned int index = hash(key, map->size);
     HashNode *node = map->table[index];
 
