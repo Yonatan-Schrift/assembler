@@ -11,6 +11,8 @@ char *copy_file(const char *src_path, char *extension);
 
 char *change_extension(const char *filename, char *extension);
 
+char *find_extension(const char *filename);
+
 int delete_line(const char *filename, const char *search_text);
 
 int find_line(const char *filename, const char *search_text);

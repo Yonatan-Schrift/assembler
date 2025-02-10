@@ -157,7 +157,7 @@ int is_opcode(char *name) {
 	opcode_count = ARRAY_SIZE(op_codes);
 
 	for (i = 0; i < opcode_count; i++) {
-		if (strcmp(name, op_codes[i]) == 0) {
+		if (strcmp(name, op_codes[i]) == STRCMP_SUCCESS) {
 			return TRUE;
 		}
 	}
@@ -175,7 +175,7 @@ char *is_macro_start(char *input) {
 
 	line = split_line(input);
 
-	if (strcmp(line->command, MACRO_START_STRING) != 0) {
+	if (strcmp(line->command, MACRO_START_STRING) != STRCMP_SUCCESS) {
 		/* Didn't find a macro definition */
 		free_line(line);
 		return NULL;

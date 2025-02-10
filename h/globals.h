@@ -5,6 +5,8 @@
 #define TRUE 1
 #define FALSE 0
 
+#define STRCMP_SUCCESS 0
+
 #define OP_NAMES {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc", "dec", "jmp", "bne", "jsr", "red", "prn", "rts", "stop" } 
 
 /* Error and Success codes */

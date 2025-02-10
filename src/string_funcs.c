@@ -24,7 +24,6 @@ char *copy_string(const char *origin)
 void remove_after_delim(char *origin, char delim)
 {
     char *pos;
-
     pos = strchr(origin, delim);
     if (pos != NULL)
     {

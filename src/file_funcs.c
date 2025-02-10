@@ -2,7 +2,6 @@
 #include "../h/file_funcs.h"
 #include "../h/globals.h"
 
-
 char *copy_file(const char *src_path, char *extension) {
 	FILE *src, *dest;
 	char *dest_path;
@@ -68,14 +67,13 @@ char *change_extension(const char *filename, char *extension) {
 	size_t len;
 	size_t base_len;
 
-	if(!filename || !extension)
-	{
+	if (!filename || !extension) {
 		return NULL;
 	}
 
 	/* Determine the length of the original filename */
 	len = strlen(filename) + strlen(extension);
-	
+
 	/* Allocate memory for the new filename.
 	 * In the worst-case, there is no extension, so we need enough space for the original
 	 * filename plus the new extension ".am" (3 characters) and the null terminator.
@@ -104,157 +102,173 @@ char *change_extension(const char *filename, char *extension) {
 	return new_filename;
 }
 
+char *find_extension(const char *filename) {
+	char *ext;
+
+	/* Find the last occurrence of '.' in the filename */
+	ext = strrchr(filename, '.');
+
+	if (ext != NULL && *(ext + 1) != '\0') {
+		ext++;
+	} else {
+		ext = NULL;
+		printf("No extension found in the filename.\n");
+	}
+
+	return ext;
+}
+
 int delete_line(const char *filename, const char *search_text) {
-    FILE *originalFile, *tempFile;
-    char buffer[MAX_LINE_LENGTH];
+	FILE *originalFile, *tempFile;
+	char buffer[MAX_LINE_LENGTH];
 	int line_to_delete = find_line(filename, search_text);
-    int current_line = 1;
-    const char *temp_filename = "temp.txt";
+	int current_line = 1;
+	const char *temp_filename = "temp.txt";
 
-    /* Open the original file for reading */
-    originalFile = fopen(filename, "r");
-    if (originalFile == NULL) {
-        perror("Error opening file for reading");
-        return FAIL_CODE;
-    }
+	/* Open the original file for reading */
+	originalFile = fopen(filename, "r");
+	if (originalFile == NULL) {
+		perror("Error opening file for reading");
+		return FAIL_CODE;
+	}
 
-    /* Open a temporary file for writing */
-    tempFile = fopen(temp_filename, "w");
-    if (tempFile == NULL) {
-        perror("Error opening temporary file for writing");
-        fclose(originalFile);
-        return FAIL_CODE;
-    }
+	/* Open a temporary file for writing */
+	tempFile = fopen(temp_filename, "w");
+	if (tempFile == NULL) {
+		perror("Error opening temporary file for writing");
+		fclose(originalFile);
+		return FAIL_CODE;
+	}
 
-    /* Read each line from the original file and write it to the temporary file,
-       except for the line that should be deleted */
-    while (fgets(buffer, MAX_LINE_LENGTH, originalFile) != NULL) {
-        if (current_line != line_to_delete) {
-            if (fputs(buffer, tempFile) == EOF) {
-                perror("Error writing to temporary file");
-                fclose(originalFile);
-                fclose(tempFile);
-                return FAIL_CODE;
-            }
-        }
-        current_line++;
-    }
+	/* Read each line from the original file and write it to the temporary file,
+	   except for the line that should be deleted */
+	while (fgets(buffer, MAX_LINE_LENGTH, originalFile) != NULL) {
+		if (current_line != line_to_delete) {
+			if (fputs(buffer, tempFile) == EOF) {
+				perror("Error writing to temporary file");
+				fclose(originalFile);
+				fclose(tempFile);
+				return FAIL_CODE;
+			}
+		}
+		current_line++;
+	}
 
-    /* Close both files */
-    fclose(originalFile);
-    fclose(tempFile);
+	/* Close both files */
+	fclose(originalFile);
+	fclose(tempFile);
 
-    /* Delete the original file */
-    if (remove(filename) != 0) {
-        perror("Error deleting original file");
-        return FAIL_CODE;
-    }
+	/* Delete the original file */
+	if (remove(filename) != 0) {
+		perror("Error deleting original file");
+		return FAIL_CODE;
+	}
 
-    /* Rename the temporary file to the original file name */
-    if (rename(temp_filename, filename) != 0) {
-        perror("Error renaming temporary file");
-        return FAIL_CODE;
-    }
+	/* Rename the temporary file to the original file name */
+	if (rename(temp_filename, filename) != 0) {
+		perror("Error renaming temporary file");
+		return FAIL_CODE;
+	}
 
-    return SUCCESS_CODE;
+	return SUCCESS_CODE;
 }
 
 int find_line(const char *filename, const char *search_text) {
-    FILE *file;
-    char buffer[MAX_LINE_LENGTH];
-    int line_number = 0;
+	FILE *file;
+	char buffer[MAX_LINE_LENGTH];
+	int line_number = 0;
 
-    file = fopen(filename, "r");
-    if (file == NULL) {
-        perror("Error opening file");
-        return FAIL_CODE;
-    }
+	file = fopen(filename, "r");
+	if (file == NULL) {
+		perror("Error opening file");
+		return FAIL_CODE;
+	}
 
-    /* Read the file line by line */
-    while (fgets(buffer, MAX_LINE_LENGTH, file) != NULL) {
-        line_number++;
+	/* Read the file line by line */
+	while (fgets(buffer, MAX_LINE_LENGTH, file) != NULL) {
+		line_number++;
 
-        if (strstr(buffer, search_text) != NULL) {
-            fclose(file);
-            return line_number;
-        }
-    }
+		if (strstr(buffer, search_text) != NULL) {
+			fclose(file);
+			return line_number;
+		}
+	}
 
-    fclose(file);
-    return FAIL_CODE;  /* search_text not found in the file */
+	fclose(file);
+	return FAIL_CODE; /* search_text not found in the file */
 }
 
 int insert_text_at_line(const char *filename, const char *search_text, const char *text) {
-    FILE *origFile, *tempFile;
-    char buffer[MAX_LINE_LENGTH];
+	FILE *origFile, *tempFile;
+	char buffer[MAX_LINE_LENGTH];
 	int pos = find_line(filename, search_text);
-    int current_line = 1;
-    int inserted = 0;
-    const char *temp_filename = "temp.txt";
+	int current_line = 1;
+	int inserted = 0;
+	const char *temp_filename = "temp.txt";
 
-    /* Open the original file for reading */
-    origFile = fopen(filename, "r");
-    if (origFile == NULL) {
-        perror("Error opening original file");
-        return FAIL_CODE;
-    }
+	/* Open the original file for reading */
+	origFile = fopen(filename, "r");
+	if (origFile == NULL) {
+		perror("Error opening original file");
+		return FAIL_CODE;
+	}
 
-    /* Open a temporary file for writing */
-    tempFile = fopen(temp_filename, "w");
-    if (tempFile == NULL) {
-        perror("Error opening temporary file");
-        fclose(origFile);
-        return FAIL_CODE;
-    }
+	/* Open a temporary file for writing */
+	tempFile = fopen(temp_filename, "w");
+	if (tempFile == NULL) {
+		perror("Error opening temporary file");
+		fclose(origFile);
+		return FAIL_CODE;
+	}
 
-    /* Read and write each line from the original file */
-    while (fgets(buffer, MAX_LINE_LENGTH, origFile) != NULL) {
-        /* If we've reached the specified line and haven't inserted the text yet,
-           insert the new text before writing the current line */
-        if (current_line == pos && !inserted) {
-            if (fputs(text, tempFile) == EOF) {
-                perror("Error writing inserted text to temporary file");
-                fclose(origFile);
-                fclose(tempFile);
-                return FAIL_CODE;
-            }
-            inserted = 1;
-        }
-        /* Write the current line to the temporary file */
-        if (fputs(buffer, tempFile) == EOF) {
-            perror("Error writing line to temporary file");
-            fclose(origFile);
-            fclose(tempFile);
-            return FAIL_CODE;
-        }
-        current_line++;
-    }
+	/* Read and write each line from the original file */
+	while (fgets(buffer, MAX_LINE_LENGTH, origFile) != NULL) {
+		/* If we've reached the specified line and haven't inserted the text yet,
+		   insert the new text before writing the current line */
+		if (current_line == pos && !inserted) {
+			if (fputs(text, tempFile) == EOF) {
+				perror("Error writing inserted text to temporary file");
+				fclose(origFile);
+				fclose(tempFile);
+				return FAIL_CODE;
+			}
+			inserted = 1;
+		}
+		/* Write the current line to the temporary file */
+		if (fputs(buffer, tempFile) == EOF) {
+			perror("Error writing line to temporary file");
+			fclose(origFile);
+			fclose(tempFile);
+			return FAIL_CODE;
+		}
+		current_line++;
+	}
 
-    /* If pos is beyond the end of the file, append the text now */
-    if (!inserted) {
-        if (fputs(text, tempFile) == EOF) {
-            perror("Error appending inserted text to temporary file");
-            fclose(origFile);
-            fclose(tempFile);
-            return FAIL_CODE;
-        }
-    }
+	/* If pos is beyond the end of the file, append the text now */
+	if (!inserted) {
+		if (fputs(text, tempFile) == EOF) {
+			perror("Error appending inserted text to temporary file");
+			fclose(origFile);
+			fclose(tempFile);
+			return FAIL_CODE;
+		}
+	}
 
-    /* Close both files */
-    fclose(origFile);
-    fclose(tempFile);
+	/* Close both files */
+	fclose(origFile);
+	fclose(tempFile);
 
-    /* Remove the original file */
-    if (remove(filename) != 0) {
-        perror("Error removing original file");
-        return FAIL_CODE;
-    }
+	/* Remove the original file */
+	if (remove(filename) != 0) {
+		perror("Error removing original file");
+		return FAIL_CODE;
+	}
 
-    /* Rename the temporary file to the original file name */
-    if (rename(temp_filename, filename) != 0) {
-        perror("Error renaming temporary file");
-        return FAIL_CODE;
-    }
+	/* Rename the temporary file to the original file name */
+	if (rename(temp_filename, filename) != 0) {
+		perror("Error renaming temporary file");
+		return FAIL_CODE;
+	}
 
-    return SUCCESS_CODE;
+	return SUCCESS_CODE;
 }

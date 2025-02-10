@@ -9,7 +9,9 @@
  */
 
 #include <stdio.h>
+#include "../h/file_funcs.h"
 #include "../h/globals.h"
+#include "../h/main.h"
 #include "../h/pre_assembler.h"
 
 #define REQ_ARGUMENT_COUNT 2
@@ -29,6 +31,10 @@ int main(int argc, char *argv[]) {
     }
     else if(argc < REQ_ARGUMENT_COUNT) {
         printf("No text file provided.\n");
+        return FAIL_CODE;
+    }
+    if(strcmp(find_extension(argv[1]), AS_EXTENSION) != STRCMP_SUCCESS) {
+        printf("Not a .as file.\n");
         return FAIL_CODE;
     }
     
