@@ -7,6 +7,7 @@
 
 #include "hashmap.h"
 #include <stdio.h>
+#include <ctype.h>
 
 #define MACRO_FOUND 1
 #define MACRO_NOT_FOUND 0

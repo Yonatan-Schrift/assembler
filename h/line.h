@@ -54,6 +54,8 @@ Line *split_line(char *line);
  */
 void free_line(Line *line);
 
+int is_in_array(char *name, char **array);
+
 int isEmpty(char *line);
 
 #endif /* LINE_H */

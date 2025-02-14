@@ -8,6 +8,8 @@
 #define STRCMP_SUCCESS 0
 
 #define OP_NAMES {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc", "dec", "jmp", "bne", "jsr", "red", "prn", "rts", "stop" } 
+#define INSTRUCTIONS {".data", ".string", ".extern", ".entry"}
+#define REGISTERS {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"}
 
 /* Error and Success codes */
 

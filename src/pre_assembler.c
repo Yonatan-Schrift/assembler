@@ -151,17 +151,20 @@ Macro *parse_macro(char *input, char *filename, FILE *file) {
 	return output;
 }
 
-int is_opcode(char *name) {
-	int i, opcode_count;
-	const char *op_codes[] = OP_NAMES;
-	opcode_count = ARRAY_SIZE(op_codes);
-
-	for (i = 0; i < opcode_count; i++) {
-		if (strcmp(name, op_codes[i]) == STRCMP_SUCCESS) {
-			return TRUE;
-		}
+int is_valid_macro_name(char *name) {
+	/* Check if the first character is alphabetic or underscore */
+	if (isalpha(name[0]) == FALSE && name[0] != '_') {
+		return FALSE;
 	}
-	return FALSE;
+
+	/* Check if the name is a reserved name */
+	if (is_in_array(name, OP_NAMES) ||
+		is_in_array(name, REGISTERS) ||
+		is_in_array(name, INSTRUCTIONS)) {
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 char *is_macro_start(char *input) {

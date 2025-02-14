@@ -139,6 +139,20 @@ void free_line(Line *line) {
 	free(line);
 }
 
+int is_in_array(char *name, char **array) {
+	int i, array_size;
+	
+	array_size = ARRAY_SIZE(array);
+
+	for (i = 0; i < array_size; i++) {
+		if (strcmp(name, array[i]) == STRCMP_SUCCESS) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+
 int isEmpty(char *line) {
 	const char *p = line;
 
