@@ -11,7 +11,7 @@
 #define ENTRY 4
 
 typedef struct Symbol {
-    char *name; /*i dont know what to put inside insted of a number here*/
+    char *name;
     int value;
     int instruction;
 } Symbol;
