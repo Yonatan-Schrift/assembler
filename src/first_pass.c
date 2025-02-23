@@ -35,16 +35,16 @@ int first_pass(char *file_path) {
             }
 
             if (strcmp(parsed_line->command, ".data") == 0) {
-                char *token = strtok(parsed_line->arguments[0], ",");
-                while (token != NULL) {
-                    // Convert token to integer and store it in memory
+                char **data_arguments = split_line(parsed_line->arguments[0]);
+                for (int i = 0; data_arguments[i] != NULL; i++) {
+                    /* Convert data_arguments[i] to integer and store it in memory */
                     DC++;
-                    token = strtok(NULL, ",");
                 }
+                /* Free the data arguments array */ 
             } else if (strcmp(parsed_line->command, ".string") == 0) {
                 char *str = parsed_line->arguments[0];
                 for (int i = 0; str[i] != '\0'; i++) {
-                    // Store each character in memory
+                    /* Store each character in memory */
                     DC++;
                 }
                 DC++;
@@ -53,6 +53,5 @@ int first_pass(char *file_path) {
             free_line(parsed_line);
             free(line);
             continue;
-        }
-
-// I need to continue...
+        }    
+/* I need to continue 8-20 */
