@@ -4,6 +4,7 @@
 #define MACRO_START_STRING "mcro"
 #define MACRO_END_STRING "mcroend"
 #define STOP_STRING "STOP"
+#define MAX_MCRO_NAME_LENGTH 31
 
 #include "hashmap.h"
 #include <stdio.h>
@@ -15,6 +16,16 @@
 #define INITIAL_MACRO_SIZE 256 
 #define MACRO_GROWTH_FACTOR 2
 
+/**
+ * struct Macro - Represents a macro definition used by the pre-assembler.
+ *
+ * This data structure stores information about a macro including its name and
+ * the corresponding replacement text (body).
+ *
+ * Members:
+ *   name - A pointer to a string containing the macro's name.
+ *   body - A pointer to a string containing the macro's body.
+ */
 typedef struct Macro {
     char *name;
     char *body;

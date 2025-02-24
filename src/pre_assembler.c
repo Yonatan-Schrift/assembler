@@ -156,6 +156,9 @@ int is_valid_macro_name(char *name) {
 	if (isalpha(name[0]) == FALSE && name[0] != '_') {
 		return FALSE;
 	}
+	if (strlen(name) > MAX_MCRO_NAME_LENGTH) {
+		return FALSE;
+	}
 
 	/* Check if the name is a reserved name */
 	return is_op_name(name) && is_register(name) && is_instruction(name);
