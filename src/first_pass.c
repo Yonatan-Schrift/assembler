@@ -11,10 +11,10 @@ int first_pass (char *src_path){
     char *line, *new_path;
     FILE *file;
 
-	file = fopen(path, "r");
+	file = fopen(new_path, "r");
 	if (file == NULL) {
 		free_hashmap(symbolTable);
-		free(path);
+		free(new_path);
 		return FAIL_CODE;
 	}
 
@@ -24,7 +24,7 @@ int first_pass (char *src_path){
     DC = 0;
 
     while (line = read_line(file) != NULL) {
-       Line split_line *parsed_line = split_line(line);
+       Line *parsed_line = split_line(line);
         
     }
     
