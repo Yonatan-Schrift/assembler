@@ -9,6 +9,7 @@
 #define CODE 2
 #define EXTERNAL 3
 #define ENTRY 4
+#define NOT_IN_TABLE -1
 
 typedef struct Symbol {
     char *name;
