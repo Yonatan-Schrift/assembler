@@ -158,13 +158,7 @@ int is_valid_macro_name(char *name) {
 	}
 
 	/* Check if the name is a reserved name */
-	if (is_in_array(name, OP_NAMES) ||
-		is_in_array(name, REGISTERS) ||
-		is_in_array(name, INSTRUCTIONS)) {
-		return FALSE;
-	}
-
-	return TRUE;
+	return is_op_name(name) && is_register(name) && is_instruction(name);
 }
 
 char *is_macro_start(char *input) {
@@ -220,3 +214,4 @@ void paste_macro(char *name, char *search_text, char *filename, hashmap_t *map) 
 		return;
 	}
 }
+

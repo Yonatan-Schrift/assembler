@@ -6,6 +6,15 @@
 #include <string.h>
 #include <ctype.h>
 
+/**
+ * @brief Represents a line in an assembly file.
+ *
+ * This structure contains the components of a single line in an assembler program.
+ * It includes:
+ *   - A label, which acts as an identifier for the line if present.
+ *   - A command, which specifies the instruction or directive.
+ *   - An array of arguments related to the command.
+ */
 typedef struct Line {
 	char *label;
 	char *command;
@@ -57,5 +66,11 @@ void free_line(Line *line);
 int is_in_array(char *name, char **array);
 
 int isEmpty(char *line);
+
+int is_op_name(char *name);
+
+int is_register(char *name);
+
+int is_instuction(char *name);
 
 #endif /* LINE_H */

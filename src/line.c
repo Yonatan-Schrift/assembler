@@ -170,3 +170,33 @@ int isEmpty(char *line) {
     }
     return TRUE;  /* Line is empty */
 }
+
+int is_op_name(char *name) {
+	char *array[] = OP_NAMES;
+
+	if (name == NULL) {
+		return FALSE;
+	}
+
+	return is_in_array(name, array);
+}
+
+int is_register(char *name) {
+	char *array[] = REGISTERS;
+
+	if (name == NULL) {
+		return FALSE;
+	}
+
+	return is_in_array(name, array);
+}
+
+int is_instuction(char *name) {
+	char *array[] = INSTRUCTIONS;
+
+	if (name == NULL) {
+		return FALSE;
+	}
+
+	return is_in_array(name, array);
+}
