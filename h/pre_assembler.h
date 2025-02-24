@@ -35,9 +35,9 @@ int pre_comp(char *src_path);
 
 Macro *parse_macro(char *input, char *filename, FILE *file);
 
-int is_opcode(char *name);
-
 void paste_macro(char *name, char *search_text, char *filename, hashmap_t *map);
+
+int is_valid_macro_name(char *name);
 
 char *is_macro_start(char *input);
 

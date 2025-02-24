@@ -45,7 +45,7 @@ int pre_comp(char *src_path) {
 		if ((macro = parse_macro(line, new_path, file)) != NULL) {
 
 			/* Checking if the macro name is allowed, if not, delete the file and stop the pre_assembler. */
-			if (strcmp(macro->name, STOP_STRING) == 0) {
+			if (strcmp(macro->name, STOP_STRING) == STRCMP_SUCCESS) {
 				fclose(file);
 				remove(new_path);
 				free(macro);
@@ -109,6 +109,15 @@ Macro *parse_macro(char *input, char *filename, FILE *file) {
 	output->name = macro_name; /* Saving the first argument as the macro name  */
 	IS_MACRO = TRUE;
 
+	if(is_valid_macro_name(macro_name) == FALSE) {
+		free(macro_body);
+
+		output->name = STOP_STRING;
+		IS_MACRO = FALSE;
+		
+		return output;
+	}
+
 	while (IS_MACRO) {
 		input = read_line(file);
 		if (input == NULL)
@@ -116,7 +125,7 @@ Macro *parse_macro(char *input, char *filename, FILE *file) {
 
 		line = split_line(input);
 
-		if (strcmp(line->command, MACRO_END_STRING) == 0) {
+		if (strcmp(line->command, MACRO_END_STRING) == STRCMP_SUCCESS) {
 			/* IS_MACRO = FALSE; */
 			delete_line(filename, MACRO_END_STRING);
 			free_line(line);
@@ -188,6 +197,7 @@ char *is_macro_start(char *input) {
 }
 
 char *is_macro(char *input, hashmap_t *map) {
+	/* This method searchs for the macro inside the hashmap */
 	Line *line;
 	char *name;
 
