@@ -1,4 +1,7 @@
 
+#ifndef GLOBALS_H
+#define GLOBALS_H
+
 #define MAX_LINE_LENGTH 81
 #define MAX_ARGS 2
 
@@ -18,3 +21,4 @@
 #define LINE_TOO_LONG -2
 #define TOO_MANY_ARGS -3
 
+#endif /* GLOBALS_H */
