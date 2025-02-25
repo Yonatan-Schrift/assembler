@@ -8,17 +8,10 @@
 char *read_line(FILE *file) {
 	char cur;
 	char *buffer, *line;
-	size_t capacity, index;
-
-	/* Initialize variables:
-	 * capacity: Initial size of the dynamic buffer.
-	 * index: Tracks the current position in the buffer.
-	 */
-	capacity = 8; /* starting size for the line */
-	index = 0;
+	int index = 0;
 
 	/* Allocating initial memory */
-	line = (char *)malloc(capacity);
+	line = (char *)malloc(MAX_LINE_LENGTH + 2);
 	if (!line) {
 		fprintf(stderr, "Failed memory allocation\n");
 		return NULL; /* Memory Allocation Error */
@@ -26,22 +19,14 @@ char *read_line(FILE *file) {
 
 	/* Read input character by character */
 	while ((cur = fgetc(file)) != EOF && cur != '\n') {
-		/* Line too long */
-		if (index >= MAX_LINE_LENGTH) {
+		
+		if (index > MAX_LINE_LENGTH || (index == MAX_LINE_LENGTH && line[index - 1] != '\n')) {
+			/* Line too long */
+			printerror("LINE_TOO_LONG\n");
 			free(line);
 			return NULL;
 		}
 
-		/* Buffer is too small, double the capacity */
-		if (index >= capacity - 1) {
-			buffer = realloc(line, capacity * 2);
-			if (!buffer) {
-				free(line);
-				return NULL; /* Memory Allocation Error */
-			}
-			line = buffer;
-			capacity *= 2;
-		}
 		line[index++] = cur;
 	}
 

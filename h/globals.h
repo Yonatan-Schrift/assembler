@@ -21,4 +21,10 @@
 #define LINE_TOO_LONG -2
 #define TOO_MANY_ARGS -3
 
+#include "error.h"
+
+
+
+
+
 #endif /* GLOBALS_H */

@@ -2,6 +2,24 @@
 #include "../h/file_funcs.h"
 #include "../h/globals.h"
 
+FILE *open_file(const char *filename, const char *extension, const char *mode) {
+	char *file_name_with_ext = change_extension(filename, extension);
+
+	FILE *file = fopen(file_name_with_ext, mode);
+
+	/* checks that the file opened */
+	if(!file) {
+		printerror("failed file");
+		free(file_name_with_ext);
+		close(file);
+
+		exit(EXIT_FAILURE);
+	}
+	
+	free(file_name_with_ext);
+	return file;
+}
+
 char *copy_file(const char *src_path, char *extension) {
 	FILE *src, *dest;
 	char *dest_path;
@@ -61,7 +79,7 @@ char *copy_file(const char *src_path, char *extension) {
 	return dest_path;
 }
 
-char *change_extension(const char *filename, char *extension) {
+char *change_extension(const char *filename, const char *extension) {
 	char *new_filename;
 	char *dot;
 	size_t len;

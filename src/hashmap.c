@@ -24,6 +24,7 @@ void init_hashmap(hashmap_t *map, int initial_size) {
     for (i = 0; i < map->size; i++) {
         map->table[i] = NULL;
     }
+    return;
 }
 
 /* Resize the hashmap when reaching the threshold */

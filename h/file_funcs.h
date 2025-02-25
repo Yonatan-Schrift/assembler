@@ -6,10 +6,15 @@
 #include <string.h>
 
 #define BUFFER_SIZE 256
+#define WRITE_MODE "wb"
+#define READ_MODE "rb"
+
+
+FILE *open_file(const char *filename, const char *extension, const char *mode);
 
 char *copy_file(const char *src_path, char *extension);
 
-char *change_extension(const char *filename, char *extension);
+char *change_extension(const char *filename, const char *extension);
 
 char *find_extension(const char *filename);
 
