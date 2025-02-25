@@ -112,9 +112,7 @@ Macro *parse_macro(char *input, char *filename, FILE *file) {
 	if(is_valid_macro_name(macro_name) == FALSE) {
 		free(macro_body);
 
-		output->name = STOP_STRING;
-		IS_MACRO = FALSE;
-		
+		output->name = STOP_STRING;		
 		return output;
 	}
 
