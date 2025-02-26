@@ -21,6 +21,7 @@ typedef struct Line {
 	char **arguments;
 } Line;
 
+void init_line(Line *line);
 
 /**
  * Reads a line from standard input character by character.
@@ -35,7 +36,7 @@ typedef struct Line {
  * 
  *          Code taken from maman22 by Yonatan Schrift
  */
-char *read_line(FILE *file);
+int read_line(FILE *file, char *line);
 
 /**
  * split_line - Parses an input string to extract a label, command, and arguments.
@@ -56,7 +57,7 @@ char *read_line(FILE *file);
  * @param line A null-terminated string containing the line to be parsed.
  * @return A pointer to a Line structure with the parsed components, or NULL if the line is NULL or a memory allocation error occurs.
  */
-Line *split_line(char *line);
+int split_line(char *line, Line *output);
 
 /** 
  * A cool ass method for freeing a line.
@@ -71,6 +72,6 @@ int is_op_name(char *name);
 
 int is_register(char *name);
 
-int is_instuction(char *name);
+int is_instruction(char *name);
 
 #endif /* LINE_H */

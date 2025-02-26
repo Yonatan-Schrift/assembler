@@ -4,68 +4,64 @@
 #include "../h/argument_funcs.h"
 #include "../h/globals.h"
 #include "../h/string_funcs.h"
+#include <string.h>
 
-char *read_line(FILE *file) {
+void init_line(Line *line) {
+	int i;
+
+    if (line == NULL) {
+        return;
+    }
+
+    line->label = NULL;
+    line->command = NULL;
+    
+    /* Allocate memory for the array on the heap */
+    line->arguments = malloc(sizeof(char*) * MAX_ARGS);
+    
+    /* Initialize all elements to NULL */
+    if (line->arguments) {    
+        for (i = 0; i < MAX_ARGS; i++) {
+            line->arguments[i] = NULL;
+        }
+    }
+}
+
+int read_line(FILE *file, char *line) {
 	char cur;
-	char *buffer, *line;
 	int index = 0;
-
-	/* Allocating initial memory */
-	line = (char *)malloc(MAX_LINE_LENGTH + 2);
-	if (!line) {
-		fprintf(stderr, "Failed memory allocation\n");
-		return NULL; /* Memory Allocation Error */
-	}
 
 	/* Read input character by character */
 	while ((cur = fgetc(file)) != EOF && cur != '\n') {
-		
+
 		if (index > MAX_LINE_LENGTH || (index == MAX_LINE_LENGTH && line[index - 1] != '\n')) {
 			/* Line too long */
 			printerror("LINE_TOO_LONG\n");
-			free(line);
-			return NULL;
+			/* line = STOP_STRING; */
+			return EXIT_FAILURE;
 		}
-
 		line[index++] = cur;
 	}
 
-	/* Handle EOF when no input is given */
+	/* Handle EOF or when when no input is given */
 	if (index == 0 && cur == EOF) {
-		free(line);
-		return NULL;
+		return EXIT_FAILURE;
 	}
 
 	/* Null-terminate the string */
 	line[index] = '\0';
-	return line;
+	return EXIT_SUCCESS;
 }
 
-Line *split_line(char *line) {
-	Line *output;
-	char *input_copy, *token, **args, **new_args;
+int split_line(char *line, Line *output) {
+	char input_copy[MAX_LINE_LENGTH + 2], *token;
 	char *delims = " ,\t\n";
-	size_t i, max_args = MAX_ARGS;
+	int i;
 
 	if (line == NULL) {
-		return NULL;
+		return EXIT_FAILURE;
 	}
-	output = malloc(sizeof(Line));
-	if (output == NULL) {
-		/* error failed mem allocation */
-		return NULL;
-	}
-	input_copy = copy_string(line);
-	if (input_copy == NULL) {
-		/* Something failed gotta check what */
-		return output;
-	}
-	args = malloc(sizeof(char *) * max_args);
-
-	/* Initialize all fields */
-	output->command = NULL;
-	output->label = NULL;
-	output->arguments = args;
+	strcpy(input_copy, line);
 
 	/* removing the comments from the line. */
 	remove_after_delim(input_copy, ';');
@@ -82,51 +78,41 @@ Line *split_line(char *line) {
 	/* Extract command if exists */
 	if (token) {
 		output->command = copy_string(token);
-
 		token = strtok(NULL, delims);
 	}
 
 	for (i = 0; token; token = strtok(NULL, delims), i++) {
-		if (i >= max_args) {
-			new_args = realloc(args, sizeof(char *) * (max_args * 2));
-			if (!new_args) {
-				/* Handle memory allocation failure */
-				free(args);
-                free(input_copy);
-				return output;
-			}
-			args = new_args;
-			output->arguments = args;
-			max_args *= 2;
+		if (i >= MAX_ARGS) {
+			printerror("TOO_MANY_ARGUMENTS\n");
+			return EXIT_FAILURE;
 		}
-		args[i] = token;
+		output->arguments[i] = copy_string(token);
 	}
-	
-	free(input_copy);
-	return output;
+	output->arguments[i] = NULL;
+
+	return EXIT_SUCCESS;
 }
 
 void free_line(Line *line) {
-	/* int i; */
-	
-	if (!line) return;
+	int i;
+
+	if (!line)
+		return;
 
 	free(line->command);
 	free(line->label);
 
 	if (line->arguments) {
-        /* for (i = 0; line->arguments[i] != NULL; i++) {
-            free(line->arguments[i]);
-        } */
-        free(line->arguments);
-    }
-
-	free(line);
+		for (i = 0; line->arguments[i] != NULL; i++) {
+			free(line->arguments[i]);
+		}
+		free(line->arguments);
+	}
 }
 
 int is_in_array(char *name, char **array) {
 	int i, array_size;
-	
+
 	array_size = ARRAY_SIZE(array);
 
 	for (i = 0; i < array_size; i++) {
@@ -137,23 +123,22 @@ int is_in_array(char *name, char **array) {
 	return FALSE;
 }
 
-
 int isEmpty(char *line) {
 	const char *p = line;
 
-    /* Treat a NULL pointer as empty if desired */
-    if (line == NULL) {
-        return TRUE;
-    }
+	/* Treat a NULL pointer as empty if desired */
+	if (line == NULL) {
+		return TRUE;
+	}
 
-    while (*p != '\0') {
-        /* Cast to unsigned char to avoid undefined behavior with isspace */
-        if (!isspace((unsigned char)*p)) {
-            return FALSE;  
-        }
-        p++;
-    }
-    return TRUE;  /* Line is empty */
+	while (*p != '\0') {
+		/* Cast to unsigned char to avoid undefined behavior with isspace */
+		if (!isspace((unsigned char)*p)) {
+			return FALSE;
+		}
+		p++;
+	}
+	return TRUE; /* Line is empty */
 }
 
 int is_op_name(char *name) {
@@ -176,7 +161,7 @@ int is_register(char *name) {
 	return is_in_array(name, array);
 }
 
-int is_instuction(char *name) {
+int is_instruction(char *name) {
 	char *array[] = INSTRUCTIONS;
 
 	if (name == NULL) {

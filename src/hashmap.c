@@ -83,7 +83,7 @@ void insert(hashmap_t *map, void *value, char *key) {
     map->count++;  /* Increment the element count */
 }
 
-/* Lookup a macro via key */
+/* Lookup a value via key */
 void *lookup(hashmap_t *map, char *key) {
     unsigned int index = hash(key, map->size);
     HashNode *node = map->table[index];
@@ -111,12 +111,10 @@ void free_hashmap(hashmap_t *map) {
         while (node != NULL) {
             temp = node;
             node = node->next;
-            free(temp->value);
             free(temp->key);
             free(temp);
         }
     }
     free(map->table);
-    free(map);
 }
 

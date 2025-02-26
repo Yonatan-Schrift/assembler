@@ -24,6 +24,7 @@ typedef struct Macro {
     char *body;
 } Macro;
 
+void init_macro(Macro *mcro);
 
 /**
  * Checks if the given name is a valid macro name.
@@ -39,7 +40,7 @@ int is_valid_macro_name(char *name);
  * @param input The input line.
  * @return The macro name if the line defines a macro, otherwise NULL.
  */
-char *is_macro_start(char *input);
+char *is_macro_start(char *input, Line *line);
 
 /**
  * Finds a macro within the hashmap based on the input line.

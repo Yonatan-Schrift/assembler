@@ -26,4 +26,18 @@ void remove_after_delim(char *origin, char delim);
  */
 int string_array_len(const char **args);
 
+
+/**
+ * @brief Allocates memory of the specified size and stores the pointer in the provided variable.
+ * 
+ * This function serves as a wrapper for malloc with automatic error handling. If memory
+ * allocation fails, the program will terminate with EXIT_FAILURE.
+ * 
+ * @param var Pointer to a pointer where the allocated memory address will be stored
+ * @param size Size of the memory to allocate in bytes
+ * 
+ * @note The program will exit if memory allocation fails
+ */
+int handle_malloc(void **var, int size);
+
 #endif /* STRING_FUNCS_H */

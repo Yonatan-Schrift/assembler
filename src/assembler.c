@@ -1,14 +1,13 @@
 /**
  * Assembler
  *
- * @file main.c
+ * @file assembler.c
  * @brief currently for testing I ain't sure what it's gonna do
  *
  * @author Yonatan Schrift
  * @date Created 31.01.2025
  */
 
-#include "../h/main.h"
 #include "../h/file_funcs.h"
 #include "../h/globals.h"
 #include "../h/pre_assembler.h"
@@ -17,9 +16,14 @@
 #define REQ_ARGUMENT_COUNT 2
 
 /**
- * This method opens a file and reads it line by line.asm
- * Do notice that each line has a max of 80 characters + 1 for null terminator.
+ * @brief Entry point for the assembler.
  *
+ * This function processes command line arguments, opens the file,
+ * and initiates the pre-assembly phase.
+ *
+ * @param argc The number of command line arguments.
+ * @param argv Array of command line arguments.
+ * @return int Returns SUCCESS_CODE on success or FAIL_CODE on failure.
  */
 int main(int argc, char *argv[]) {
 	int i, error_flag = FALSE;
@@ -30,7 +34,7 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (strcmp(find_extension(argv[1]), AS_EXTENSION) != STRCMP_SUCCESS) {
+	if (strcmp(find_extension(argv[1]), "as") != STRCMP_SUCCESS) {
 		printf("Not a .as file.\n");
 		return FAIL_CODE;
 	}

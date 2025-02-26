@@ -13,7 +13,6 @@ char *copy_string(const char *origin)
     }
     /* Copy the string contents to new memory */
     strcpy(copy, origin);
-
     return copy;
 }
 
@@ -34,7 +33,6 @@ void remove_after_delim(char *origin, char delim)
 int string_array_len(const char **args)
 {
     int count = 0;
-
     if (args == NULL)
     {
         return EXIT_FAILURE;
@@ -46,4 +44,12 @@ int string_array_len(const char **args)
         count++;
     }
     return count;
+}
+
+int handle_malloc(void **var, int size) {
+    *var = malloc(size);
+	if (!*var) {
+		return EXIT_FAILURE;
+	}
+    return EXIT_SUCCESS;
 }

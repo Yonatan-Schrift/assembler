@@ -5,142 +5,141 @@
 #include "../h/globals.h"
 #include "../h/line.h"
 #include "../h/macro.h"
-#include <ctype.h>
-#include <stdio.h>
 
 int pre_comp(char *src_path) {
-	char *line, *name;
-	int line_counter, error_flag = FALSE;
+	char line[MAX_LINE_LENGTH + 2], *name, *filename;
+	int error_flag = FALSE;
 	FILE *file_in, *file_out;
 	Macro *mcro;
 	hashmap_t mcro_table;
 
+	mcro = malloc(sizeof(Macro));
+	if (!mcro)
+		return EXIT_FAILURE;
+
+	init_macro(mcro);
 	init_hashmap(&mcro_table, TABLE_SIZE);
 
-	file_in = open_file(src_path, ".am" READ_MODE);
-	file_out = open_file(src_path, ".as", WRITE_MODE);
+	/* Open the input and output files */
+	file_in = open_file(src_path, ".as", READ_MODE);
+	file_out = open_file(src_path, ".am", WRITE_MODE);
 
-	printf(" >>> Starting to work on file %s.as\n", src_path);
+	printf(" >>> Starting to work on file %s\n\n", change_extension(src_path, ".am"));
 
-	while ((line = read_line(file_in)) != NULL) {
-		line_counter++;
+	while (read_line(file_in, line) != EXIT_FAILURE) {
+		printf("Read line: %s\n", line);
 
-		if (isEmpty(line) == TRUE) {
+		if (strcmp(line, STOP_STRING) == STRCMP_SUCCESS) {
+			error_flag = EXIT_FAILURE;
 			continue;
 		}
 
-		printf("Read line: %s\n", line);
-
-		if ((mcro = parse_macro(line, new_path, file)) != NULL) {
-
-			/* Checking if the macro name is allowed, if not, delete the file and stop the pre_assembler. */
-			if (strcmp(mcro->name, STOP_STRING) == STRCMP_SUCCESS) {
-				fclose(file);
-				remove(new_path);
-				free(mcro);
-				free_hashmap(&mcro_table);
-
-				return SUCCESS_CODE;
+		/* Skips the line if it's empty */
+		if (isEmpty(line) == TRUE) {
+			continue;
+		}
+		/* Check for a macro definition */
+		if (parse_macro(line, file_in, mcro) == EXIT_SUCCESS) {
+			if (strcmp(mcro->name, STOP_STRING) == STRCMP_SUCCESS)
+				error_flag = EXIT_FAILURE;
+			else {
+				insert(&mcro_table, (void *)mcro, mcro->name);
 			}
-			delete_line(new_path, line);
-			/* A macro definition was found */
-			insert(&mcro_table, (void *)mcro, mcro->name);
-		} else if ((name = find_macro(line, &mcro_table)) != NULL) {
-			paste_macro(name, line, new_path, &mcro_table);
-			delete_line(new_path, line);
+		}
+		/* Check for a macro usage*/
+		else if ((name = find_macro(line, &mcro_table))) {
+			mcro = (Macro *)lookup(&mcro_table, name);
+			fprintf(file_out, "%s", mcro->body);
+
+			free(mcro->body);
+			free(mcro->name);
+
+		}
+		/* Didn't find a macro, save the line in the output file */
+		else {
+			fprintf(file_out, "%s\n", line);
 		}
 	}
 
 	free_hashmap(&mcro_table);
+	if (error_flag != FALSE) {
+		filename = change_extension(src_path, ".am");
+		remove(filename);
+		free(filename);
+	}
 
-	printerror("\nPRECOMPILE SUCCESS\n");
+	fclose(file_in);
+	fclose(file_out);
+
+	printf("\nPRECOMPILE SUCCESS\n");
 	return error_flag;
 }
 
-Macro *parse_macro(char *input, char *filename, FILE *file) {
-	Macro *output;
-	Line *line;
+int parse_macro(char *input, FILE *file, Macro *mcro) {
+	Line line;
 	char *macro_body, *macro_name, *new_macro_body;
-	int IS_MACRO = FALSE;
-	size_t line_length, buffer_size = INITIAL_MACRO_SIZE, length = 0;
+	int IS_MACRO = FALSE, buffer_size = INITIAL_MACRO_SIZE, line_length, total_length = 0;
 
-	/* Check for NULL input */
-	if (input == NULL) {
-		return NULL;
-	}
+	/* Initialize all fields */
+	init_line(&line);
 
-	output = malloc(sizeof(Macro));
-	if (output == NULL) {
-		return NULL;
-	}
-	macro_body = malloc(buffer_size * sizeof(char));
+	macro_body = malloc(buffer_size);
 	if (macro_body == NULL) {
-		free(output);
-		return NULL;
+		return EXIT_FAILURE;
 	}
 
-	if ((macro_name = is_macro_start(input)) == NULL) {
+	if (!(macro_name = is_macro_start(input, &line))) {
+		/* Not a macro start */
 		free(macro_body);
-		free(output);
-		return NULL;
+		return EXIT_FAILURE;
 	}
-
-	if (is_opcode(macro_name) == TRUE) {
-		printf("\nNOT ALLOWED MACRO NAME \"%s\"\n", macro_name);
-		free(macro_body);
-
-		output->name = STOP_STRING;
-		return output;
-	}
-
-	output->name = macro_name; /* Saving the first argument as the macro name  */
-	IS_MACRO = TRUE;
 
 	if (is_valid_macro_name(macro_name) == FALSE) {
+		/* Invalid macro name */
+		printerror("\nNOT ALLOWED MACRO NAME\n");
 		free(macro_body);
 
-		output->name = STOP_STRING;
-		return output;
+		mcro->name = STOP_STRING;
+		return EXIT_SUCCESS;
 	}
 
+	mcro->name = macro_name; /* Saving the first argument as the macro name  */
+	IS_MACRO = TRUE;
+
 	while (IS_MACRO) {
-		input = read_line(file);
+		read_line(file, input);
 		if (input == NULL)
 			break;
 
-		line = split_line(input);
+		split_line(input, &line);
 
-		if (strcmp(line->command, MACRO_END_STRING) == STRCMP_SUCCESS) {
-			/* IS_MACRO = FALSE; */
-			delete_line(filename, MACRO_END_STRING);
-			free_line(line);
-			break;
+		if (strcmp(line.command, MACRO_END_STRING) == STRCMP_SUCCESS) {
+			IS_MACRO = FALSE;
+			free_line(&line);
+			continue;
 		}
 
 		line_length = strlen(input);
 
-		/*  Ensure enough space in buffer */
-		while (length + line_length + 2 > buffer_size) { /* +2 for '\n' and '\0' */
+		/* Ensure enough space in buffer */
+		while ((total_length + line_length + 2) > buffer_size) { /* +2 for '\n' and '\0' */
 			buffer_size *= MACRO_GROWTH_FACTOR;
 			new_macro_body = (char *)realloc(macro_body, buffer_size);
 			if (new_macro_body == NULL) {
 				free(macro_body);
-				free(output);
-				free_line(line);
-				return NULL;
+				free_line(&line);
+				exit(EXIT_FAILURE);
 			}
 			macro_body = new_macro_body;
 		}
 
 		/* Append new line */
-		strcpy(macro_body + length, input);
-		length += line_length;
-		macro_body[length++] = '\n'; /* Preserve line breaks */
-		macro_body[length] = '\0';	 /* Null terminate */
-		delete_line(filename, input);
+		strcpy(macro_body + total_length, input);
+		total_length += line_length;
+		macro_body[total_length++] = '\n'; /* Preserve line breaks */
+		macro_body[total_length] = '\0';   /* Null terminate */
 	}
 
-	output->body = macro_body;
-
-	return output;
+	mcro->body = macro_body;
+	return EXIT_SUCCESS;
 }

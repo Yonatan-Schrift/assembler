@@ -1,11 +1,7 @@
-#include "first_pass.h"
-#include "hashmap.h"
-#include "line.h"
-#include "globals.h"
-
-void printerror(char *error) {
-	printf("%s\n", error);
-}
+#include "../h/first_pass.h"
+#include "../h/hashmap.h"
+#include "../h/line.h"
+#include "../h/globals.h"
 
 int first_pass (char *src_path){
     char *line, *new_path;

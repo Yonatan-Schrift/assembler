@@ -11,7 +11,6 @@ FILE *open_file(const char *filename, const char *extension, const char *mode) {
 	if(!file) {
 		printerror("failed file");
 		free(file_name_with_ext);
-		close(file);
 
 		exit(EXIT_FAILURE);
 	}

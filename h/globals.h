@@ -14,13 +14,6 @@
 #define INSTRUCTIONS {".data", ".string", ".extern", ".entry"}
 #define REGISTERS {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"}
 
-/* Error and Success codes */
-
-#define SUCCESS_CODE 0
-#define FAIL_CODE -1
-#define LINE_TOO_LONG -2
-#define TOO_MANY_ARGS -3
-
 #include "error.h"
 
 
