@@ -17,11 +17,11 @@ void init_line(Line *line) {
     line->command = NULL;
     
     /* Allocate memory for the array on the heap */
-    line->arguments = malloc(sizeof(char*) * MAX_ARGS);
+    line->arguments = malloc(sizeof(char*) * (MAX_ARGS + 1));
     
     /* Initialize all elements to NULL */
     if (line->arguments) {    
-        for (i = 0; i < MAX_ARGS; i++) {
+        for (i = 0; i < MAX_ARGS + 1; i++) {
             line->arguments[i] = NULL;
         }
     }
@@ -88,7 +88,6 @@ int split_line(char *line, Line *output) {
 		}
 		output->arguments[i] = copy_string(token);
 	}
-	output->arguments[i] = NULL;
 
 	return EXIT_SUCCESS;
 }

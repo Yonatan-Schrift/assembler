@@ -51,14 +51,6 @@ char *is_macro_start(char *input, Line *line);
  */
 char *find_macro(char *input, hashmap_t *map);
 
-/**
- * Pastes the macro body into a file at the specified search location.
- *
- * @param name The name of the macro.
- * @param search_text The text to search for the insertion point.
- * @param filename The file where the macro body will be inserted.
- * @param map The hashmap storing macros.
- */
-void paste_macro(char *name, char *search_text, char *filename, hashmap_t *map);
+void free_macro(Macro *mcro);
 
 #endif /* MACRO_H */

@@ -111,6 +111,9 @@ void free_hashmap(hashmap_t *map) {
         while (node != NULL) {
             temp = node;
             node = node->next;
+
+            /* Freeing the macro itself */
+            free_macro((Macro*)temp->value);
             free(temp->key);
             free(temp);
         }

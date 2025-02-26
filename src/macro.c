@@ -52,7 +52,7 @@ char *find_macro(char *input, hashmap_t *map) {
 	/* This method searchs for the macro inside the hashmap */
 	Line line;
 	char *name = NULL;
-	
+
 	/* Check for NULL input */
 	if (input == NULL) {
 		return NULL;
@@ -73,11 +73,10 @@ char *find_macro(char *input, hashmap_t *map) {
 	return name;
 }
 
-/* void paste_macro(char *name, char *search_text, char *filename, hashmap_t *map) {
-	char *body;
-	body = ((Macro *)lookup(map, name))->body;
-
-	if (insert_text_at_line(filename, search_text, body) != SUCCESS_CODE) {
-		return;
-	}
-} */
+void free_macro(Macro *mcro) {
+	if (mcro->name)
+		free(mcro->name);
+	if (mcro->body)
+		free(mcro->body);
+	free(mcro);
+}
