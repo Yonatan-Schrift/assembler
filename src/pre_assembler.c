@@ -61,6 +61,7 @@ int pre_comp(char *src_path) {
 
 			lookup_result = (Macro *)lookup(&mcro_table, name);
 			fprintf(file_out, "%s", lookup_result->body);
+			free(name);
 		}
 		/* Didn't find a macro, save the line in the output file */
 		else {
@@ -139,7 +140,7 @@ int parse_macro(char *input, FILE *file, Macro *mcro) {
 			if (new_macro_body == NULL) {
 				free(macro_body);
 				free_line(&line);
-				exit(EXIT_FAILURE);
+				return EXIT_FAILURE;
 			}
 			macro_body = new_macro_body;
 		}
