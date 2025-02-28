@@ -5,6 +5,7 @@
 #include "../h/line.h"
 
 #define IS_STORE_INST(a) (strcmp((a), ".string") == STRCMP_SUCCESS || strcmp((a), ".data") == STRCMP_SUCCESS)
+#define IS_STORE_OTHER_INST(a) (strcmp((a), ".extern") == STRCMP_SUCCESS || strcmp((a), ".entry") == STRCMP_SUCCESS) /* need to find a better name */
 
 int first_pass(char *src_path) {
 	char line[MAX_LINE_LENGTH + 1], *new_path;
@@ -54,14 +55,38 @@ int first_pass(char *src_path) {
 			}
 
 			if (IS_STORE_INST(parsed_line.command)) {
-				if (is_symbol)
-					;
+				if (is_symbol){
+                    insert_symbol(parsed_line.label, parsed_line.command, DATA, DC, &sym_table);
+                }
+
+                if (parsed_line.command == ".data")
+                {
+                    DC += sizeof(".data");
+                }
+    
+                if (parsed_line.command == ".string")
+                {
+                    DC += sizeof(".string");
+                }
 			}
+
+            if (IS_STORE_OTHER_INST(parsed_line.command)){
+                if (parsed_line.command == ".extern"){
+                    insert_symbol(parsed_line.label, parsed_line.command, EXTERNAL, 0 , &sym_table);
+                }
+
+                else { /* if it's .entry continues */
+                    continue;
+                }
+                
+                
+            }
+            
 		}
 	}
 }
 
-int insert_symbol(char *name, char *instruction, int value, hashmap_t *map) {
+int insert_symbol(char *name, char *instruction, char *attribute, int value, hashmap_t *map) {
 	Symbol *sym;
 	
 	if(lookup(map, name)) {
@@ -70,12 +95,13 @@ int insert_symbol(char *name, char *instruction, int value, hashmap_t *map) {
 
 	sym = malloc(sizeof(Symbol));
 
-	if (!sym || !name || !value || !instruction) {
+	if (!sym || !name || !value || !instruction || !attribute) {
 		return EXIT_FAILURE;
 	}
 	
 	sym->instruction = copy_string(instruction);
 	sym->name = copy_string(name);
+    sym->attribute = copy_string(attribute);
 	sym->value = value;
 
 	
