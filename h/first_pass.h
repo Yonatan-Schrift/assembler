@@ -6,15 +6,16 @@
 #include <string.h>
 #include "hashmap.h"
 
-#define DATA 1
-#define CODE 2
-#define EXTERNAL 3
-#define ENTRY 4
+#define DATA "data"
+#define CODE "code"
+#define EXTERNAL "external"
+#define ENTRY "entry"
 #define NOT_IN_TABLE -1
 
 typedef struct Symbol {
     char *name;
     char *instruction;
+    char *attribute;
     int value;
 } Symbol;
 
@@ -25,6 +26,6 @@ extern int DCF;
 
 
 int first_pass(char *file_path);
-int insert_symbol(char *name, char *instruction, int value, hashmap_t *map);
+int insert_symbol(char *name, char *instruction, char *attribute, int value, hashmap_t *map);
 
 #endif

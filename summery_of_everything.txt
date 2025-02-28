@@ -445,14 +445,14 @@ first-pass algorithm:
     3. Is the first word in the line is a symbol? if not, go to 5
     4. Turn on flag: is_symbol
     5. Is the instruction .data or .string? if not, go to 8
-    6. If you have defined a label, put it in the symbols table with the .data attribute. His value will be DC.
+    6. If you have defined a label, put it in the symbols table with the data attribute. His value will be DC.
        If the symbol is already in the table retrun an error.
     7. Recognize the data type, encode them in the memory, and update the DC based on there length. Go back to 2
-    8. Is it an .extra or .entry instruction? if not, go to 11
+    8. Is it an .extern or .entry instruction? if not, go to 11
     9. If it's an .entry instruction. Go back to 2 (the instruction will be processed in the second-pass)
     10.If this is an .extern instruction, insert the symbol that appears as the operand of the instruction into the symbol table with the value 0
-       and the .external attribute. Go back to 2
-    11.This is an instruction line. If a symbol is defined, insert it into the symbol table with the .code attribute. The value of the symbol will be IC 
+       and the external attribute. Go back to 2
+    11.This is an instruction line. If a symbol is defined, insert it into the symbol table with the code attribute. The value of the symbol will be IC 
        (if the symbol already exists in the table, report an error).
     12.Search for the operation name in the operations name table. If it is not found, report an error with the instruction name.
     13.Analyze the operand structure of the instruction and calculate the total number of words that the instruction occupies in machine code
