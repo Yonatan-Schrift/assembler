@@ -14,6 +14,6 @@
 
 int pre_comp(char *src_path);
 
-int parse_macro(char *input, FILE *file, Macro *mcro);
+int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro);
 
 #endif /* PRE_ASSEMBLER_H */

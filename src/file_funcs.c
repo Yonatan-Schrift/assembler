@@ -11,7 +11,7 @@ FILE *open_file(const char *filename, const char *extension, const char *mode) {
 
 	/* checks that the file opened */
 	if(!file) {
-		printerror("failed file");
+		printerror("failed to open the file\n", NO_LINE);
 		return NULL;
 	}
 	

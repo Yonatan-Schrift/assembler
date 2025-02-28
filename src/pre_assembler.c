@@ -45,7 +45,7 @@ int pre_comp(char *src_path) {
 		init_macro(mcro);
 
 		/* Check for a macro definition */
-		if (parse_macro(line, file_in, mcro) == EXIT_SUCCESS) {
+		if (parse_macro(line, &line_count, file_in, mcro) == EXIT_SUCCESS) {
 			printf("\n >>> Macro is %s\n", mcro->name);
 			is_stop_string = (strcmp(mcro->name, STOP_STRING) == STRCMP_SUCCESS);
 
@@ -86,7 +86,7 @@ int pre_comp(char *src_path) {
 	return error_flag;
 }
 
-int parse_macro(char *input, FILE *file, Macro *mcro) {
+int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 	Line line;
 	char *macro_body, *macro_name, *new_macro_body;
 	int IS_MACRO = FALSE, buffer_size = INITIAL_MACRO_SIZE, line_length, total_length = 0;
@@ -120,6 +120,8 @@ int parse_macro(char *input, FILE *file, Macro *mcro) {
 
 	while (IS_MACRO) {
 		read_line(file, input);
+		line_count++;
+		
 		if (input == NULL) {
 			free(macro_body);
 			free_line(&line);

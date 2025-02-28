@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define STOP_STRING "STOP\n"  /* Added newlines since they get removed at line reading - this code cannot be written by a user */
+#define STOP_STRING "STOP\n"  /* A string used for stopping the program when encountering errors. */
+#define NO_LINE -1            /* A used when an error has no specific line */
 
 /* Error and Success codes */
 #define SUCCESS_CODE 0

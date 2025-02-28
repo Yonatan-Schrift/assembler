@@ -84,8 +84,7 @@ int split_line(char *line, Line *output) {
 
 	for (i = 0; token; token = strtok(NULL, delims), i++) {
 		if (i >= MAX_ARGS) {
-			printerror("TOO_MANY_ARGUMENTS\n");
-			return EXIT_FAILURE;
+			return TOO_MANY_ARGS;
 		}
 		output->arguments[i] = copy_string(token);
 	}

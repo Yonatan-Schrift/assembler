@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
 	/* Checks if recieved at least 1 input file */
 	if (argc < REQ_ARGUMENT_COUNT) {
-		printerror("MISSING ARGUMET\n");
+		printerror("MISSING FILE TO PROCESS\n", NO_LINE);
 		exit(EXIT_FAILURE);
 	}
 
