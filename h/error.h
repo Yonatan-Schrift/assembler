@@ -13,6 +13,7 @@
 #define LINE_TOO_LONG -2
 #define TOO_MANY_ARGS -3
 #define NOT_ALLOWED_MACRO_NAME -4
+#define REDEFINE_SYMBOL -5
 
 /* Print an error message and continue execution. */
 void printerror(const char *message, int line_num);

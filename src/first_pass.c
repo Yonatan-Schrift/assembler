@@ -10,7 +10,7 @@ int first_pass(char *src_path) {
 	char line[MAX_LINE_LENGTH + 1], *new_path;
 	FILE *file_in, *file_ob;
 	Line parsed_line;
-	int is_symbol = FALSE, error_flag = FALSE, line_err_flag = FALSE, line_count = 0;
+	int is_symbol = FALSE, error_flag = FALSE, line_count = 0;
 	hashmap_t sym_table;
 
 	new_path = change_extension(src_path, ".ob"); /* might be useless */
@@ -37,7 +37,7 @@ int first_pass(char *src_path) {
 
 			printf("%d", error_flag); /* needs to be removed once printerror is done */
 			
-			printerror("error_flag");
+			printerror("error_flag", line_count);
 			continue;
 		}
 
@@ -65,8 +65,7 @@ int insert_symbol(char *name, char *instruction, int value, hashmap_t *map) {
 	Symbol *sym;
 	
 	if(lookup(map, name)) {
-		printerror("CANNOT RE-DEFINE SYMBOL");
-		return EXIT_FAILURE;
+		return REDEFINE_SYMBOL;
 	}
 
 	sym = malloc(sizeof(Symbol));
