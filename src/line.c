@@ -36,9 +36,10 @@ int read_line(FILE *file, char *line) {
 
 		if (index > MAX_LINE_LENGTH || (index == MAX_LINE_LENGTH && line[index - 1] != '\n')) {
 			/* Line too long */
-			printerror("LINE_TOO_LONG\n");
-			/* line = STOP_STRING; */
-			return EXIT_FAILURE;
+			line = copy_string(STOP_STRING);
+			line[MAX_LINE_LENGTH] = '\0';
+			
+			return LINE_TOO_LONG;
 		}
 		line[index++] = cur;
 	}

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "string_funcs.h"
 
-#define TABLE_SIZE 101 /* Starting size for the hashmap */
+#define TABLE_SIZE 51 /* Starting size for the hashmap */
 #define LOAD_FACTOR_THRESHOLD 0.75 /* The percentage for resizing the hashmap  */
 
 /* Hashmap node structure */

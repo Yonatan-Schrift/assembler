@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "hashmap.h"
 
 #define DATA 1
 #define CODE 2
@@ -13,13 +14,10 @@
 
 typedef struct Symbol {
     char *name;
+    char *instruction;
     int value;
-    int instruction;
 } Symbol;
 
-
-extern Symbol *symbolTable;
-extern int symbolCount;
 extern int IC;
 extern int DC;
 extern int ICF;
@@ -27,7 +25,6 @@ extern int DCF;
 
 
 int first_pass(char *file_path);
-int findSymbol(char *name);
-void insertSymbol(char *name, int value, int instruction);
+int insert_symbol(char *name, char *instruction, int value, hashmap_t *map);
 
 #endif

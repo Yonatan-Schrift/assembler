@@ -12,16 +12,10 @@
 
 FILE *open_file(const char *filename, const char *extension, const char *mode);
 
-char *copy_file(const char *src_path, char *extension);
-
 char *change_extension(const char *filename, const char *extension);
 
 char *find_extension(const char *filename);
 
-int delete_line(const char *filename, const char *search_text);
-
-int find_line(const char *filename, const char *search_text);
-
-int insert_text_at_line(const char *filename, const char *search_text, const char *text);
+void close_mult_files(FILE *file1, FILE *file2, FILE *file3, FILE *file4, FILE *file5, FILE *file6);
 
 #endif /* FILE_FUNCS_H */

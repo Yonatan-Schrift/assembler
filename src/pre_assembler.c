@@ -8,7 +8,7 @@
 
 int pre_comp(char *src_path) {
 	char line[MAX_LINE_LENGTH + 2], *name;
-	int error_flag = FALSE, is_stop_string;
+	int error_flag = FALSE, read_err_flag = FALSE, is_stop_string, line_count = 0;
 	FILE *file_in, *file_out;
 	Macro *mcro;
 	Macro *lookup_result;
@@ -24,7 +24,8 @@ int pre_comp(char *src_path) {
 
 	printf(" >>> Starting to work on file %s\n\n", filename);
 
-	while (read_line(file_in, line) != EXIT_FAILURE) {
+	while ((read_err_flag = read_line(file_in, line)) != EXIT_FAILURE) {
+		line_count++;
 		printf("Read line: %s\n", line);
 
 		if (strcmp(line, STOP_STRING) == STRCMP_SUCCESS) {
@@ -72,6 +73,7 @@ int pre_comp(char *src_path) {
 
 	free_hashmap(&mcro_table);
 	if (error_flag != FALSE) {
+		printerror( "Error Flag\n", read_err_flag); /* change this to line count once printerror is fixed */
 		remove(filename);
 	}
 
@@ -106,12 +108,11 @@ int parse_macro(char *input, FILE *file, Macro *mcro) {
 
 	if (is_valid_macro_name(macro_name) == FALSE) {
 		/* Invalid macro name */
-		printerror("\nNOT ALLOWED MACRO NAME\n");
 		free(macro_body);
 		free_line(&line);
 
 		mcro->name = STOP_STRING;
-		return EXIT_SUCCESS;
+		return NOT_ALLOWED_MACRO_NAME;
 	}
 
 	mcro->name = copy_string(macro_name);
