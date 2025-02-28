@@ -465,3 +465,17 @@ first-pass algorithm:
     18.Save the final values of IC and DC (called ICF and DCF). We will use them to build the output files after the second-pass.
     19.Update the symbol table with the value of ICF for every symbol with the .data attribute (see explanation for this later).
     20.Start the second-pass.
+
+so? what should the second pass do?
+
+Second-pass algorithm:
+    1. Read the next line.
+    2. if a label was found, skip it D:
+    3. is the instruction .data / .string / .extern? if so, go back to 1.
+    4. is the instruction .entry? if not, go to 6
+    5. set the value of is_entry to TRUE for the corrosponding symbol in the symbol table. (check if it exists obviously)
+    6. code the info-words for the operands, based on the addressing method.
+       for each operand that includes a symbol, find the value from the symbol table.
+       if the symbol is an external, include the address for the relevant info-word.
+    7. if an error was found, stop here.
+    8. build the output files.
