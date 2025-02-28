@@ -54,8 +54,9 @@ int first_pass(char *src_path) {
 			}
 
 			if (IS_STORE_INST(parsed_line.command)) {
-				if (is_symbol)
-					;
+				if (is_symbol){
+                    insert_symbol(parsed_line.label, parsed_line.command, DC, &sym_table);
+                }
 			}
 		}
 	}

@@ -445,7 +445,7 @@ first-pass algorithm:
     3. Is the first word in the line is a symbol? if not, go to 5
     4. Turn on flag: is_symbol
     5. Is the instruction .data or .string? if not, go to 8
-    6. If you have defined a symbol (label), put it in the symbols table with the .data attribute. His value will be DC.
+    6. If you have defined a label, put it in the symbols table with the .data attribute. His value will be DC.
        If the symbol is already in the table retrun an error.
     7. Recognize the data type, encode them in the memory, and update the DC based on there length. Go back to 2
     8. Is it an .extra or .entry instruction? if not, go to 11
