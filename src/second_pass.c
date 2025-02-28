@@ -4,3 +4,8 @@
 #include "../h/globals.h"
 #include "../h/hashmap.h"
 
+int second_pass() {
+
+
+    return EXIT_SUCCESS;
+}
