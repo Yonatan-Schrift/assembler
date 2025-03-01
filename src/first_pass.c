@@ -12,15 +12,22 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	char line[MAX_LINE_LENGTH + 1], *new_path;
 	FILE *file_in, *file_ob;
 	Line parsed_line;
-	int is_symbol = FALSE, error_flag = FALSE, line_count = 0;
+	int error_flag = FALSE, line_count = 0, i, value;
 	hashmap_t sym_table;
 
-	new_path = change_extension(src_path, ".ob"); /* might be useless */
-
+	int data_size = INITIAL_DATA_SIZE;
+	int *data_image = malloc(INITIAL_DATA_SIZE * sizeof(int));
+	if (!data_image)
+		return EXIT_FAILURE;
+	/*
+		new_path = change_extension(src_path, ".ob");  might be useless
+	 */
 	file_in = open_file(src_path, ".am", READ_MODE);
 	file_ob = open_file(src_path, ".ob", WRITE_MODE);
 	if (!file_in || !file_ob) {
 		close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
+		free(data_image);
+
 		return FAIL_CODE;
 	}
 
@@ -47,31 +54,31 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 
 		if (split_line(line, &parsed_line) != EXIT_FAILURE) {
-			
-			/* check for a label */
-			if (parsed_line.label != NULL) {
-				is_symbol = TRUE;
-			}
 
 			/* Stages 5-7 */
 			/* check if the instruction stores data in the memory */
 			if (IS_STORE_INST(parsed_line.command)) {
-				if (is_symbol) {
+				/* check for a label */
+				if (parsed_line.label != NULL) {
 					error_flag = insert_symbol(parsed_line.label, parsed_line.command, DATA, DC, &sym_table, mcro_tb);
 					printerror("IF_ERROR", line_count, error_flag);
 				}
 
 				if (COMPARE_STR(parsed_line.command, ".data")) {
 					/* is '.data' instruction */
-					DC += sizeof(".data");
+					for (i = 0; parsed_line.arguments != NULL; i++) {
+						value = atoi(parsed_line.arguments[i]);
+
+						add_data_word(value, &data_size, &data_image);
+					}
 				}
 
 				else {
 					/* is '.string' instruction */
-					DC += sizeof(".string");
+					add_string_word(parsed_line.arguments[0], &data_size, &data_image);
 				}
 			}
-			
+
 			/* Stages 8-10 */
 			/* check if the instruction is an entry or extern variable */
 			if (IS_ENTRY_OR_EXTERN(parsed_line.command)) {
@@ -87,18 +94,19 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					continue;
 				}
 			}
-			
-			/* Stages 11-? */
 
+			/* Stages 11-? */
 		}
 	}
+
+	free(data_image);
 	return EXIT_SUCCESS;
 }
 
 int insert_symbol(char *name, char *instruction, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
 	Symbol *sym;
 
-	if(!name || !value || !instruction || !attribute) {
+	if (!name || !value || !instruction || !attribute) {
 		/* Missing values for the symbol */
 		return MISSING_SYMBOL_VALUES;
 	}
@@ -123,4 +131,33 @@ int insert_symbol(char *name, char *instruction, char *attribute, int value, has
 
 	insert(sym_tb, (void *)sym, name);
 	return SUCCESS_CODE;
+}
+
+int add_data_word(int value, int *data_cap, int **data_image) {
+	int *img_buffer;
+
+	if (DC >= *data_cap) {
+		*data_cap *= 2;
+		img_buffer = realloc(*data_image, *data_cap * sizeof(int));
+		if (!img_buffer) {
+			printerror("Memory failue", NO_LINE, 0);
+			return EXIT_FAILURE;
+		}
+		*data_image = img_buffer;
+	}
+	*data_image[DC++] = value;
+	return EXIT_SUCCESS;
+}
+
+int add_string_word(char *string, int *data_cap, int **data_image) {
+	int i, value;
+	remove_quotes(string);
+
+	for(i = 0; string[i] != '\0'; i++) {
+		value = (int) string[i];
+		if(add_data_word(value, data_cap, data_image) == EXIT_FAILURE) {
+			return EXIT_FAILURE;
+		}
+	}
+	return EXIT_SUCCESS;
 }
