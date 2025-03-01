@@ -16,15 +16,6 @@ void init_line(Line *line) {
     line->label = NULL;
     line->command = NULL;
     
-    /* Allocate memory for the array on the heap */
-    line->arguments = malloc(sizeof(char*) * (MAX_ARGS + 1));
-    
-    /* Initialize all elements to NULL */
-    if (line->arguments) {    
-        for (i = 0; i < MAX_ARGS + 1; i++) {
-            line->arguments[i] = NULL;
-        }
-    }
 }
 
 int read_line(FILE *file, char *line) {
@@ -56,14 +47,21 @@ int read_line(FILE *file, char *line) {
 }
 
 int split_line(char *line, Line *output) {
-	char input_copy[MAX_LINE_LENGTH + 2], *token, **args;
+	char input_copy[MAX_LINE_LENGTH + 2], *token, **args, **args_buffer;
 	char *delims = " ,\t\n";
-	int i;
+	int i, arg_count = MAX_ARGS;
 
 	if (line == NULL) {
 		return EXIT_FAILURE;
 	}
 	strcpy(input_copy, line);
+
+	/* Allocate memory for the array on the heap */
+    args = malloc(sizeof(char*) * (MAX_ARGS + 1));
+    if (!args) {    
+        return EXIT_FAILURE;
+    }
+	output->arguments = args;
 
 	/* removing the comments from the line. */
 	remove_after_delim(input_copy, ';');
@@ -77,18 +75,25 @@ int split_line(char *line, Line *output) {
 		token = strtok(NULL, delims);
 	}
 
-	/* Extract command if exists */
+	/* Extract command */
 	if (token) {
 		output->command = copy_string(token);
 		token = strtok(NULL, delims);
 	}
 
+	/* Puts the rest of the tokens as arguments */
 	for (i = 0; token; token = strtok(NULL, delims), i++) {
-		if (i >= MAX_ARGS) {
-			return TOO_MANY_ARGS;
+		if (i >= arg_count) {
+			arg_count *= 2;
+			args_buffer = realloc(args, arg_count);
+			if(!args_buffer) {
+				return EXIT_FAILURE;
+			}
+			args = args_buffer;
 		}
-		output->arguments[i] = copy_string(token);
+		args[i] = copy_string(token);
 	}
+	output->arguments = args;
 
 	return EXIT_SUCCESS;
 }
