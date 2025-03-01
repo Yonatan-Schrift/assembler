@@ -5,7 +5,8 @@
 #include "../h/line.h"
 
 #define IS_STORE_INST(a) (strcmp((a), ".string") == STRCMP_SUCCESS || strcmp((a), ".data") == STRCMP_SUCCESS)
-#define IS_STORE_OTHER_INST(a) (strcmp((a), ".extern") == STRCMP_SUCCESS || strcmp((a), ".entry") == STRCMP_SUCCESS) /* need to find a better name */
+#define IS_ENTRY_OR_EXTERN(a) (strcmp((a), ".extern") == STRCMP_SUCCESS || strcmp((a), ".entry") == STRCMP_SUCCESS)
+#define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
 
 int first_pass(char *src_path) {
 	char line[MAX_LINE_LENGTH + 1], *new_path;
@@ -35,10 +36,7 @@ int first_pass(char *src_path) {
 		printf("Read line is: %s\n", line);
 
 		if (strcmp(line, STOP_STRING) == STRCMP_SUCCESS) {
-
-			printf("%d", error_flag); /* needs to be removed once printerror is done */
-			
-			printerror("error_flag", line_count);
+			printerror("error_flag", line_count, error_flag);
 			continue;
 		}
 
@@ -54,42 +52,43 @@ int first_pass(char *src_path) {
 				is_symbol = TRUE;
 			}
 
+			/* is it an instruction for storing data? */
 			if (IS_STORE_INST(parsed_line.command)) {
-				if (is_symbol){
-                    insert_symbol(parsed_line.label, parsed_line.command, DATA, DC, &sym_table);
-                }
+				if (is_symbol) {
+					error_flag = insert_symbol(parsed_line.label, parsed_line.command, DATA, DC, &sym_table);
+					printerror("ERROR_FLAG", line_count, error_flag);
+				}
 
-                if (parsed_line.command == ".data")
-                {
-                    DC += sizeof(".data");
-                }
-    
-                if (parsed_line.command == ".string")
-                {
-                    DC += sizeof(".string");
-                }
+				if (COMPARE_STR(parsed_line.command, ".data")) {
+					DC += sizeof(".data");
+				}
+
+				else {
+					/* is .string instruction */
+					DC += sizeof(".string");
+				}
 			}
 
-            if (IS_STORE_OTHER_INST(parsed_line.command)){
-                if (parsed_line.command == ".extern"){
-                    insert_symbol(parsed_line.label, parsed_line.command, EXTERNAL, 0 , &sym_table);
-                }
+			if (IS_ENTRY_OR_EXTERN(parsed_line.command)) {
+				if (COMPARE_STR(parsed_line.command, ".extern")) {
+					insert_symbol(parsed_line.label, parsed_line.command, EXTERNAL, 0, &sym_table);
+				}
 
-                else { /* if it's .entry continues */
-                    continue;
-                }
-                
-                
-            }
-            
+				else {
+					/* is .entry instruction */
+					/* do nothing :D */
+					continue;
+				}
+			}
 		}
 	}
+	return EXIT_SUCCESS;
 }
 
 int insert_symbol(char *name, char *instruction, char *attribute, int value, hashmap_t *map) {
 	Symbol *sym;
-	
-	if(lookup(map, name)) {
+
+	if (lookup(map, name)) {
 		return REDEFINE_SYMBOL;
 	}
 
@@ -98,13 +97,12 @@ int insert_symbol(char *name, char *instruction, char *attribute, int value, has
 	if (!sym || !name || !value || !instruction || !attribute) {
 		return EXIT_FAILURE;
 	}
-	
+
 	sym->instruction = copy_string(instruction);
 	sym->name = copy_string(name);
-    sym->attribute = copy_string(attribute);
+	sym->attribute = copy_string(attribute);
 	sym->value = value;
 
-	
 	insert(map, (void *)sym, name);
 	return SUCCESS_CODE;
 }

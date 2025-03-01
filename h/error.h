@@ -16,6 +16,6 @@
 #define REDEFINE_SYMBOL -5
 
 /* Print an error message and continue execution. */
-void printerror(const char *message, int line_num);
+void printerror(const char *message, int line_num, int error_code);
 
 #endif /* ERROR_H */

@@ -8,7 +8,7 @@
 
 int pre_comp(char *src_path) {
 	char line[MAX_LINE_LENGTH + 2], *name;
-	int error_flag = FALSE, read_err_flag = FALSE, is_stop_string, line_count = 0;
+	int error_flag = FALSE, read_line_err_flag = FALSE, is_stop_string, line_count = 0;
 	FILE *file_in, *file_out;
 	Macro *mcro;
 	Macro *lookup_result;
@@ -24,12 +24,12 @@ int pre_comp(char *src_path) {
 
 	printf(" >>> Starting to work on file %s\n\n", filename);
 
-	while ((read_err_flag = read_line(file_in, line)) != EXIT_FAILURE) {
+	while ((read_line_err_flag = read_line(file_in, line)) != EXIT_FAILURE) {
 		line_count++;
 		printf("Read line: %s\n", line);
 
 		if (strcmp(line, STOP_STRING) == STRCMP_SUCCESS) {
-			error_flag = EXIT_FAILURE;
+			printerror("ERROR", line_count, read_line_err_flag);
 			continue;
 		}
 
@@ -73,7 +73,7 @@ int pre_comp(char *src_path) {
 
 	free_hashmap(&mcro_table);
 	if (error_flag != FALSE) {
-		printerror( "Error Flag\n", read_err_flag); /* change this to line count once printerror is fixed */
+		printerror( "Error Flag\n", line_count, error_flag);
 		remove(filename);
 	}
 

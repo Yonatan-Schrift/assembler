@@ -56,7 +56,7 @@ int read_line(FILE *file, char *line) {
 }
 
 int split_line(char *line, Line *output) {
-	char input_copy[MAX_LINE_LENGTH + 2], *token;
+	char input_copy[MAX_LINE_LENGTH + 2], *token, **args;
 	char *delims = " ,\t\n";
 	int i;
 
@@ -126,13 +126,12 @@ int is_in_array(char *name, char **array) {
 int isEmpty(char *line) {
 	const char *p = line;
 
-	/* Treat a NULL pointer as empty if desired */
+	/* Treat a NULL pointer as empty */
 	if (line == NULL) {
 		return TRUE;
 	}
 
 	while (*p != '\0') {
-		/* Cast to unsigned char to avoid undefined behavior with isspace */
 		if (!isspace((unsigned char)*p)) {
 			return FALSE;
 		}
