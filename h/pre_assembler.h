@@ -12,7 +12,7 @@
 #define INITIAL_MACRO_SIZE 256 
 #define MACRO_GROWTH_FACTOR 2
 
-int pre_comp(char *src_path);
+int pre_comp(char *src_path, hashmap_t *mcro_table);
 
 int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro);
 

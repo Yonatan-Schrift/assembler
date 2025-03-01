@@ -30,17 +30,13 @@ int main(int argc, char *argv[]) {
 
 	/* Checks if recieved at least 1 input file */
 	if (argc < REQ_ARGUMENT_COUNT) {
-		printerror("MISSING FILE TO PROCESS\n", NO_LINE);
+		printerror("MISSING FILE TO PROCESS\n", NO_LINE, NO_FILES);
 		exit(EXIT_FAILURE);
 	}
 
-	if (strcmp(find_extension(argv[1]), "as") != STRCMP_SUCCESS) {
-		printf("Not a .as file.\n");
-		return FAIL_CODE;
-	}
-
 	for (i = 1; i < argc; i++) {
-		if (pre_comp(argv[i]))
+		hashmap_t mcro_tb;
+		if (pre_comp(argv[i], &mcro_tb))
 			error_flag = TRUE;
 	}
 

@@ -6,8 +6,8 @@
 #include <string.h>
 
 #define BUFFER_SIZE 256
-#define WRITE_MODE "wb"
-#define READ_MODE "rb"
+#define WRITE_MODE "w"
+#define READ_MODE "r"
 
 
 FILE *open_file(const char *filename, const char *extension, const char *mode);

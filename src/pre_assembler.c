@@ -1,34 +1,32 @@
 
 #include "../h/pre_assembler.h"
-#include "../h/error.h"
 #include "../h/file_funcs.h"
 #include "../h/globals.h"
 #include "../h/line.h"
 #include "../h/macro.h"
 
-int pre_comp(char *src_path) {
+int pre_comp(char *src_path, hashmap_t *mcro_table) {
 	char line[MAX_LINE_LENGTH + 2], *name;
 	int error_flag = FALSE, read_line_err_flag = FALSE, is_stop_string, line_count = 0;
 	FILE *file_in, *file_out;
 	Macro *mcro;
 	Macro *lookup_result;
-	hashmap_t mcro_table;
 
-	char *filename = change_extension(src_path, ".am");
+	char *processedFilename = change_extension(src_path, ".am");
 
-	init_hashmap(&mcro_table, TABLE_SIZE);
+	init_hashmap(mcro_table, TABLE_SIZE);
 
 	/* Open the input and output files */
 	file_in = open_file(src_path, ".as", READ_MODE);
 	file_out = open_file(src_path, ".am", WRITE_MODE);
 
-	printf(" >>> Starting to work on file %s\n\n", filename);
+	printf(" >>> Starting to work on file %s\n\n", processedFilename);
 
 	while ((read_line_err_flag = read_line(file_in, line)) != EXIT_FAILURE) {
 		line_count++;
 		printf("Read line: %s\n", line);
 
-		if (strcmp(line, STOP_STRING) == STRCMP_SUCCESS) {
+		if (strcmp(line, ERROR_STRING) == STRCMP_SUCCESS) {
 			printerror("ERROR", line_count, read_line_err_flag);
 			continue;
 		}
@@ -47,20 +45,20 @@ int pre_comp(char *src_path) {
 		/* Check for a macro definition */
 		if (parse_macro(line, &line_count, file_in, mcro) == EXIT_SUCCESS) {
 			printf("\n >>> Macro is %s\n", mcro->name);
-			is_stop_string = (strcmp(mcro->name, STOP_STRING) == STRCMP_SUCCESS);
+			is_stop_string = (strcmp(mcro->name, ERROR_STRING) == STRCMP_SUCCESS);
 
 			if (is_stop_string) {
 				error_flag = EXIT_FAILURE;
 				free_macro(mcro);
 			} else {
-				insert(&mcro_table, (void *)mcro, mcro->name);
+				insert(mcro_table, (void *)mcro, mcro->name);
 			}
 		}
 		/* Check for a macro usage*/
-		else if ((name = find_macro(line, &mcro_table))) {
+		else if ((name = find_macro(line, mcro_table))) {
 			free_macro(mcro);
 
-			lookup_result = (Macro *)lookup(&mcro_table, name);
+			lookup_result = (Macro *)lookup(mcro_table, name);
 			fprintf(file_out, "%s", lookup_result->body);
 			free(name);
 		}
@@ -71,17 +69,18 @@ int pre_comp(char *src_path) {
 		}
 	}
 
-	free_hashmap(&mcro_table);
-	if (error_flag != FALSE) {
-		printerror( "Error Flag\n", line_count, error_flag);
-		remove(filename);
-	}
-
-	free(filename);
-
 	fclose(file_in);
 	fclose(file_out);
 
+	if (error_flag != FALSE) {
+		printerror("Error Flag\n", line_count, error_flag);
+		remove(processedFilename); /* Removing the .am file */
+
+		free_hashmap(mcro_table);
+
+		printf("\npre-compilation failed\n");
+		return EXIT_FAILURE;
+	}
 	printf("\nPRECOMPILE SUCCESS\n");
 	return error_flag;
 }
@@ -111,7 +110,7 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 		free(macro_body);
 		free_line(&line);
 
-		mcro->name = STOP_STRING;
+		mcro->name = ERROR_STRING;
 		return NOT_ALLOWED_MACRO_NAME;
 	}
 
@@ -121,7 +120,7 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 	while (IS_MACRO) {
 		read_line(file, input);
 		line_count++;
-		
+
 		if (input == NULL) {
 			free(macro_body);
 			free_line(&line);

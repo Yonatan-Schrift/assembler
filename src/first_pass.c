@@ -8,7 +8,7 @@
 #define IS_ENTRY_OR_EXTERN(a) (strcmp((a), ".extern") == STRCMP_SUCCESS || strcmp((a), ".entry") == STRCMP_SUCCESS)
 #define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
 
-int first_pass(char *src_path) {
+int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	char line[MAX_LINE_LENGTH + 1], *new_path;
 	FILE *file_in, *file_ob;
 	Line parsed_line;
@@ -33,9 +33,10 @@ int first_pass(char *src_path) {
 	while ((error_flag = read_line(file_in, line)) != EXIT_FAILURE) {
 		line_count++;
 		/* Read a line from the source */
-		printf("Read line is: %s\n", line);
+		printf("Read line is: %s\n", line); /* debug line */
 
-		if (strcmp(line, STOP_STRING) == STRCMP_SUCCESS) {
+		/* Check if the line encountered an error */
+		if (COMPARE_STR(line, ERROR_STRING)) {
 			printerror("error_flag", line_count, error_flag);
 			continue;
 		}
@@ -46,55 +47,72 @@ int first_pass(char *src_path) {
 		}
 
 		if (split_line(line, &parsed_line) != EXIT_FAILURE) {
-
+			
+			/* check for a label */
 			if (parsed_line.label != NULL) {
-				/* check for a label */
 				is_symbol = TRUE;
 			}
 
-			/* is it an instruction for storing data? */
+			/* Stages 5-7 */
+			/* check if the instruction stores data in the memory */
 			if (IS_STORE_INST(parsed_line.command)) {
 				if (is_symbol) {
-					error_flag = insert_symbol(parsed_line.label, parsed_line.command, DATA, DC, &sym_table);
-					printerror("ERROR_FLAG", line_count, error_flag);
+					error_flag = insert_symbol(parsed_line.label, parsed_line.command, DATA, DC, &sym_table, mcro_tb);
+					printerror("IF_ERROR", line_count, error_flag);
 				}
 
 				if (COMPARE_STR(parsed_line.command, ".data")) {
+					/* is '.data' instruction */
 					DC += sizeof(".data");
 				}
 
 				else {
-					/* is .string instruction */
+					/* is '.string' instruction */
 					DC += sizeof(".string");
 				}
 			}
-
+			
+			/* Stages 8-10 */
+			/* check if the instruction is an entry or extern variable */
 			if (IS_ENTRY_OR_EXTERN(parsed_line.command)) {
 				if (COMPARE_STR(parsed_line.command, ".extern")) {
-					insert_symbol(parsed_line.label, parsed_line.command, EXTERNAL, 0, &sym_table);
+					/* Is '.extern' instruction */
+					error_flag = insert_symbol(parsed_line.label, parsed_line.command, EXTERNAL, 0, &sym_table, mcro_tb);
+					printerror("IF_ERROR", line_count, error_flag);
 				}
 
 				else {
-					/* is .entry instruction */
-					/* do nothing :D */
+					/* is '.entry' instruction */
+					/* do nothing */
 					continue;
 				}
 			}
+			
+			/* Stages 11-? */
+
 		}
 	}
 	return EXIT_SUCCESS;
 }
 
-int insert_symbol(char *name, char *instruction, char *attribute, int value, hashmap_t *map) {
+int insert_symbol(char *name, char *instruction, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
 	Symbol *sym;
 
-	if (lookup(map, name)) {
-		return REDEFINE_SYMBOL;
+	if(!name || !value || !instruction || !attribute) {
+		/* Missing values for the symbol */
+		return MISSING_SYMBOL_VALUES;
+	}
+	if (lookup(sym_tb, name)) {
+		/* Checks if a symbol is defined twice */
+		return SYMBOL_ALREADY_EXISTS;
+	}
+	if (lookup(mcro_tb, name)) {
+		/* Checks if a symbol is defined with the same name as a macro */
+		return SYMBOL_IS_MACRO;
 	}
 
 	sym = malloc(sizeof(Symbol));
-
-	if (!sym || !name || !value || !instruction || !attribute) {
+	if (!sym) {
 		return EXIT_FAILURE;
 	}
 
@@ -103,6 +121,6 @@ int insert_symbol(char *name, char *instruction, char *attribute, int value, has
 	sym->attribute = copy_string(attribute);
 	sym->value = value;
 
-	insert(map, (void *)sym, name);
+	insert(sym_tb, (void *)sym, name);
 	return SUCCESS_CODE;
 }

@@ -11,13 +11,25 @@ FILE *open_file(const char *filename, const char *extension, const char *mode) {
 
 	/* checks that the file opened */
 	if(!file) {
-		printerror("failed to open the file\n", NO_LINE);
+		printerror("failed to open the file\n", NO_LINE, EXIT_FAILURE);
 		return NULL;
 	}
 	
 	return file;
 }
 
+/**
+ * @brief Changes the extension of a filename.
+ * 
+ * This function takes a filename and replaces its existing extension with
+ * a new extension. If the filename doesn't have an extension, the new 
+ * extension is appended.
+ *
+ * @param filename The original filename whose extension needs to be changed
+ * @param extension The new extension
+ * @return A pointer to a newly allocated string containing the filename with the new extension.
+ *         The caller is responsible for freeing this memory.
+ */
 char *change_extension(const char *filename, const char *extension) {
 	char *new_filename;
 	char *dot;
@@ -53,7 +65,7 @@ char *change_extension(const char *filename, const char *extension) {
 		strcpy(new_filename, filename);
 	}
 
-	/* Append the new extension ".am" */
+	/* Append the new extension */
 	strcat(new_filename, extension);
 
 	return new_filename;
