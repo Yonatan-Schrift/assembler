@@ -12,7 +12,8 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	char line[MAX_LINE_LENGTH + 1], *new_path;
 	FILE *file_in, *file_ob;
 	Line parsed_line;
-	int error_flag = FALSE, line_count = 0, i, value;
+	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
+	int line_count = 0, i, value;
 	hashmap_t sym_table;
 
 	int data_size = INITIAL_DATA_SIZE;
@@ -37,14 +38,16 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	IC = 100;
 	DC = 0;
 
-	while ((error_flag = read_line(file_in, line)) != EXIT_FAILURE) {
+	while ((current_error = read_line(file_in, line)) != EXIT_FAILURE) {
 		line_count++;
+		is_symbol = FALSE;
+
 		/* Read a line from the source */
 		printf("Read line is: %s\n", line); /* debug line */
 
 		/* Check if the line encountered an error */
 		if (COMPARE_STR(line, ERROR_STRING)) {
-			printerror("error_flag", line_count, error_flag);
+			printerror("error_flag", line_count, current_error);
 			continue;
 		}
 
@@ -55,27 +58,61 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 		if (split_line(line, &parsed_line) != EXIT_FAILURE) {
 
+			/* check for a label */
+			if (parsed_line.label != NULL) {
+				is_symbol = TRUE;
+			}
 			/* Stages 5-7 */
 			/* check if the instruction stores data in the memory */
 			if (IS_STORE_INST(parsed_line.command)) {
-				/* check for a label */
-				if (parsed_line.label != NULL) {
-					error_flag = insert_symbol(parsed_line.label, parsed_line.command, DATA, DC, &sym_table, mcro_tb);
-					printerror("IF_ERROR", line_count, error_flag);
+				if (is_symbol) {
+					current_error = insert_symbol(parsed_line.label, DATA, DC, &sym_table, mcro_tb);
+					printerror("IF_ERROR", line_count, current_error);
+					if (current_error != FALSE)
+						error_flag = TRUE;
 				}
 
 				if (COMPARE_STR(parsed_line.command, ".data")) {
 					/* is '.data' instruction */
+					if (parsed_line.arguments[0] == NULL) {
+						/* Checks that the data does exist */
+						printerror("MISSING PARAMETERS", line_count, MISSING_ARGS);
+						error_flag = TRUE;
+						continue;
+					}
 					for (i = 0; parsed_line.arguments != NULL; i++) {
+						/* saves each integer to the data-image */
 						value = atoi(parsed_line.arguments[i]);
 
-						add_data_word(value, &data_size, &data_image);
+						if (add_data_word(value, &data_size, &data_image) != EXIT_SUCCESS) {
+							/* Memory failure */
+							free(data_image);
+							close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
+							free_line(&parsed_line);
+							free_hashmap(&sym_table);
+							free_hashmap(mcro_tb);
+
+							return EXIT_FAILURE;
+						}
 					}
 				}
 
 				else {
 					/* is '.string' instruction */
-					add_string_word(parsed_line.arguments[0], &data_size, &data_image);
+					if (string_array_len((const char **)parsed_line.arguments) != 1) {
+						printerror("TOO_MANY_ARGUMENTS", line_count, TOO_MANY_ARGS);
+						error_flag = TRUE;
+					}
+					if (add_string_word(parsed_line.arguments[0], &data_size, &data_image) != EXIT_SUCCESS) {
+						/* Memory failure */
+						free(data_image);
+						close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
+						free_line(&parsed_line);
+						free_hashmap(&sym_table);
+						free_hashmap(mcro_tb);
+
+						return EXIT_FAILURE;
+					}
 				}
 			}
 
@@ -84,8 +121,10 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			if (IS_ENTRY_OR_EXTERN(parsed_line.command)) {
 				if (COMPARE_STR(parsed_line.command, ".extern")) {
 					/* Is '.extern' instruction */
-					error_flag = insert_symbol(parsed_line.label, parsed_line.command, EXTERNAL, 0, &sym_table, mcro_tb);
-					printerror("IF_ERROR", line_count, error_flag);
+					current_error = insert_symbol(parsed_line.label, EXTERNAL, 0, &sym_table, mcro_tb);
+					printerror("IF_ERROR", line_count, current_error);
+					if (current_error != FALSE)
+						error_flag = TRUE;
 				}
 
 				else {
@@ -95,18 +134,28 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				}
 			}
 
-			/* Stages 11-? */
+			/* Stage 11 */
+			if (is_symbol) {
+				current_error = insert_symbol(parsed_line.label, CODE, IC, &sym_table, mcro_tb);
+				printerror("IF_ERROR", line_count, current_error);
+				if (current_error != FALSE)
+					error_flag = TRUE;
+			}
 		}
 	}
 
+	/* FOR SURE NEEDS TO BE REDONE */
+	if (error_flag == TRUE) {
+		printf("WOW FOUND ERRORS");
+	}
 	free(data_image);
 	return EXIT_SUCCESS;
 }
 
-int insert_symbol(char *name, char *instruction, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
+int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
 	Symbol *sym;
 
-	if (!name || !value || !instruction || !attribute) {
+	if (!value || !attribute) {
 		/* Missing values for the symbol */
 		return MISSING_SYMBOL_VALUES;
 	}
@@ -124,7 +173,6 @@ int insert_symbol(char *name, char *instruction, char *attribute, int value, has
 		return EXIT_FAILURE;
 	}
 
-	sym->instruction = copy_string(instruction);
 	sym->name = copy_string(name);
 	sym->attribute = copy_string(attribute);
 	sym->value = value;
@@ -153,9 +201,9 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 	int i, value;
 	remove_quotes(string);
 
-	for(i = 0; string[i] != '\0'; i++) {
-		value = (int) string[i];
-		if(add_data_word(value, data_cap, data_image) == EXIT_FAILURE) {
+	for (i = 0; string[i] != '\0'; i++) {
+		value = (int)string[i];
+		if (add_data_word(value, data_cap, data_image) == EXIT_FAILURE) {
 			return EXIT_FAILURE;
 		}
 	}

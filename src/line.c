@@ -70,14 +70,14 @@ int split_line(char *line, Line *output) {
 	token = strtok(input_copy, delims);
 
 	if (token && strchr(token, ':')) {
-		output->label = copy_string(token);
+		output->label = clean_arg(token);
 
 		token = strtok(NULL, delims);
 	}
 
 	/* Extract command */
 	if (token) {
-		output->command = copy_string(token);
+		output->command = clean_arg(token);
 		token = strtok(NULL, delims);
 	}
 
@@ -91,7 +91,7 @@ int split_line(char *line, Line *output) {
 			}
 			args = args_buffer;
 		}
-		args[i] = copy_string(token);
+		args[i] = clean_arg(token);
 	}
 	output->arguments = args;
 

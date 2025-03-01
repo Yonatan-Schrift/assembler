@@ -15,7 +15,6 @@
 
 typedef struct Symbol {
     char *name;
-    char *instruction;
     char *attribute;
     int value;
 } Symbol;
@@ -26,7 +25,7 @@ extern int DC;
 
 int first_pass(char *file_path, hashmap_t *mcro_tb);
 
-int insert_symbol(char *name, char *instruction, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb);
+int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb);
 
 int add_data_word(int value, int *data_cap, int **data_image);
 

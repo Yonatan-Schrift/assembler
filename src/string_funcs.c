@@ -4,6 +4,7 @@
 
 char *copy_string(const char *origin)
 {
+    if(!origin) return NULL;
     /* Allocate memory for new string (length + null terminator) */
     char *copy = malloc(strlen(origin) + 1);
     if (!copy)
