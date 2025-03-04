@@ -29,4 +29,4 @@ int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, has
 
 int add_data_word(int value, int *data_cap, int **data_image);
 
-#endif
+#endif /* FIRST_PASS_H */
