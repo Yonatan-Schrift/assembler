@@ -143,12 +143,19 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					error_flag = TRUE;
 			}
 			
+			/* Stage 12 */
+			if (!is_op_name(parsed_line.command)) {
+				printerror("OPERATION NOT FOUND", line_count, FAIL_CODE);
+				error_flag = TRUE;
+				continue;
+			}
+			
 		}
 	}
 
 	/* FOR SURE NEEDS TO BE REDONE */
 	if (error_flag == TRUE) {
-		printf("WOW FOUND ERRORS");
+		printf("ERRORS WERE FOUND DURING THE FIRST PASS!");
 	}
 	free(data_image);
 	return EXIT_SUCCESS;
