@@ -135,12 +135,14 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			}
 
 			/* Stage 11 */
+			/* Is an instructive statement */
 			if (is_symbol) {
 				current_error = insert_symbol(parsed_line.label, CODE, IC, &sym_table, mcro_tb);
 				printerror("IF_ERROR", line_count, current_error);
 				if (current_error != FALSE)
 					error_flag = TRUE;
 			}
+			
 		}
 	}
 
