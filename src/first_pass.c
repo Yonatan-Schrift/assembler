@@ -62,6 +62,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			if (parsed_line.label != NULL) {
 				is_symbol = TRUE;
 			}
+			
 			/* Stages 5-7 */
 			/* check if the instruction stores data in the memory */
 			if (IS_STORE_INST(parsed_line.command)) {
@@ -144,6 +145,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			}
 			
 			/* Stage 12 */
+			/* find the opcode */
 			if (!is_op_name(parsed_line.command)) {
 				printerror("OPERATION NOT FOUND", line_count, FAIL_CODE);
 				error_flag = TRUE;
