@@ -220,3 +220,9 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 	}
 	return EXIT_SUCCESS;
 }
+
+int find_opcode(char *string) {
+	if(!is_op_name(string))
+		return FALSE;
+	
+}
