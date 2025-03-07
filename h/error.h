@@ -19,6 +19,9 @@
 #define SYMBOL_ALREADY_EXISTS -11
 #define SYMBOL_IS_MACRO -12
 #define MISSING_SYMBOL_VALUES -13
+#define OPCODE_NOT_FOUND -14
+
+
 
 #define NO_FILES -20
 

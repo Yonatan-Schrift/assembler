@@ -13,24 +13,12 @@
 
 #define INITIAL_DATA_SIZE 128
 
-/**
- * @brief Enumeration of operation codes for the assembler.
- * 
- * This enum defines the various operation codes that the assembler can process.
- * Each opcode represents a specific instruction in the assembly language.
- */
-typedef enum {
-	mov, cmp,
-	add, sub,
-	lea, clr,
-	not, inc,
-	dec, jmp,
-	bne, jsr,
-	red, prn,
-	rts, stop,
-	unknown_opcode
-} opcode;
-
+typedef struct op_code {
+	char *op_code_name;
+	int opcode;
+	int funct;
+	int args_num;
+} op_code;
 
 typedef struct Symbol {
     char *name;
@@ -47,5 +35,7 @@ int first_pass(char *file_path, hashmap_t *mcro_tb);
 int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb);
 
 int add_data_word(int value, int *data_cap, int **data_image);
+
+int find_opcode(char *string); 
 
 #endif /* FIRST_PASS_H */

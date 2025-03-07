@@ -174,3 +174,6 @@ int is_instruction(char *name) {
 
 	return is_in_array(name, array);
 }
+
+
+

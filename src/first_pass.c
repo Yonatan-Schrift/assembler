@@ -8,12 +8,32 @@
 #define IS_ENTRY_OR_EXTERN(a) (strcmp((a), ".extern") == STRCMP_SUCCESS || strcmp((a), ".entry") == STRCMP_SUCCESS)
 #define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
 
+op_code OPCODES[] = {
+	{"mov", 0, 0, 2},
+	{"cmp", 1, 0, 2},
+	{"add", 2, 1, 2},
+	{"sub", 2, 2, 2},
+	{"lea", 4, 0, 2},
+
+	{"clr", 5, 1, 1},
+	{"not", 5, 2, 1},
+	{"inc", 5, 3, 1},
+	{"dec", 5, 4, 1},
+	{"jmp", 9, 1, 1},
+	{"bne", 9, 2, 1},
+	{"jsr", 9, 3, 1},
+	{"red", 12, 0, 1},
+	{"prn", 13, 0, 1},
+
+	{"rts", 14, 0, 0},
+	{"stop", 15, 0, 0}};
+
 int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	char line[MAX_LINE_LENGTH + 1], *new_path;
 	FILE *file_in, *file_ob;
 	Line parsed_line;
 	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
-	int line_count = 0, i, value;
+	int line_count = 0, i, value, opcode_index;
 	hashmap_t sym_table;
 
 	int data_size = INITIAL_DATA_SIZE;
@@ -62,7 +82,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			if (parsed_line.label != NULL) {
 				is_symbol = TRUE;
 			}
-			
+
 			/* Stages 5-7 */
 			/* check if the instruction stores data in the memory */
 			if (IS_STORE_INST(parsed_line.command)) {
@@ -143,15 +163,16 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				if (current_error != FALSE)
 					error_flag = TRUE;
 			}
-			
+
 			/* Stage 12 */
 			/* find the opcode */
-			if (!is_op_name(parsed_line.command)) {
-				printerror("OPERATION NOT FOUND", line_count, FAIL_CODE);
+			opcode_index = find_opcode(parsed_line.command);
+			/* Saving the opcode and checking if it failed. */
+			if (opcode_index < SUCCESS_CODE) {
+				printerror("OPERATION NOT FOUND", line_count, opcode_index);
 				error_flag = TRUE;
 				continue;
 			}
-			
 		}
 	}
 
@@ -221,8 +242,55 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 	return EXIT_SUCCESS;
 }
 
+/*
+ * Find the index of an opcode in the OPCODES array
+ * Returns the index if found, OEPRATION_NOT_FOUND otherwise
+ */
 int find_opcode(char *string) {
-	if(!is_op_name(string))
-		return FALSE;
+	int i;
+	const int num_opcodes = ARRAY_SIZE(OPCODES);
+
+	if (!string) {
+		return OPCODE_NOT_FOUND;
+	}
+	for (i = 0; i < num_opcodes; i++) {
+		if (COMPARE_STR(string, OPCODES[i].op_code_name)) {
+			return i;
+		}
+	}
+
+	return OPCODE_NOT_FOUND;
+}
+
+int build_info_word();
+
+int check_arg_count(char **args, int index);
+
+int find_addressing_method(char *operand, hashmap_t *sym_tb) {
+	char *operand_without_start;
+
+	if (!operand) {
+		return FAIL_CODE;
+	}
 	
+	operand_without_start = operand + 1;
+	
+	if (*operand == '#') {
+		/* is immediate addressing */
+		return 0;
+	}
+	if (lookup(sym_tb, operand)) {
+		/* is direct addressing */
+		return 1;
+	}
+	if (*operand == '&' && lookup(sym_tb, operand_without_start)) {
+		/* is relative addressing */
+		return 2;
+	}
+	if (is_register(operand)) {
+		/* is direct register addressing */
+		return 3;
+	}
+
+	return FAIL_CODE;
 }

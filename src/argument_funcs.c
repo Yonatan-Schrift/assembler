@@ -16,6 +16,7 @@
  *         - Memory allocation fails
  *
  * @note The caller is responsible for freeing the returned string.
+ * code taken from Maman 22 by Yonatan Schrift
  */
 char *clean_arg( char *arg)
 {
@@ -50,3 +51,4 @@ char *clean_arg( char *arg)
     output[j] = '\0'; /* Null-terminate the output string */
     return output;
 }
+
