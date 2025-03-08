@@ -60,4 +60,6 @@ int find_opcode(char *string);
  */
 int find_addressing_method(char *operand, hashmap_t *sym_tb);
 
+int count_info_words_required(char **args, hashmap_t *sym_tb);
+
 #endif /* FIRST_PASS_H */
