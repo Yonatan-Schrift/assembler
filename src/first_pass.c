@@ -303,3 +303,26 @@ int find_addressing_method(char *operand, hashmap_t *sym_tb) {
 
 	return FAIL_CODE;
 }
+
+int build_instruction_word(int opcode, int source_addressing, int source_register, int des_addressing, int des_register, int funct, int are) {
+	int instruction;
+
+	instruction |= (opcode << 18);
+	instruction |= (source_addressing << 16);
+	instruction |= (source_register << 13);
+	instruction |= (des_addressing <<> 11);
+	instruction |= (des_register << 8);
+	instruction |= (funct << 3);
+	instruction |= are;
+
+	return instruction;
+}
+
+int build_immediate_word(int value, int are) {
+	int immediate_word;
+
+	immediate_word = (value << 3);
+	immediate_word = immediate_word | are;
+
+	return immediate_word;
+}
