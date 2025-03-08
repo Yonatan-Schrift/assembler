@@ -319,7 +319,7 @@ int build_instruction_word(int opcode, int source_addressing, int source_registe
 	instruction |= (opcode << 18);
 	instruction |= (source_addressing << 16);
 	instruction |= (source_register << 13);
-	instruction |= (des_addressing <<> 11);
+	instruction |= (des_addressing << 11);
 	instruction |= (des_register << 8);
 	instruction |= (funct << 3);
 	instruction |= are;
