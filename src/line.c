@@ -129,7 +129,7 @@ int is_in_array(char *name, char **array) {
 }
 
 int isEmpty(char *line) {
-	const char *p = line;
+	char *p = line;
 
 	/* Treat a NULL pointer as empty */
 	if (line == NULL) {

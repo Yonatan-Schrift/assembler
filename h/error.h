@@ -20,7 +20,7 @@
 #define SYMBOL_IS_MACRO -12
 #define MISSING_SYMBOL_VALUES -13
 #define OPCODE_NOT_FOUND -14
-
+#define NOT_A_LABEL -15
 
 
 #define NO_FILES -20

@@ -264,32 +264,41 @@ int find_opcode(char *string) {
 
 int build_info_word();
 
-int check_arg_count(char **args, int index);
+int check_arg_count(char **args, int index) {
+	int i;
+
+	if (!args)
+		return 0;
+	/* Counting the amount of arguments given */
+	for (i = 0; args[i] != NULL; i++);
+
+	/* Check if there are more operands than required */
+	if (i > OPCODES->args_num) return TOO_MANY_ARGS;
+
+	/* Check if there are less operands than required */
+	if (i < OPCODES->args_num) return MISSING_ARGS;
+
+	/* The amount of operands is correct. */
+	return SUCCESS_CODE;
+}
 
 int find_addressing_method(char *operand, hashmap_t *sym_tb) {
 	char *operand_without_start;
 
-	if (!operand) {
-		return FAIL_CODE;
-	}
-	
-	operand_without_start = operand + 1;
-	
-	if (*operand == '#') {
-		/* is immediate addressing */
-		return 0;
-	}
-	if (lookup(sym_tb, operand)) {
-		/* is direct addressing */
-		return 1;
-	}
-	if (*operand == '&' && lookup(sym_tb, operand_without_start)) {
-		/* is relative addressing */
-		return 2;
-	}
-	if (is_register(operand)) {
-		/* is direct register addressing */
-		return 3;
+	if (!operand || isEmpty(operand)) return FAIL_CODE;
+
+	if (*operand == '#') return IMMEDIATE;
+
+	if (is_register(operand)) return REGISTER_DIRECT;
+
+	if (lookup(sym_tb, operand)) return DIRECT;
+
+	if (*operand == '&') {
+		operand_without_start = operand + 1;
+		if (lookup(sym_tb, operand_without_start))
+			return RELATIVE;
+		else
+			return NOT_A_LABEL;
 	}
 
 	return FAIL_CODE;
