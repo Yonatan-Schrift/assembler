@@ -1,10 +1,6 @@
-/** yes, it's perfectly normal to create a whole diferent file for reading one line.  */
-
 #include "../h/line.h"
-#include "../h/argument_funcs.h"
 #include "../h/globals.h"
 #include "../h/string_funcs.h"
-#include <string.h>
 
 void init_line(Line *line) {
 	int i;
@@ -175,5 +171,36 @@ int is_instruction(char *name) {
 	return is_in_array(name, array);
 }
 
+char *clean_arg( char *arg)
+{
+    char *output = NULL;
+    int i , j;
+    int len;
 
+    if (arg == NULL || *arg == '\0')
+    {
+        return NULL; /* Return NULL if the input is null or an empty string */
+    }
 
+    len = strlen(arg);
+    
+    /* Allocating memory with the length of arg. */
+    output = malloc(len + 1); /* +1 for the null terminator */
+    if (!output)
+    {
+        printf("Failed memory allocation\n");
+        return NULL; /* Memory allocation failed */
+    }
+
+    /* Iterate through the input string and copy only non-whitespace characters */
+    for (i = 0, j = 0; i < len; i++)
+    {
+        if (!isspace(arg[i]))
+        {
+            output[j] = arg[i];
+            j++;
+        }
+    }
+    output[j] = '\0'; /* Null-terminate the output string */
+    return output;
+}
