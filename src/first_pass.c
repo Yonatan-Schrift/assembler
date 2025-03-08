@@ -33,7 +33,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	FILE *file_in, *file_ob;
 	Line parsed_line;
 	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
-	int line_count = 0, i, value, opcode_index;
+	int line_count = 0, i, value, opcode_index, L;
 	hashmap_t sym_table;
 
 	int data_size = INITIAL_DATA_SIZE;
@@ -120,7 +120,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 				else {
 					/* is '.string' instruction */
-					if (string_array_len((const char **)parsed_line.arguments) != 1) {
+					if (string_array_len(parsed_line.arguments) != 1) {
 						printerror("TOO_MANY_ARGUMENTS", line_count, TOO_MANY_ARGS);
 						error_flag = TRUE;
 					}
@@ -159,9 +159,10 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			/* Is an instructive statement */
 			if (is_symbol) {
 				current_error = insert_symbol(parsed_line.label, CODE, IC, &sym_table, mcro_tb);
-				printerror("IF_ERROR", line_count, current_error);
-				if (current_error != FALSE)
-					error_flag = TRUE;
+				if (current_error != SUCCESS_CODE)
+					printerror("SYMBOL ERROR", line_count, current_error);
+				error_flag = TRUE;
+				continue;
 			}
 
 			/* Stage 12 */
@@ -173,6 +174,14 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				error_flag = TRUE;
 				continue;
 			}
+			/* checking the amount of arguments */
+			current_error = check_arg_count(parsed_line.arguments, opcode_index);
+			if (current_error != SUCCESS_CODE) {
+				printerror("Argument Error found\n", line_count, current_error);
+				error_flag = TRUE;
+				continue;
+			}
+			L = count_info_words_required(parsed_line.arguments, &sym_table);
 		}
 	}
 
@@ -325,4 +334,33 @@ int build_immediate_word(int value, int are) {
 	immediate_word = immediate_word | are;
 
 	return immediate_word;
+}
+
+int count_info_words_required(char **args, hashmap_t *sym_tb) {
+	int L = 1; /* starting with 1 for the instruction itself */
+	int i, arg_count, addressing_method;
+
+	arg_count = string_array_len(args);
+
+	for (i = 0; i < arg_count; i++) {
+		addressing_method = find_addressing_method(args[i], sym_tb);
+		switch (addressing_method) {
+		case IMMEDIATE:
+			L += 1;
+			break;
+		case DIRECT:
+			L += 1;
+			break;
+		case REGISTER_DIRECT:
+			break;
+		case RELATIVE:
+			L += 1;
+			break;
+		case NOT_A_LABEL:
+			return NOT_A_LABEL;
+		case FAIL_CODE:
+			return FAIL_CODE;
+		};
+	}
+	return L;
 }
