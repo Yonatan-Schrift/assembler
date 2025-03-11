@@ -35,11 +35,19 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
 	int line_count = 0, i, value, opcode_index, L;
 	hashmap_t sym_table;
+	int data_size = INITIAL_ARRAY_SIZE, *data_image, machine_code_size = INITIAL_ARRAY_SIZE;
+	FirstInstruction *machine_code;
 
-	int data_size = INITIAL_DATA_SIZE;
-	int *data_image = malloc(INITIAL_DATA_SIZE * sizeof(int));
+	data_image = malloc(INITIAL_ARRAY_SIZE * sizeof(int));
 	if (!data_image)
 		return EXIT_FAILURE;
+
+	machine_code = malloc(INITIAL_ARRAY_SIZE * sizeof(FirstInstruction));
+	if (!machine_code) {
+		free(data_image);
+		return EXIT_FAILURE;
+	}
+
 	/*
 		new_path = change_extension(src_path, ".ob");  might be useless
 	 */
@@ -48,6 +56,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	if (!file_in || !file_ob) {
 		close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 		free(data_image);
+		free(machine_code);
 
 		return FAIL_CODE;
 	}
@@ -108,6 +117,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						if (add_data_word(value, &data_size, &data_image) != EXIT_SUCCESS) {
 							/* Memory failure */
 							free(data_image);
+							free(machine_code);
 							close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 							free_line(&parsed_line);
 							free_hashmap(&sym_table);
@@ -127,6 +137,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					if (add_string_word(parsed_line.arguments[0], &data_size, &data_image) != EXIT_SUCCESS) {
 						/* Memory failure */
 						free(data_image);
+						free(machine_code);
 						close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 						free_line(&parsed_line);
 						free_hashmap(&sym_table);
@@ -181,7 +192,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				error_flag = TRUE;
 				continue;
 			}
-			L = 0;
+			/* L */
 		}
 	}
 
@@ -190,6 +201,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		printf("ERRORS WERE FOUND DURING THE FIRST PASS!");
 	}
 	free(data_image);
+	free(machine_code);
 	return EXIT_SUCCESS;
 }
 
@@ -251,6 +263,9 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 	return EXIT_SUCCESS;
 }
 
+/* WIP */
+int add_instruction();
+
 /*
  * Find the index of an opcode in the OPCODES array
  * Returns the index if found, OEPRATION_NOT_FOUND otherwise
@@ -311,8 +326,9 @@ int find_addressing_method(char *operand, hashmap_t *sym_tb) {
 	return FAIL_CODE;
 }
 
+/* Not used in the first pass */
 int build_instruction_word(int opcode, int source_addressing, int source_register, int des_addressing, int des_register, int funct, int are) {
-	int instruction;
+	int instruction = 0;
 
 	instruction |= (opcode << 18);
 	instruction |= (source_addressing << 16);
@@ -325,27 +341,47 @@ int build_instruction_word(int opcode, int source_addressing, int source_registe
 	return instruction;
 }
 
-int build_immediate_word(int value, int are) {
-	int immediate_word;
+/* Not used in the first pass */
+int build_info_word(int address, int addressing_method, char *type) {
+	int info_word = 0, ARE;
 
-	immediate_word = (value << 3);
-	immediate_word = immediate_word | are;
+	info_word = (address << 3);
 
-	return immediate_word;
+	switch (addressing_method) {
+	case IMMEDIATE:
+		ARE = 4; /* 4 is 100 in binary (A=1, R=0, E=0) */
+		break;
+	case DIRECT:
+		ARE = (COMPARE_STR(type, EXTERNAL)) ? 1 : 2; /* 1 is 001 for external addresses, 2 is 010 for internal addresses */
+		break;
+	case RELATIVE:
+		ARE = 4; /* 4 is 100 in binary (A=1, R=0, E=0) */
+		break;
+	default:
+		return FAIL_CODE; /* Generic error code as there shouldn't be any errors heres */
+		break;
+	}
+
+	info_word = info_word | ARE;
+
+	return info_word;
 }
 
+/* Not used in the first pass - ALSO WIP */
 int build_info_words(Line *line, hashmap_t *sym_tb) {
-	int i, L, add_method;
+	int i, L, add_method, instr_word;
 	L = count_info_words_required(line->arguments, sym_tb);
-	if(L < SUCCESS_CODE) {
+	if (L < SUCCESS_CODE) {
 		return L;
 	}
-	for(i = 0; i < L; i++) {
+	instr_word = build_instruction_word(find_opcode(line->command), 0, 0, 0, 0, 0, 0);
+	for (i = 0; i < L; i++) {
 		add_method = find_addressing_method(line->arguments[i], sym_tb);
-		if(add_method == IMMEDIATE) {
-			build_immediate_word(line->arguments[i])
+		if (add_method == IMMEDIATE) {
+			return instr_word; /* UNUSED RN */
 		}
 	}
+	return L;
 }
 
 int count_info_words_required(char **args, hashmap_t *sym_tb) {

@@ -17,7 +17,18 @@
 #define REGISTER_DIRECT 3
 
 
-#define INITIAL_DATA_SIZE 128
+#define INITIAL_ARRAY_SIZE 128
+
+typedef struct {
+    int address;
+    int opcode;
+    int src_addressing;
+    int src_register;
+    int dest_addressing;
+    int dest_register;
+    int funct;
+    int are;
+} FirstInstruction;
 
 typedef struct op_code {
 	char *op_code_name;
@@ -61,5 +72,7 @@ int find_opcode(char *string);
 int find_addressing_method(char *operand, hashmap_t *sym_tb);
 
 int count_info_words_required(char **args, hashmap_t *sym_tb);
+
+int build_instruction_word(int opcode, int source_addressing, int source_register, int des_addressing, int des_register, int funct, int are);
 
 #endif /* FIRST_PASS_H */
