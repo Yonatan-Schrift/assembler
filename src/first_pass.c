@@ -181,7 +181,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				error_flag = TRUE;
 				continue;
 			}
-			L = count_info_words_required(parsed_line.arguments, &sym_table);
+			L = 0;
 		}
 	}
 
@@ -271,8 +271,6 @@ int find_opcode(char *string) {
 	return OPCODE_NOT_FOUND;
 }
 
-int build_info_word();
-
 int check_arg_count(char **args, int index) {
 	int i;
 
@@ -334,6 +332,20 @@ int build_immediate_word(int value, int are) {
 	immediate_word = immediate_word | are;
 
 	return immediate_word;
+}
+
+int build_info_words(Line *line, hashmap_t *sym_tb) {
+	int i, L, add_method;
+	L = count_info_words_required(line->arguments, sym_tb);
+	if(L < SUCCESS_CODE) {
+		return L;
+	}
+	for(i = 0; i < L; i++) {
+		add_method = find_addressing_method(line->arguments[i], sym_tb);
+		if(add_method == IMMEDIATE) {
+			build_immediate_word(line->arguments[i])
+		}
+	}
 }
 
 int count_info_words_required(char **args, hashmap_t *sym_tb) {
