@@ -192,7 +192,22 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				error_flag = TRUE;
 				continue;
 			}
+			/* Stage 13 */
 			/* L */
+			L = count_info_words_required(parsed_line.arguments, &sym_table);
+			if (L < SUCCESS_CODE) {
+				printerror("Error calculating instruction length", line_count, L);
+				error_flag = TRUE;
+				continue;
+			}
+			
+			/* Stage 15 */
+			/* idk what to do with the IC leave it as an extern or put it in the FirstInstruction
+			 or can i do both? */
+			machine_code[IC - 100].L = L;
+
+			/* Stage 16 */
+			IC += L;
 		}
 	}
 

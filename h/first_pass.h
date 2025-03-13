@@ -28,6 +28,7 @@ typedef struct {
     int dest_register;
     int funct;
     int are;
+    int L;
 } FirstInstruction;
 
 typedef struct op_code {
