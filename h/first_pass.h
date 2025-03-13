@@ -19,8 +19,7 @@
 
 #define INITIAL_ARRAY_SIZE 128
 
-typedef struct {
-    int address;
+typedef struct FirstInstruction {
     int opcode;
     int src_addressing;
     int src_register;
@@ -54,7 +53,7 @@ int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, has
 
 int add_data_word(int value, int *data_cap, int **data_image);
 
-int find_opcode(char *string); 
+int find_in_opcode(char *string); 
 
 /**
  * @brief Determines the addressing method of an operand.

@@ -9,6 +9,7 @@
 #define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
 
 op_code OPCODES[] = {
+	/* {"command", "opcode", "funct", "req_args"} */
 	{"mov", 0, 0, 2},
 	{"cmp", 1, 0, 2},
 	{"add", 2, 1, 2},
@@ -196,15 +197,21 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			/* L */
 			L = count_info_words_required(parsed_line.arguments, &sym_table);
 			if (L < SUCCESS_CODE) {
-				printerror("Error calculating instruction length", line_count, L);
+				printerror("Info word error found: \n", line_count, L);
+				error_flag = TRUE;
+				continue;
+			}
+
+			/* Stage 15 */
+			/* idk what to do with the IC leave it as an extern or put it in the FirstInstruction
+			 or can i do both? */
+			current_error = add_instruction(&parsed_line, machine_code, machine_code_size, L);
+			if (current_error != SUCCESS_CODE) {
+				printerror("Error doing something cool\n", line_count, current_error);
 				error_flag = TRUE;
 				continue;
 			}
 			
-			/* Stage 15 */
-			/* idk what to do with the IC leave it as an extern or put it in the FirstInstruction
-			 or can i do both? */
-			machine_code[IC - 100].L = L;
 
 			/* Stage 16 */
 			IC += L;
@@ -279,13 +286,50 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 }
 
 /* WIP */
-int add_instruction();
+int add_instruction(Line *line, FirstInstruction **machine_code, int *machine_code_size, int L) {
+	FirstInstruction inst;
+	FirstInstruction *temp;
+	int i;
+	int arg_count = string_array_len(line->arguments);
+
+	int index = find_in_opcode(line->command);
+	if(index < SUCCESS_CODE) {
+		return index;
+	}
+
+	if (IC - 100 >= *machine_code_size) {
+		*machine_code_size *= 2;
+		temp = realloc(*machine_code, *machine_code_size * sizeof(FirstInstruction));
+		if (!temp) {
+			printerror("Memory failue", NO_LINE, 0);
+			return EXIT_FAILURE;
+		}
+		*machine_code = temp;
+	}
+
+	inst.L = L;		  /* no bit representation */
+
+	inst.funct = OPCODES[index].funct;			  /* 3-7 */
+	inst.are = 4;			  /*4 = 1-0-0,           0-2 */
+	inst.opcode = OPCODES[index].opcode;		 /* 18-23 */
+
+	for (i = 0; i < arg_count; i++) {
+		line->arguments[i]
+	}
+	
+	inst.dest_addressing ; /* 8-10 */
+	inst.dest_register;	  /* 11-12 */
+
+
+	inst.src_addressing; /* 13-15 */
+	inst.src_register;	 /* 16-17 */
+}
 
 /*
  * Find the index of an opcode in the OPCODES array
  * Returns the index if found, OEPRATION_NOT_FOUND otherwise
  */
-int find_opcode(char *string) {
+int find_in_opcode(char *string) {
 	int i;
 	const int num_opcodes = ARRAY_SIZE(OPCODES);
 
