@@ -118,7 +118,7 @@ int is_in_array(char *name, char **array) {
 
 	for (i = 0; i < array_size; i++) {
 		if (strcmp(name, array[i]) == STRCMP_SUCCESS) {
-			return TRUE;
+			return i;
 		}
 	}
 	return FALSE;

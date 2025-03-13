@@ -9,25 +9,25 @@
 #define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
 
 op_code OPCODES[] = {
-	/* {"command", "opcode", "funct", "req_args"} */
-	{"mov", 0, 0, 2},
-	{"cmp", 1, 0, 2},
-	{"add", 2, 1, 2},
-	{"sub", 2, 2, 2},
-	{"lea", 4, 0, 2},
+	/* {"command", "opcode", "funct", "req_args", "is_source", "is_dest"} */
+	{"mov", 0, 0, 2, TRUE, TRUE},
+	{"cmp", 1, 0, 2, TRUE, TRUE},
+	{"add", 2, 1, 2, TRUE, TRUE},
+	{"sub", 2, 2, 2, TRUE, TRUE},
+	{"lea", 4, 0, 2, TRUE, TRUE},
 
-	{"clr", 5, 1, 1},
-	{"not", 5, 2, 1},
-	{"inc", 5, 3, 1},
-	{"dec", 5, 4, 1},
-	{"jmp", 9, 1, 1},
-	{"bne", 9, 2, 1},
-	{"jsr", 9, 3, 1},
-	{"red", 12, 0, 1},
-	{"prn", 13, 0, 1},
+	{"clr", 5, 1, 1, FALSE, TRUE},
+	{"not", 5, 2, 1, FALSE, TRUE},
+	{"inc", 5, 3, 1, FALSE, TRUE},
+	{"dec", 5, 4, 1, FALSE, TRUE},
+	{"jmp", 9, 1, 1, FALSE, TRUE},
+	{"bne", 9, 2, 1, FALSE, TRUE},
+	{"jsr", 9, 3, 1, FALSE, TRUE},
+	{"red", 12, 0, 1, FALSE, TRUE},
+	{"prn", 13, 0, 1, FALSE, TRUE},
 
-	{"rts", 14, 0, 0},
-	{"stop", 15, 0, 0}};
+	{"rts", 14, 0, 0, FALSE, FALSE},
+	{"stop", 15, 0, 0, FALSE, FALSE}};
 
 int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	char line[MAX_LINE_LENGTH + 1], *new_path;
@@ -211,7 +211,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				error_flag = TRUE;
 				continue;
 			}
-			
 
 			/* Stage 16 */
 			IC += L;
@@ -289,11 +288,10 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 int add_instruction(Line *line, FirstInstruction **machine_code, int *machine_code_size, int L) {
 	FirstInstruction inst;
 	FirstInstruction *temp;
-	int i;
-	int arg_count = string_array_len(line->arguments);
+	int num;
 
 	int index = find_in_opcode(line->command);
-	if(index < SUCCESS_CODE) {
+	if (index < SUCCESS_CODE) {
 		return index;
 	}
 
@@ -307,22 +305,32 @@ int add_instruction(Line *line, FirstInstruction **machine_code, int *machine_co
 		*machine_code = temp;
 	}
 
-	inst.L = L;		  /* no bit representation */
+	inst.L = L; /* no bit representation */
 
-	inst.funct = OPCODES[index].funct;			  /* 3-7 */
-	inst.are = 4;			  /*4 = 1-0-0,           0-2 */
-	inst.opcode = OPCODES[index].opcode;		 /* 18-23 */
+	inst.funct = OPCODES[index].funct;
+	inst.are = 4; /* 4 = 1-0-0 */
+	inst.opcode = OPCODES[index].opcode;
 
-	for (i = 0; i < arg_count; i++) {
-		line->arguments[i]
+	/* both source and dest is WIP (work in progress) */
+	if (OPCODES[index].is_source) {
+		if ((num = is_register(line->arguments[0])) != FALSE) {
+			inst.src_register = num;
+			inst.src_addressing = 0;
+		}
+	} else {
+		inst.src_register = 0;
+		inst.src_addressing = 0;
 	}
-	
-	inst.dest_addressing ; /* 8-10 */
-	inst.dest_register;	  /* 11-12 */
 
-
-	inst.src_addressing; /* 13-15 */
-	inst.src_register;	 /* 16-17 */
+	if (OPCODES[index].is_dest) {
+		if ((num = is_register(line->arguments[1]) != FALSE)) {
+			inst.dest_register = num;
+			inst.dest_addressing = 0;
+		} else {
+			inst.dest_addressing = 0;
+			inst.dest_register = 0;
+		}
+	}
 }
 
 /*

@@ -36,11 +36,3 @@ int string_array_len(char **args) {
 
 	return count;
 }
-
-int handle_malloc(void **var, int size) {
-	*var = malloc(size);
-	if (!*var) {
-		return EXIT_FAILURE;
-	}
-	return EXIT_SUCCESS;
-}

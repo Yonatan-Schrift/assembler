@@ -35,6 +35,8 @@ typedef struct op_code {
 	int opcode;
 	int funct;
 	int args_num;
+    int is_source;
+    int is_dest;
 } op_code;
 
 typedef struct Symbol {
