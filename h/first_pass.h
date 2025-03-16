@@ -77,4 +77,6 @@ int count_info_words_required(char **args, hashmap_t *sym_tb);
 
 int build_instruction_word(int opcode, int source_addressing, int source_register, int des_addressing, int des_register, int funct, int are);
 
+void set_data_to_icf(hashmap_t *sym_tb, int ICF);
+
 #endif /* FIRST_PASS_H */
