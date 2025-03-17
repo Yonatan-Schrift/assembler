@@ -38,6 +38,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	hashmap_t sym_table;
 	int data_size = INITIAL_ARRAY_SIZE, *data_image, machine_code_size = INITIAL_ARRAY_SIZE;
 	FirstInstruction *machine_code;
+	int ICF, DCF;
 
 	data_image = malloc(INITIAL_ARRAY_SIZE * sizeof(int));
 	if (!data_image)
@@ -203,8 +204,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			}
 
 			/* Stage 15 */
-			/* idk what to do with the IC leave it as an extern or put it in the FirstInstruction
-			 or can i do both? */
+			/* idk what to do here */
 			current_error = add_instruction(&parsed_line, machine_code, machine_code_size, L);
 			if (current_error != SUCCESS_CODE) {
 				printerror("Error doing something cool\n", line_count, current_error);
@@ -217,13 +217,22 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 	}
 
-	/* FOR SURE NEEDS TO BE REDONE */
+	/* FOR SURE NEEDS TO BE REDONE - Stage 17 */
 	if (error_flag == TRUE) {
 		printf("ERRORS WERE FOUND DURING THE FIRST PASS!");
 	}
 	free(data_image);
 	free(machine_code);
 	return EXIT_SUCCESS;
+
+	/* Stage 18 */
+	ICF = IC;
+	DCF = DC;
+
+	/* Stage 19 */
+	/* Update the symbol table with ICF for DATA symbols */
+	set_data_to_icf(&sym_table, ICF);
+
 }
 
 int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
@@ -478,4 +487,28 @@ int count_info_words_required(char **args, hashmap_t *sym_tb) {
 		};
 	}
 	return L;
+}
+
+void set_data_to_icf(hashmap_t *sym_tb, int ICF) {
+	int i;
+	HashNode *node, *temp;
+	Symbol *sym;
+	
+	if (sym_tb == NULL) return;
+
+	for (i = 0; i < sym_tb->size; i++) {
+		node = sym_tb->table[i];
+
+        while (node != NULL) {
+            temp = node;
+            node = node->next;
+
+			sym = (Symbol*)temp->value;
+
+			if (COMPARE_STR(sym->attribute, DATA))
+			{
+				sym->value += ICF;
+			}
+		}		
+	}
 }
