@@ -44,7 +44,7 @@ char *is_macro_start(char *input, Line *line) {
 	}
 	/* sets the name as the first argument */
 	name = line->arguments[0];
-	
+
 	return name;
 }
 

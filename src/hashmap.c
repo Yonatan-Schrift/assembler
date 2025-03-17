@@ -99,7 +99,7 @@ void *lookup(hashmap_t *map, char *key) {
 
 /* Free the hashmap */
 /* Might need to also free the macro here, not sure */
-void free_hashmap(hashmap_t *map) {
+void free_hashmap(hashmap_t *map, char *type) {
     int i;
     HashNode *node, *temp;
 
@@ -113,6 +113,7 @@ void free_hashmap(hashmap_t *map) {
             node = node->next;
 
             /* Freeing the macro itself */
+            /* if (COMPARE_STR(type, )) gotta do this shit*/
             free_macro((Macro*)temp->value);
             free(temp->key);
             free(temp);
