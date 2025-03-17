@@ -513,3 +513,11 @@ void set_data_to_icf(hashmap_t *sym_tb, int ICF) {
 	}
 }
 
+void free_symbol (Symbol *sym) {
+	if (sym->attribute != NULL) {
+		free(sym->attribute);
+	}
+	if (sym->name != NULL) {
+		free(sym->name);
+	}
+}

@@ -79,4 +79,6 @@ int build_instruction_word(int opcode, int source_addressing, int source_registe
 
 void set_data_to_icf(hashmap_t *sym_tb, int ICF);
 
+void free_symbol (Symbol *sym);
+
 #endif /* FIRST_PASS_H */
