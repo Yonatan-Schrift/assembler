@@ -3,6 +3,7 @@
 #include "../h/globals.h"
 #include "../h/hashmap.h"
 #include "../h/line.h"
+#include "../h/pre_assembler.h"
 
 #define IS_STORE_INST(a) (strcmp((a), ".string") == STRCMP_SUCCESS || strcmp((a), ".data") == STRCMP_SUCCESS)
 #define IS_ENTRY_OR_EXTERN(a) (strcmp((a), ".extern") == STRCMP_SUCCESS || strcmp((a), ".entry") == STRCMP_SUCCESS)
@@ -122,8 +123,8 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 							free(machine_code);
 							close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 							free_line(&parsed_line);
-							free_hashmap(&sym_table);
-							free_hashmap(mcro_tb);
+							free_hashmap(&sym_table, (void (*)(void *))free_symbol);
+							free_hashmap(mcro_tb, (void (*)(void *))free_macro);
 
 							return EXIT_FAILURE;
 						}
@@ -142,8 +143,8 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						free(machine_code);
 						close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 						free_line(&parsed_line);
-						free_hashmap(&sym_table);
-						free_hashmap(mcro_tb);
+						free_hashmap(&sym_table, (void (*)(void *))free_symbol);
+						free_hashmap(mcro_tb, (void (*)(void *))free_macro);
 
 						return EXIT_FAILURE;
 					}
@@ -232,7 +233,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	/* Stage 19 */
 	/* Update the symbol table with ICF for DATA symbols */
 	set_data_to_icf(&sym_table, ICF);
-
 }
 
 int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
@@ -493,27 +493,26 @@ void set_data_to_icf(hashmap_t *sym_tb, int ICF) {
 	int i;
 	HashNode *node, *temp;
 	Symbol *sym;
-	
+
 	if (sym_tb == NULL) return;
 
 	for (i = 0; i < sym_tb->size; i++) {
 		node = sym_tb->table[i];
 
-        while (node != NULL) {
-            temp = node;
-            node = node->next;
+		while (node != NULL) {
+			temp = node;
+			node = node->next;
 
-			sym = (Symbol*)temp->value;
+			sym = (Symbol *)temp->value;
 
-			if (COMPARE_STR(sym->attribute, DATA))
-			{
+			if (COMPARE_STR(sym->attribute, DATA)) {
 				sym->value += ICF;
 			}
-		}		
+		}
 	}
 }
 
-void free_symbol (Symbol *sym) {
+void free_symbol(Symbol *sym) {
 	if (sym->attribute != NULL) {
 		free(sym->attribute);
 	}
