@@ -512,3 +512,4 @@ void set_data_to_icf(hashmap_t *sym_tb, int ICF) {
 		}		
 	}
 }
+

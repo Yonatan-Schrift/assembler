@@ -76,7 +76,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		printerror("Error Flag\n", line_count, error_flag);
 		remove(processedFilename); /* Removing the .am file */
 
-		free_hashmap(mcro_table);
+		free_hashmap(mcro_table, (void (*)(void *))free_macro);
 
 		printf("\npre-compilation failed\n");
 		return EXIT_FAILURE;

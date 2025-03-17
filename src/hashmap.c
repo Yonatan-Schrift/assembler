@@ -1,7 +1,5 @@
 
 #include "../h/hashmap.h"
-#include "../h/pre_assembler.h"
-
 
 /* Hash Function */
 unsigned int hash(char *key, int table_size) {
@@ -98,8 +96,8 @@ void *lookup(hashmap_t *map, char *key) {
 }
 
 /* Free the hashmap */
-/* Might need to also free the macro here, not sure */
-void free_hashmap(hashmap_t *map, char *type) {
+
+void free_hashmap(hashmap_t *map, void (*free_value)(void *)) {
     int i;
     HashNode *node, *temp;
 
@@ -112,9 +110,10 @@ void free_hashmap(hashmap_t *map, char *type) {
             temp = node;
             node = node->next;
 
-            /* Freeing the macro itself */
-            /* if (COMPARE_STR(type, )) gotta do this shit*/
-            free_macro((Macro*)temp->value);
+            /* Freeing the value */
+
+            free_value(temp->value);
+
             free(temp->key);
             free(temp);
         }

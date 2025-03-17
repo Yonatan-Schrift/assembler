@@ -9,6 +9,12 @@
 #define TABLE_SIZE 51 /* Starting size for the hashmap */
 #define LOAD_FACTOR_THRESHOLD 0.75 /* The percentage for resizing the hashmap  */
 
+/* Types of values that can be stored in the hashmap */
+typedef enum {
+    TYPE_MACRO,     
+    TYPE_SYMBOL
+} ValueType;
+
 /* Hashmap node structure */
 typedef struct HashNode {
     char *key;
@@ -28,6 +34,6 @@ unsigned int hash(char *key, int table_size);
 void init_hashmap(hashmap_t *map, int initial_size);
 void insert(hashmap_t *map, void *value, char *key);
 void *lookup(hashmap_t *map, char *key);
-void free_hashmap(hashmap_t *map);
+void free_hashmap(hashmap_t *map, void (*free_value)(void *));
 
 #endif /* HASHMAP_H */
