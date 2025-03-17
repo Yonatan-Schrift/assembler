@@ -6,6 +6,7 @@
 
 #define MAX_LINE_LENGTH 81
 #define MAX_ARGS 2
+#define MAX_INSTRUCTION_NUM 1024
 
 #define TRUE 1
 #define FALSE 0

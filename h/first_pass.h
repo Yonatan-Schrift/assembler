@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hashmap.h"
+#include "line.h"
 
 #define DATA "data"
 #define CODE "code"
@@ -16,6 +17,7 @@
 #define RELATIVE 2
 #define REGISTER_DIRECT 3
 
+#define ARE_ABSOLUTE 4
 
 #define INITIAL_ARRAY_SIZE 128
 
@@ -55,7 +57,13 @@ int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, has
 
 int add_data_word(int value, int *data_cap, int **data_image);
 
+int add_string_word(char *string, int *data_cap, int **data_image);
+
+int add_instruction(Line *line, FirstInstruction **machine_code, hashmap_t *sym_tb, int L, int line_num);
+
 int find_in_opcode(char *string); 
+
+int check_arg_count(char **args, int index);
 
 /**
  * @brief Determines the addressing method of an operand.
@@ -75,10 +83,27 @@ int find_addressing_method(char *operand, hashmap_t *sym_tb);
 
 int count_info_words_required(char **args, hashmap_t *sym_tb);
 
-int build_instruction_word(int opcode, int source_addressing, int source_register, int des_addressing, int des_register, int funct, int are);
-
 void set_data_to_icf(hashmap_t *sym_tb, int ICF);
 
+/**
+ * @brief Frees all allocated memory associated with a Symbol structure.
+ * 
+ * @param sym Pointer to the Symbol structure to be freed
+ */
 void free_symbol (Symbol *sym);
+
+/**
+ * @brief Process an argument to determine its type (register or immediate/direct/index) 
+ * and addressing method.
+ *
+ * @param argument The argument string to process
+ * @param sym_tb Pointer to the symbol table
+ * @param line_num Current line number in the assembly source file
+ * @param reg Pointer to store register number (if applicable, otherwise 0)
+ * @param addr Pointer to store addressing method code or error code
+ * 
+ * @return SUCCESS_CODE if processing was successful, FAIL_CODE if an error occurred
+ */
+int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr);
 
 #endif /* FIRST_PASS_H */

@@ -37,19 +37,15 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
 	int line_count = 0, i, value, opcode_index, L;
 	hashmap_t sym_table;
-	int data_size = INITIAL_ARRAY_SIZE, *data_image, machine_code_size = INITIAL_ARRAY_SIZE;
-	FirstInstruction *machine_code;
+	int data_size = INITIAL_ARRAY_SIZE, *data_image;
+	FirstInstruction machine_code[MAX_INSTRUCTION_NUM], *machine_code_ptr;
 	int ICF, DCF;
+
+	machine_code_ptr = machine_code;
 
 	data_image = malloc(INITIAL_ARRAY_SIZE * sizeof(int));
 	if (!data_image)
 		return EXIT_FAILURE;
-
-	machine_code = malloc(INITIAL_ARRAY_SIZE * sizeof(FirstInstruction));
-	if (!machine_code) {
-		free(data_image);
-		return EXIT_FAILURE;
-	}
 
 	/*
 		new_path = change_extension(src_path, ".ob");  might be useless
@@ -59,7 +55,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	if (!file_in || !file_ob) {
 		close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 		free(data_image);
-		free(machine_code);
 
 		return FAIL_CODE;
 	}
@@ -113,14 +108,13 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						error_flag = TRUE;
 						continue;
 					}
-					for (i = 0; parsed_line.arguments != NULL; i++) {
+					for (i = 0; parsed_line.arguments[i] != NULL; i++) {
 						/* saves each integer to the data-image */
 						value = atoi(parsed_line.arguments[i]);
 
 						if (add_data_word(value, &data_size, &data_image) != EXIT_SUCCESS) {
 							/* Memory failure */
 							free(data_image);
-							free(machine_code);
 							close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 							free_line(&parsed_line);
 							free_hashmap(&sym_table, (void (*)(void *))free_symbol);
@@ -140,7 +134,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					if (add_string_word(parsed_line.arguments[0], &data_size, &data_image) != EXIT_SUCCESS) {
 						/* Memory failure */
 						free(data_image);
-						free(machine_code);
 						close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 						free_line(&parsed_line);
 						free_hashmap(&sym_table, (void (*)(void *))free_symbol);
@@ -188,6 +181,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				error_flag = TRUE;
 				continue;
 			}
+
 			/* checking the amount of arguments */
 			current_error = check_arg_count(parsed_line.arguments, opcode_index);
 			if (current_error != SUCCESS_CODE) {
@@ -195,8 +189,9 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				error_flag = TRUE;
 				continue;
 			}
+
 			/* Stage 13 */
-			/* L */
+			/* find L - the number of info-words required */
 			L = count_info_words_required(parsed_line.arguments, &sym_table);
 			if (L < SUCCESS_CODE) {
 				printerror("Info word error found: \n", line_count, L);
@@ -205,8 +200,8 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			}
 
 			/* Stage 15 */
-			/* idk what to do here */
-			current_error = add_instruction(&parsed_line, machine_code, machine_code_size, L);
+			
+			current_error = add_instruction(&parsed_line, &machine_code_ptr, &sym_table, L, line_count);
 			if (current_error != SUCCESS_CODE) {
 				printerror("Error doing something cool\n", line_count, current_error);
 				error_flag = TRUE;
@@ -218,13 +213,18 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 	}
 
-	/* FOR SURE NEEDS TO BE REDONE - Stage 17 */
+	/* Stage 17 */
+	close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
+
 	if (error_flag == TRUE) {
 		printf("ERRORS WERE FOUND DURING THE FIRST PASS!");
+		free(data_image);
+		free_line(&parsed_line);
+		free_hashmap(&sym_table, (void (*)(void *))free_symbol);
+		free_hashmap(mcro_tb, (void (*)(void *))free_macro);
+
+		return FAIL_CODE;
 	}
-	free(data_image);
-	free(machine_code);
-	return EXIT_SUCCESS;
 
 	/* Stage 18 */
 	ICF = IC;
@@ -233,6 +233,10 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	/* Stage 19 */
 	/* Update the symbol table with ICF for DATA symbols */
 	set_data_to_icf(&sym_table, ICF);
+
+	/* start second pass */
+
+	return SUCCESS_CODE;
 }
 
 int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
@@ -276,7 +280,7 @@ int add_data_word(int value, int *data_cap, int **data_image) {
 		}
 		*data_image = img_buffer;
 	}
-	*data_image[DC++] = value;
+	(*data_image)[DC++] = value;
 	return EXIT_SUCCESS;
 }
 
@@ -293,53 +297,54 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 	return EXIT_SUCCESS;
 }
 
-/* WIP */
-int add_instruction(Line *line, FirstInstruction **machine_code, int *machine_code_size, int L) {
-	FirstInstruction inst;
-	FirstInstruction *temp;
-	int num;
+int add_instruction(Line *line, FirstInstruction **machine_code, hashmap_t *sym_tb, int L, int line_num) {
+	FirstInstruction *inst;
+	int return_code, index, arg_index = 0;
+	int found_error = FALSE;
 
-	int index = find_in_opcode(line->command);
+	/* checking for null input */
+	if (!machine_code || !sym_tb || !line) return TRUE;
+
+	/* finding the index inside the OPCODES array */
+	index = find_in_opcode(line->command);
 	if (index < SUCCESS_CODE) {
-		return index;
+		printerror("Error,\n", line_num, index);
+		found_error = TRUE;
+		return found_error;
 	}
 
-	if (IC - 100 >= *machine_code_size) {
-		*machine_code_size *= 2;
-		temp = realloc(*machine_code, *machine_code_size * sizeof(FirstInstruction));
-		if (!temp) {
-			printerror("Memory failue", NO_LINE, 0);
-			return EXIT_FAILURE;
-		}
-		*machine_code = temp;
-	}
+	/* allocating memory for the instruction */
+	inst = malloc(sizeof(FirstInstruction));
+	if (!inst) return TRUE;
 
-	inst.L = L; /* no bit representation */
+	/* L is the number of info-words */
+	inst->L = L;
 
-	inst.funct = OPCODES[index].funct;
-	inst.are = 4; /* 4 = 1-0-0 */
-	inst.opcode = OPCODES[index].opcode;
+	/* update the instruction based on the operations table. */
+	inst->funct = OPCODES[index].funct;
+	inst->are = ARE_ABSOLUTE;
+	inst->opcode = OPCODES[index].opcode;
 
-	/* both source and dest is WIP (work in progress) */
+	/* checking if the operation has a source argument */
 	if (OPCODES[index].is_source) {
-		if ((num = is_register(line->arguments[0])) != FALSE) {
-			inst.src_register = num;
-			inst.src_addressing = 0;
+
+		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->src_register, &inst->src_addressing);
+		if (return_code != SUCCESS_CODE) {
+			found_error = TRUE;
 		}
-	} else {
-		inst.src_register = 0;
-		inst.src_addressing = 0;
+		arg_index++;
+	}
+	/* checking if the operation has a destionation argument */
+	if (OPCODES[index].is_dest) {
+		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->dest_register, &inst->dest_addressing);
+		if (return_code != SUCCESS_CODE) {
+			found_error = TRUE;
+		}
 	}
 
-	if (OPCODES[index].is_dest) {
-		if ((num = is_register(line->arguments[1]) != FALSE)) {
-			inst.dest_register = num;
-			inst.dest_addressing = 0;
-		} else {
-			inst.dest_addressing = 0;
-			inst.dest_register = 0;
-		}
-	}
+	machine_code[IC - 100] = inst;
+
+	return found_error;
 }
 
 /*
@@ -402,64 +407,6 @@ int find_addressing_method(char *operand, hashmap_t *sym_tb) {
 	return FAIL_CODE;
 }
 
-/* Not used in the first pass */
-int build_instruction_word(int opcode, int source_addressing, int source_register, int des_addressing, int des_register, int funct, int are) {
-	int instruction = 0;
-
-	instruction |= (opcode << 18);
-	instruction |= (source_addressing << 16);
-	instruction |= (source_register << 13);
-	instruction |= (des_addressing << 11);
-	instruction |= (des_register << 8);
-	instruction |= (funct << 3);
-	instruction |= are;
-
-	return instruction;
-}
-
-/* Not used in the first pass */
-int build_info_word(int address, int addressing_method, char *type) {
-	int info_word = 0, ARE;
-
-	info_word = (address << 3);
-
-	switch (addressing_method) {
-	case IMMEDIATE:
-		ARE = 4; /* 4 is 100 in binary (A=1, R=0, E=0) */
-		break;
-	case DIRECT:
-		ARE = (COMPARE_STR(type, EXTERNAL)) ? 1 : 2; /* 1 is 001 for external addresses, 2 is 010 for internal addresses */
-		break;
-	case RELATIVE:
-		ARE = 4; /* 4 is 100 in binary (A=1, R=0, E=0) */
-		break;
-	default:
-		return FAIL_CODE; /* Generic error code as there shouldn't be any errors heres */
-		break;
-	}
-
-	info_word = info_word | ARE;
-
-	return info_word;
-}
-
-/* Not used in the first pass - ALSO WIP */
-int build_info_words(Line *line, hashmap_t *sym_tb) {
-	int i, L, add_method, instr_word;
-	L = count_info_words_required(line->arguments, sym_tb);
-	if (L < SUCCESS_CODE) {
-		return L;
-	}
-	instr_word = build_instruction_word(find_opcode(line->command), 0, 0, 0, 0, 0, 0);
-	for (i = 0; i < L; i++) {
-		add_method = find_addressing_method(line->arguments[i], sym_tb);
-		if (add_method == IMMEDIATE) {
-			return instr_word; /* UNUSED RN */
-		}
-	}
-	return L;
-}
-
 int count_info_words_required(char **args, hashmap_t *sym_tb) {
 	int L = 1; /* starting with 1 for the instruction itself */
 	int i, arg_count, addressing_method;
@@ -518,5 +465,25 @@ void free_symbol(Symbol *sym) {
 	}
 	if (sym->name != NULL) {
 		free(sym->name);
+	}
+}
+
+int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr) {
+	int num;
+	/* Check if the argument is a register */
+	if ((num = is_register(argument)) != FALSE) {
+		*reg = num;
+		*addr = 0;
+		return SUCCESS_CODE;
+	} else {
+		*reg = 0;
+		num = find_addressing_method(argument, sym_tb);
+		if (num < SUCCESS_CODE) {
+			printerror("Error,\n", line_num, num);
+			*addr = num; /* Store the error code in the addressing field */
+			return FAIL_CODE;
+		}
+		*addr = num;
+		return SUCCESS_CODE;
 	}
 }
