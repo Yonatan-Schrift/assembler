@@ -47,10 +47,6 @@ typedef struct Symbol {
     int value;
 } Symbol;
 
-/* Setting IC and DC as globals */
-extern int IC;
-extern int DC;
-
 int first_pass(char *file_path, hashmap_t *mcro_tb);
 
 int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb);

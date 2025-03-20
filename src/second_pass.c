@@ -6,20 +6,14 @@
 #include "../h/first_pass.h"
 #include "../h/line.h"
 
+#define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
+/* temp macro */
+
 int second_pass() {
 
 
     return EXIT_SUCCESS;
 }
-
-
-
-
-
-
-
-
-
 
 int build_instruction_word(int opcode, int source_addressing, int source_register, int des_addressing, int des_register, int funct, int are) {
 	int instruction = 0;
@@ -67,7 +61,7 @@ int build_info_words(Line *line, hashmap_t *sym_tb) {
 	if (L < SUCCESS_CODE) {
 		return L;
 	}
-	instr_word = build_instruction_word(find_opcode(line->command), 0, 0, 0, 0, 0, 0);
+	instr_word = build_instruction_word(find_in_opcode(line->command), 0, 0, 0, 0, 0, 0);
 	for (i = 0; i < L; i++) {
 		add_method = find_addressing_method(line->arguments[i], sym_tb);
 		if (add_method == IMMEDIATE) {

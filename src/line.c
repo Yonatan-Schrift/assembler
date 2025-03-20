@@ -2,9 +2,7 @@
 #include "../h/globals.h"
 #include "../h/string_funcs.h"
 
-void init_line(Line *line) {
-	int i;
-
+void init_line(Line *line) {	
     if (line == NULL) {
         return;
     }
@@ -66,7 +64,11 @@ int split_line(char *line, Line *output) {
 	token = strtok(input_copy, delims);
 
 	if (token && strchr(token, ':')) {
+
 		output->label = clean_arg(token);
+
+		/* removing the ':' from the label name. */
+		remove_after_delim(output->label, ':'); 
 
 		token = strtok(NULL, delims);
 	}
@@ -89,6 +91,10 @@ int split_line(char *line, Line *output) {
 		}
 		args[i] = clean_arg(token);
 	}
+	
+	/* NULL TERMINATE THE ARRAY */
+	args[i] = NULL;
+
 	output->arguments = args;
 
 	return EXIT_SUCCESS;

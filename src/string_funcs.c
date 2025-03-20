@@ -3,16 +3,33 @@
 #include <string.h>
 
 char *copy_string(const char *origin) {
+	char *copy;
 	if (!origin) return NULL;
+
 	/* Allocate memory for new string (length + null terminator) */
-	char *copy = malloc(strlen(origin) + 1);
+	copy = malloc(strlen(origin) + 1);
 	if (!copy) {
-		/* printf("Failed memory allocation\n"); */
-		return NULL; /* Memory allocation failed */
+		/* Memory allocation failed */
+		return NULL; 
 	}
 	/* Copy the string contents to new memory */
 	strcpy(copy, origin);
 	return copy;
+}
+
+void remove_quotes(char *string) {
+	int len;
+	/* Check if string is valid */
+	if (!string) return;
+
+	len = strlen(string);
+	/* Check if string has at least opening and closing quotes */
+	if (len >= 2 && string[0] == '"' && string[len-1] == '"') {
+		/* Shift all characters left by one position */
+		memmove(string, string + 1, len - 2);
+		/* Null terminate the string after removing quotes */
+		string[len - 2] = '\0';
+	}
 }
 
 /**

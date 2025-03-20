@@ -30,31 +30,36 @@ op_code OPCODES[] = {
 	{"rts", 14, 0, 0, FALSE, FALSE},
 	{"stop", 15, 0, 0, FALSE, FALSE}};
 
+int IC;
+int DC;
+
 int first_pass(char *src_path, hashmap_t *mcro_tb) {
-	char line[MAX_LINE_LENGTH + 1], *new_path;
+	char line[MAX_LINE_LENGTH + 1];
 	FILE *file_in, *file_ob;
 	Line parsed_line;
 	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
 	int line_count = 0, i, value, opcode_index, L;
 	hashmap_t sym_table;
 	int data_size = INITIAL_ARRAY_SIZE, *data_image;
-	FirstInstruction machine_code[MAX_INSTRUCTION_NUM], *machine_code_ptr;
-	int ICF, DCF;
+	FirstInstruction **machine_code;
+	int ICF;
+	/* int DCF */
 
-	machine_code_ptr = machine_code;
+	machine_code = malloc(INITIAL_ARRAY_SIZE * sizeof(FirstInstruction *));
+	if (!machine_code) return EXIT_FAILURE;
 
 	data_image = malloc(INITIAL_ARRAY_SIZE * sizeof(int));
-	if (!data_image)
+	if (!data_image) {
+		free(machine_code);
 		return EXIT_FAILURE;
+	}
 
-	/*
-		new_path = change_extension(src_path, ".ob");  might be useless
-	 */
 	file_in = open_file(src_path, ".am", READ_MODE);
 	file_ob = open_file(src_path, ".ob", WRITE_MODE);
 	if (!file_in || !file_ob) {
 		close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 		free(data_image);
+		free(machine_code);
 
 		return FAIL_CODE;
 	}
@@ -68,6 +73,9 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	while ((current_error = read_line(file_in, line)) != EXIT_FAILURE) {
 		line_count++;
 		is_symbol = FALSE;
+
+		/* clean the line from the previous line */
+		init_line(&parsed_line);
 
 		/* Read a line from the source */
 		printf("Read line is: %s\n", line); /* debug line */
@@ -95,9 +103,11 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			if (IS_STORE_INST(parsed_line.command)) {
 				if (is_symbol) {
 					current_error = insert_symbol(parsed_line.label, DATA, DC, &sym_table, mcro_tb);
-					printerror("IF_ERROR", line_count, current_error);
-					if (current_error != FALSE)
+
+					if (current_error != SUCCESS_CODE) {
+						printerror("IF_ERROR", line_count, current_error);
 						error_flag = TRUE;
+					}
 				}
 
 				if (COMPARE_STR(parsed_line.command, ".data")) {
@@ -146,13 +156,15 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 			/* Stages 8-10 */
 			/* check if the instruction is an entry or extern variable */
-			if (IS_ENTRY_OR_EXTERN(parsed_line.command)) {
+			else if (IS_ENTRY_OR_EXTERN(parsed_line.command)) {
 				if (COMPARE_STR(parsed_line.command, ".extern")) {
 					/* Is '.extern' instruction */
 					current_error = insert_symbol(parsed_line.label, EXTERNAL, 0, &sym_table, mcro_tb);
-					printerror("IF_ERROR", line_count, current_error);
-					if (current_error != FALSE)
+
+					if (current_error != SUCCESS_CODE) {
+						printerror("IF_ERROR", line_count, current_error);
 						error_flag = TRUE;
+					}
 				}
 
 				else {
@@ -164,52 +176,54 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 			/* Stage 11 */
 			/* Is an instructive statement */
-			if (is_symbol) {
-				current_error = insert_symbol(parsed_line.label, CODE, IC, &sym_table, mcro_tb);
-				if (current_error != SUCCESS_CODE)
-					printerror("SYMBOL ERROR", line_count, current_error);
-				error_flag = TRUE;
-				continue;
-			}
+			else {
+				if (is_symbol) {
+					current_error = insert_symbol(parsed_line.label, CODE, IC, &sym_table, mcro_tb);
+					if (current_error != SUCCESS_CODE) {
+						printerror("SYMBOL ERROR\n", line_count, current_error);
+						error_flag = TRUE;
+					}
+				}
 
-			/* Stage 12 */
-			/* find the opcode */
-			opcode_index = find_opcode(parsed_line.command);
-			/* Saving the opcode and checking if it failed. */
-			if (opcode_index < SUCCESS_CODE) {
-				printerror("OPERATION NOT FOUND", line_count, opcode_index);
-				error_flag = TRUE;
-				continue;
-			}
+				/* Stage 12 */
+				/* find the opcode */
+				opcode_index = find_in_opcode(parsed_line.command);
+				/* Saving the opcode and checking if it failed. */
+				if (opcode_index < SUCCESS_CODE) {
+					printerror("OPERATION NOT FOUND", line_count, opcode_index);
+					error_flag = TRUE;
+					continue;
+				}
 
-			/* checking the amount of arguments */
-			current_error = check_arg_count(parsed_line.arguments, opcode_index);
-			if (current_error != SUCCESS_CODE) {
-				printerror("Argument Error found\n", line_count, current_error);
-				error_flag = TRUE;
-				continue;
-			}
+				/* checking the amount of arguments */
+				current_error = check_arg_count(parsed_line.arguments, opcode_index);
+				if (current_error != SUCCESS_CODE) {
+					printerror("Argument Error found\n", line_count, current_error);
+					error_flag = TRUE;
+					continue;
+				}
 
-			/* Stage 13 */
-			/* find L - the number of info-words required */
-			L = count_info_words_required(parsed_line.arguments, &sym_table);
-			if (L < SUCCESS_CODE) {
-				printerror("Info word error found: \n", line_count, L);
-				error_flag = TRUE;
-				continue;
-			}
+				/* Stage 13 */
+				/* find L - the number of info-words required */
+				L = count_info_words_required(parsed_line.arguments, &sym_table);
+				if (L < SUCCESS_CODE) {
+					printerror("Info word error found: \n", line_count, L);
+					error_flag = TRUE;
+					continue;
+				}
 
-			/* Stage 15 */
-			
-			current_error = add_instruction(&parsed_line, &machine_code_ptr, &sym_table, L, line_count);
-			if (current_error != SUCCESS_CODE) {
-				printerror("Error doing something cool\n", line_count, current_error);
-				error_flag = TRUE;
-				continue;
-			}
+				/* Stage 15 */
 
-			/* Stage 16 */
-			IC += L;
+				current_error = add_instruction(&parsed_line, machine_code, &sym_table, L, line_count);
+				if (current_error != SUCCESS_CODE) {
+					printerror("Error doing something cool\n", line_count, current_error);
+					error_flag = TRUE;
+					continue;
+				}
+
+				/* Stage 16 */
+				IC += L;
+			}
 		}
 	}
 
@@ -228,7 +242,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 	/* Stage 18 */
 	ICF = IC;
-	DCF = DC;
+	/* DCF = DC;  DCF unused rn*/
 
 	/* Stage 19 */
 	/* Update the symbol table with ICF for DATA symbols */
@@ -242,7 +256,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
 	Symbol *sym;
 
-	if (!value || !attribute) {
+	if (!attribute) {
 		/* Missing values for the symbol */
 		return MISSING_SYMBOL_VALUES;
 	}
@@ -297,6 +311,7 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 	return EXIT_SUCCESS;
 }
 
+/* missing free */
 int add_instruction(Line *line, FirstInstruction **machine_code, hashmap_t *sym_tb, int L, int line_num) {
 	FirstInstruction *inst;
 	int return_code, index, arg_index = 0;
@@ -342,7 +357,7 @@ int add_instruction(Line *line, FirstInstruction **machine_code, hashmap_t *sym_
 		}
 	}
 
-	machine_code[IC - 100] = inst;
+	machine_code[(IC - 100)] = inst;
 
 	return found_error;
 }
@@ -376,17 +391,16 @@ int check_arg_count(char **args, int index) {
 	for (i = 0; args[i] != NULL; i++);
 
 	/* Check if there are more operands than required */
-	if (i > OPCODES->args_num) return TOO_MANY_ARGS;
+	if (i > OPCODES[index].args_num) return TOO_MANY_ARGS;
 
 	/* Check if there are less operands than required */
-	if (i < OPCODES->args_num) return MISSING_ARGS;
+	if (i < OPCODES[index].args_num) return MISSING_ARGS;
 
 	/* The amount of operands is correct. */
 	return SUCCESS_CODE;
 }
 
 int find_addressing_method(char *operand, hashmap_t *sym_tb) {
-	char *operand_without_start;
 
 	if (!operand || isEmpty(operand)) return FAIL_CODE;
 
@@ -394,17 +408,9 @@ int find_addressing_method(char *operand, hashmap_t *sym_tb) {
 
 	if (is_register(operand)) return REGISTER_DIRECT;
 
-	if (lookup(sym_tb, operand)) return DIRECT;
+	if (*operand == '&') return RELATIVE;
 
-	if (*operand == '&') {
-		operand_without_start = operand + 1;
-		if (lookup(sym_tb, operand_without_start))
-			return RELATIVE;
-		else
-			return NOT_A_LABEL;
-	}
-
-	return FAIL_CODE;
+	return DIRECT;
 }
 
 int count_info_words_required(char **args, hashmap_t *sym_tb) {

@@ -7,7 +7,6 @@ LOOP:   prn #48
         mcroend
 
         mcro b_mc
-        ; realest shit inside the macro
         mcroend
 
         lea STR, r6

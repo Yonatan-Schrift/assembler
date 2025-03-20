@@ -7,7 +7,6 @@ LOOP:   prn #48
         bne END
         cmp K, #-6
         bne &END
-        ; realest shit inside the macro
         dec K
         jmp &LOOP
 END:    stop

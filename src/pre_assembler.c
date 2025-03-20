@@ -20,7 +20,11 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 	file_in = open_file(src_path, ".as", READ_MODE);
 	file_out = open_file(src_path, ".am", WRITE_MODE);
 
-	printf(" >>> Starting to work on file %s\n\n", processedFilename);
+	if(!file_in || !file_out) {
+		free_hashmap(mcro_table, (void (*)(void *))free_macro);
+		free(processedFilename);
+		return FAIL_CODE;
+	}
 
 	while ((read_line_err_flag = read_line(file_in, line)) != EXIT_FAILURE) {
 		line_count++;
@@ -81,8 +85,9 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		printf("\npre-compilation failed\n");
 		return EXIT_FAILURE;
 	}
+	
 	printf("\nPRECOMPILE SUCCESS\n");
-	return error_flag;
+	return SUCCESS_CODE;
 }
 
 int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
