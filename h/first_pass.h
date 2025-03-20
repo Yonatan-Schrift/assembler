@@ -102,4 +102,8 @@ void free_symbol (Symbol *sym);
  */
 int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr);
 
+void free_everything(int *data_image, FirstInstruction **machine_code, int machine_code_size, hashmap_t *sym_table, hashmap_t *mcro_tb, Line *line);
+
+void print_symbol(Symbol *sym);
+
 #endif /* FIRST_PASS_H */

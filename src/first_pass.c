@@ -89,7 +89,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 
 		/* Read a line from the source */
-		printf("Read line is: %s\n", line); /* debug line */
+		printf("Read line is: %d:%s\n", IC + DC, line); /* debug line */
 
 		/* Skips the line if it's empty */
 		if (isEmpty(line) == TRUE) {
@@ -147,12 +147,10 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						error_flag = TRUE;
 					}
 					if (add_string_word(parsed_line.arguments[0], &data_size, &data_image) != EXIT_SUCCESS) {
+
 						/* Memory failure */
-						free(data_image);
 						close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
-						free_line(&parsed_line);
-						free_hashmap(&sym_table, (void (*)(void *))free_symbol);
-						free_hashmap(mcro_tb, (void (*)(void *))free_macro);
+						free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
 
 						return EXIT_FAILURE;
 					}
@@ -238,14 +236,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	if (error_flag == TRUE) {
 		printf("ERRORS WERE FOUND DURING THE FIRST PASS!\n\n");
 
-		free(data_image);
-		for (i = 0; i < machine_code_size; i++) {
-			if (machine_code[i]) free(machine_code[i]);
-		}
-		free(machine_code);
-		free_hashmap(&sym_table, (void (*)(void *))free_symbol);
-		free_hashmap(mcro_tb, (void (*)(void *))free_macro);
-		free_line(&parsed_line);
+		free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
 
 		return FAIL_CODE;
 	}
@@ -261,16 +252,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	/* start second pass */
 
 	/* free everything */
-	free(data_image);
-
-	for (i = 0; i < machine_code_size; i++) {
-		if (machine_code[i]) free(machine_code[i]);
-	}
-	free(machine_code);
-
-	free_hashmap(&sym_table, (void (*)(void *))free_symbol);
-	free_hashmap(mcro_tb, (void (*)(void *))free_macro);
-	free_line(&parsed_line);
+	free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
 
 	return SUCCESS_CODE;
 }
@@ -329,6 +311,11 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 		if (add_data_word(value, data_cap, data_image) == EXIT_FAILURE) {
 			return EXIT_FAILURE;
 		}
+	}
+	/* adding the null terminator */
+	value = (int)string[i];
+	if (add_data_word(value, data_cap, data_image) == EXIT_FAILURE) {
+		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
 }
@@ -443,7 +430,7 @@ int find_addressing_method(char *operand, hashmap_t *sym_tb) {
 }
 
 int count_info_words_required(char **args, hashmap_t *sym_tb) {
-	int L = 1; /* starting with 1 for the instruction itself */
+	int L = 1; /* At least 1 is required */
 	int i, arg_count, addressing_method;
 
 	arg_count = string_array_len(args);
@@ -522,4 +509,27 @@ int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, 
 		*addr = num;
 		return SUCCESS_CODE;
 	}
+}
+
+void free_everything(int *data_image, FirstInstruction **machine_code, int machine_code_size, hashmap_t *sym_table, hashmap_t *mcro_tb, Line *line) {
+	int i;
+
+	free(data_image);
+
+	for (i = 0; i < machine_code_size; i++) {
+		if (machine_code[i]) free(machine_code[i]);
+	}
+	free(machine_code);
+
+/* 	print_hashmap(sym_table, (void (*)(void *))print_symbol); */
+	free_hashmap(sym_table, (void (*)(void *))free_symbol);
+	free_hashmap(mcro_tb, (void (*)(void *))free_macro);
+	free_line(line);
+}
+
+void print_symbol(Symbol *sym) {
+	printf("Symbol Name: %s, Attribute: %s, Value: %d",
+		   sym->name ? sym->name : "NULL",
+		   sym->attribute ? sym->attribute : "NULL",
+		   sym->value);
 }

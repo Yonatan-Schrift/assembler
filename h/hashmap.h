@@ -36,4 +36,6 @@ void insert(hashmap_t *map, void *value, char *key);
 void *lookup(hashmap_t *map, char *key);
 void free_hashmap(hashmap_t *map, void (*free_value)(void *));
 
+void print_hashmap(hashmap_t *map, void (*print_value)(void *));
+
 #endif /* HASHMAP_H */

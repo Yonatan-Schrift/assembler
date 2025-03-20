@@ -122,3 +122,25 @@ void free_hashmap(hashmap_t *map, void (*free_value)(void *)) {
     free(map->table);
 }
 
+/* Print the contents of the hashmap */
+void print_hashmap(hashmap_t *map, void (*print_value)(void *)) {
+    int i;
+    HashNode *node;
+
+    if (map == NULL) return;
+
+    printf("Hashmap contents (%d elements):\n", map->count);
+    for (i = 0; i < map->size; i++) {
+        node = map->table[i];
+        if (node != NULL) {
+            printf("Bucket %d: ", i);
+            while (node != NULL) {
+                printf("[ %s: ", node->key);
+                print_value(node->value);
+                printf(" ], ");
+                node = node->next;
+            }
+            printf("\n");
+        }
+    }
+}

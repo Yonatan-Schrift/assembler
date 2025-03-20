@@ -117,7 +117,7 @@ void free_line(Line *line) {
 int is_in_array(char *name, char **array) {
 	int i, array_size;
 
-	array_size = ARRAY_SIZE(array);
+	array_size = string_array_len(array);
 
 	for (i = 0; i < array_size; i++) {
 		if (strcmp(name, array[i]) == STRCMP_SUCCESS) {
