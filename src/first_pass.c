@@ -40,15 +40,18 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
 	int line_count = 0, i, value, opcode_index, L;
 	hashmap_t sym_table;
-	int data_size = INITIAL_ARRAY_SIZE, *data_image;
+	int data_size, *data_image, machine_code_size;
 	FirstInstruction **machine_code;
 	int ICF;
 	/* int DCF */
 
-	machine_code = malloc(INITIAL_ARRAY_SIZE * sizeof(FirstInstruction *));
+	machine_code_size = INITIAL_ARRAY_SIZE;
+	data_size = INITIAL_ARRAY_SIZE;
+
+	machine_code = calloc(machine_code_size, sizeof(FirstInstruction *));
 	if (!machine_code) return EXIT_FAILURE;
 
-	data_image = malloc(INITIAL_ARRAY_SIZE * sizeof(int));
+	data_image = malloc(data_size * sizeof(int));
 	if (!data_image) {
 		free(machine_code);
 		return EXIT_FAILURE;
@@ -63,7 +66,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 		return FAIL_CODE;
 	}
-
 	init_line(&parsed_line);
 	init_hashmap(&sym_table, TABLE_SIZE);
 
@@ -71,20 +73,23 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	DC = 0;
 
 	while ((current_error = read_line(file_in, line)) != EXIT_FAILURE) {
+		/* For iterations after the first, free the memory allocated for the previous line.
+		 * (On the first iteration, no memory has been allocated yet.) */
+		if (line_count > 0) free_line(&parsed_line);
+		/* Reinitialize parsed_line to prepare for processing the next line. */
+		init_line(&parsed_line);
+
 		line_count++;
 		is_symbol = FALSE;
 
-		/* clean the line from the previous line */
-		init_line(&parsed_line);
-
-		/* Read a line from the source */
-		printf("Read line is: %s\n", line); /* debug line */
-
 		/* Check if the line encountered an error */
-		if (COMPARE_STR(line, ERROR_STRING)) {
+		if (current_error < SUCCESS_CODE) {
 			printerror("error_flag", line_count, current_error);
 			continue;
 		}
+
+		/* Read a line from the source */
+		printf("Read line is: %s\n", line); /* debug line */
 
 		/* Skips the line if it's empty */
 		if (isEmpty(line) == TRUE) {
@@ -214,7 +219,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 				/* Stage 15 */
 
-				current_error = add_instruction(&parsed_line, machine_code, &sym_table, L, line_count);
+				current_error = add_instruction(&parsed_line, machine_code, &sym_table, L, line_count, &machine_code_size);
 				if (current_error != SUCCESS_CODE) {
 					printerror("Error doing something cool\n", line_count, current_error);
 					error_flag = TRUE;
@@ -231,11 +236,16 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 
 	if (error_flag == TRUE) {
-		printf("ERRORS WERE FOUND DURING THE FIRST PASS!");
+		printf("ERRORS WERE FOUND DURING THE FIRST PASS!\n\n");
+
 		free(data_image);
-		free_line(&parsed_line);
+		for (i = 0; i < machine_code_size; i++) {
+			if (machine_code[i]) free(machine_code[i]);
+		}
+		free(machine_code);
 		free_hashmap(&sym_table, (void (*)(void *))free_symbol);
 		free_hashmap(mcro_tb, (void (*)(void *))free_macro);
+		free_line(&parsed_line);
 
 		return FAIL_CODE;
 	}
@@ -249,6 +259,18 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	set_data_to_icf(&sym_table, ICF);
 
 	/* start second pass */
+
+	/* free everything */
+	free(data_image);
+
+	for (i = 0; i < machine_code_size; i++) {
+		if (machine_code[i]) free(machine_code[i]);
+	}
+	free(machine_code);
+
+	free_hashmap(&sym_table, (void (*)(void *))free_symbol);
+	free_hashmap(mcro_tb, (void (*)(void *))free_macro);
+	free_line(&parsed_line);
 
 	return SUCCESS_CODE;
 }
@@ -311,14 +333,21 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 	return EXIT_SUCCESS;
 }
 
-/* missing free */
-int add_instruction(Line *line, FirstInstruction **machine_code, hashmap_t *sym_tb, int L, int line_num) {
-	FirstInstruction *inst;
+int add_instruction(Line *line, FirstInstruction **machine_code, hashmap_t *sym_tb, int L, int line_num, int *machine_code_size) {
+	FirstInstruction *inst, **machine_code_buffer;
 	int return_code, index, arg_index = 0;
 	int found_error = FALSE;
 
 	/* checking for null input */
 	if (!machine_code || !sym_tb || !line) return TRUE;
+
+	if ((IC - 100) > *machine_code_size) {
+		*machine_code_size *= 2;
+		machine_code_buffer = realloc(machine_code, *machine_code_size);
+
+		if (!machine_code_buffer) return TRUE;
+		machine_code = machine_code_buffer;
+	}
 
 	/* finding the index inside the OPCODES array */
 	index = find_in_opcode(line->command);
@@ -472,6 +501,7 @@ void free_symbol(Symbol *sym) {
 	if (sym->name != NULL) {
 		free(sym->name);
 	}
+	free(sym);
 }
 
 int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr) {

@@ -113,11 +113,12 @@ void free_hashmap(hashmap_t *map, void (*free_value)(void *)) {
             /* Freeing the value */
 
             free_value(temp->value);
-
+            
             free(temp->key);
             free(temp);
         }
     }
+
     free(map->table);
 }
 

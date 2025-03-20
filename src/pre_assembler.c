@@ -7,12 +7,11 @@
 
 int pre_comp(char *src_path, hashmap_t *mcro_table) {
 	char line[MAX_LINE_LENGTH + 2], *name;
-	int error_flag = FALSE, read_line_err_flag = FALSE, is_stop_string, line_count = 0;
+	int error_flag = FALSE, read_line_err_flag = FALSE, is_error_string, line_count = 0;
 	FILE *file_in, *file_out;
 	Macro *mcro;
 	Macro *lookup_result;
-
-	char *processedFilename = change_extension(src_path, ".am");
+	char *new_file_name; 
 
 	init_hashmap(mcro_table, TABLE_SIZE);
 
@@ -20,9 +19,8 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 	file_in = open_file(src_path, ".as", READ_MODE);
 	file_out = open_file(src_path, ".am", WRITE_MODE);
 
-	if(!file_in || !file_out) {
+	if (!file_in || !file_out) {
 		free_hashmap(mcro_table, (void (*)(void *))free_macro);
-		free(processedFilename);
 		return FAIL_CODE;
 	}
 
@@ -30,7 +28,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		line_count++;
 		printf("Read line: %s\n", line);
 
-		if (strcmp(line, ERROR_STRING) == STRCMP_SUCCESS) {
+		if (read_line_err_flag < EXIT_SUCCESS) {
 			printerror("ERROR", line_count, read_line_err_flag);
 			continue;
 		}
@@ -48,13 +46,16 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 
 		/* Check for a macro definition */
 		if (parse_macro(line, &line_count, file_in, mcro) == EXIT_SUCCESS) {
-			printf("\n >>> Macro is %s\n", mcro->name);
-			is_stop_string = (strcmp(mcro->name, ERROR_STRING) == STRCMP_SUCCESS);
+			is_error_string = (strcmp(mcro->name, ERROR_STRING) == STRCMP_SUCCESS);
 
-			if (is_stop_string) {
-				error_flag = EXIT_FAILURE;
+			if (is_error_string) {
+				error_flag = TRUE;
 				free_macro(mcro);
 			} else {
+				if (lookup(mcro_table, mcro->name) != NULL) {
+					error_flag = TRUE;
+					printerror("ERROR\n", line_count, MACRO_ALREADY_EXISTS);
+				}
 				insert(mcro_table, (void *)mcro, mcro->name);
 			}
 		}
@@ -70,6 +71,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		else {
 			free_macro(mcro);
 			fprintf(file_out, "%s\n", line);
+			fflush(file_out);
 		}
 	}
 
@@ -78,14 +80,17 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 
 	if (error_flag != FALSE) {
 		printerror("Error Flag\n", line_count, error_flag);
-		remove(processedFilename); /* Removing the .am file */
+		new_file_name = change_extension(src_path, ".am");
 
+		remove(new_file_name); /* Removing the .am file */
+
+		free(new_file_name);
 		free_hashmap(mcro_table, (void (*)(void *))free_macro);
 
 		printf("\npre-compilation failed\n");
 		return EXIT_FAILURE;
 	}
-	
+
 	printf("\nPRECOMPILE SUCCESS\n");
 	return SUCCESS_CODE;
 }
@@ -123,8 +128,15 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 	IS_MACRO = TRUE;
 
 	while (IS_MACRO) {
+		/* For iterations after the first, free the memory allocated for the previous line.
+		 * (On the first iteration, no memory has been allocated yet.) */
+		if (*line_count > 0) free_line(&line);
+
+		/* Reinitialize parsed_line to prepare for processing the next line. */
+		init_line(&line);
+
 		read_line(file, input);
-		line_count++;
+		(*line_count)++;
 
 		if (input == NULL) {
 			free(macro_body);
@@ -159,6 +171,9 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 		macro_body[total_length] = '\0';   /* Null terminate */
 	}
 
+	/* A check for an empty macro */
+	if(total_length == 0) *macro_body = '\0';
+	
 	free_line(&line);
 
 	mcro->body = macro_body;
