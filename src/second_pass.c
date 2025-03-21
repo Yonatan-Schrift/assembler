@@ -9,8 +9,63 @@
 #define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
 /* temp macro */
 
-int second_pass() {
+int second_pass(char *src_path) {
+	char line[MAX_LINE_LENGTH + 1];
+	FILE *file_in, *file_ob;
+	Line parsed_line;
+	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
+	int line_count = 0, i, value, opcode_index, L;
+	hashmap_t sym_table;
+	int is_entry = FALSE;
+	
+	file_in = open_file(src_path, ".am", READ_MODE);
+	file_ob = open_file(src_path, ".ob", WRITE_MODE);
+	if (!file_in || !file_ob) {
+		close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
+		return FAIL_CODE;
+	}
+	init_line(&parsed_line);
 
+	while ((current_error = read_line(file_in, line)) != EXIT_FAILURE)
+	{
+		if (line_count > 0) free_line(&parsed_line);
+		init_line(&parsed_line);
+
+		line_count++;
+
+		if (current_error < SUCCESS_CODE) {
+			printerror("error_flag", line_count, current_error);
+			continue;
+		}
+
+		if (isEmpty(line) == TRUE) {
+			continue;
+		}
+
+		if (split_line(line, &parsed_line) != EXIT_FAILURE) {
+
+			/* Stage 2 */
+			if (parsed_line.label != NULL) {
+				continue;
+			}
+
+			/* Stage 3 */
+			if (!COMPARE_STR(parsed_line.command, ".data") & 
+			!COMPARE_STR(parsed_line.command, ".string") & 
+			!COMPARE_STR(parsed_line.command, ".extern")) {
+				
+				/* Stage 4 */
+				if (COMPARE_STR(parsed_line.command, ".entry")) {
+					is_entry = TRUE;
+
+					/*need to do stage 5 in this if */
+				}
+				
+		}
+			
+		
+	}
+	
 
     return EXIT_SUCCESS;
 }
