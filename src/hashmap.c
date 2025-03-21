@@ -123,6 +123,7 @@ void free_hashmap(hashmap_t *map, void (*free_value)(void *)) {
 }
 
 /* Print the contents of the hashmap */
+/* debug method */
 void print_hashmap(hashmap_t *map, void (*print_value)(void *)) {
     int i;
     HashNode *node;

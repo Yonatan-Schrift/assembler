@@ -9,7 +9,7 @@
 #define IS_ENTRY_OR_EXTERN(a) (strcmp((a), ".extern") == STRCMP_SUCCESS || strcmp((a), ".entry") == STRCMP_SUCCESS)
 #define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
 
-op_code OPCODES[] = {
+const op_code OPCODES[] = {
 	/* {"command", "opcode", "funct", "req_args", "is_source", "is_dest"} */
 	{"mov", 0, 0, 2, TRUE, TRUE},
 	{"cmp", 1, 0, 2, TRUE, TRUE},
@@ -129,11 +129,8 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 						if (add_data_word(value, &data_size, &data_image) != EXIT_SUCCESS) {
 							/* Memory failure */
-							free(data_image);
+							free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
 							close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
-							free_line(&parsed_line);
-							free_hashmap(&sym_table, (void (*)(void *))free_symbol);
-							free_hashmap(mcro_tb, (void (*)(void *))free_macro);
 
 							return EXIT_FAILURE;
 						}
@@ -217,7 +214,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 				/* Stage 15 */
 
-				current_error = add_instruction(&parsed_line, machine_code, &sym_table, L, line_count, &machine_code_size);
+				current_error = add_instruction(&parsed_line, &machine_code, &sym_table, L, line_count, &machine_code_size);
 				if (current_error != SUCCESS_CODE) {
 					printerror("Error doing something cool\n", line_count, current_error);
 					error_flag = TRUE;
@@ -320,25 +317,47 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 	return EXIT_SUCCESS;
 }
 
-int add_instruction(Line *line, FirstInstruction **machine_code, hashmap_t *sym_tb, int L, int line_num, int *machine_code_size) {
+/**
+ * @brief Adds an instruction to the machine code buffer.
+ *
+ * This function processes the instruction line, determines the appropriate opcode,
+ * addressing methods, and other instruction components. It then builds a FirstInstruction
+ * structure and adds it to the machine code buffer.
+ *
+ * @param line The parsed line containing the command and arguments.
+ * @param machine_code Pointer to the machine code buffer array.
+ * @param sym_tb Hash map containing the symbol table.
+ * @param L The number of info-words for this instruction.
+ * @param line_num The current line number in the source code.
+ * @param machine_code_size Pointer to the current size of the machine code buffer.
+ *
+ * @return TRUE if an error was found during processing, FALSE otherwise.
+ *
+ * @note The function dynamically resizes the machine code buffer if needed.
+ * @note IC (Instruction Counter) is a global variable starting at 100.
+ */
+int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym_tb, int L, int line_num, int *machine_code_size) {
 	FirstInstruction *inst, **machine_code_buffer;
 	int return_code, index, arg_index = 0;
 	int found_error = FALSE;
 
 	/* checking for null input */
-	if (!machine_code || !sym_tb || !line) return TRUE;
+	if (!machine_code || !sym_tb || !line || !machine_code_size) return TRUE;
 
-	if ((IC - 100) > *machine_code_size) {
+	/* Using IC-100 because IC starts at 100. */
+	if ((IC - 100) >= *machine_code_size) {
 		*machine_code_size *= 2;
-		machine_code_buffer = realloc(machine_code, *machine_code_size);
+		machine_code_buffer = realloc(*machine_code, *machine_code_size * sizeof(FirstInstruction *));
 
-		if (!machine_code_buffer) return TRUE;
-		machine_code = machine_code_buffer;
+		if (!machine_code_buffer) return TRUE; /* Memory Error - Abort method */
+
+		*machine_code = machine_code_buffer;
 	}
 
 	/* finding the index inside the OPCODES array */
 	index = find_in_opcode(line->command);
 	if (index < SUCCESS_CODE) {
+		/* OPCODE not found */
 		printerror("Error,\n", line_num, index);
 		found_error = TRUE;
 		return found_error;
@@ -361,7 +380,8 @@ int add_instruction(Line *line, FirstInstruction **machine_code, hashmap_t *sym_
 
 		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->src_register, &inst->src_addressing);
 		if (return_code != SUCCESS_CODE) {
-			found_error = TRUE;
+			free(inst);
+			return TRUE;
 		}
 		arg_index++;
 	}
@@ -369,11 +389,12 @@ int add_instruction(Line *line, FirstInstruction **machine_code, hashmap_t *sym_
 	if (OPCODES[index].is_dest) {
 		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->dest_register, &inst->dest_addressing);
 		if (return_code != SUCCESS_CODE) {
-			found_error = TRUE;
+			free(inst);
+			return TRUE;
 		}
 	}
 
-	machine_code[(IC - 100)] = inst;
+	(*machine_code)[IC - 100] = inst;
 
 	return found_error;
 }
@@ -514,19 +535,30 @@ int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, 
 void free_everything(int *data_image, FirstInstruction **machine_code, int machine_code_size, hashmap_t *sym_table, hashmap_t *mcro_tb, Line *line) {
 	int i;
 
-	free(data_image);
+	if (data_image)
+		free(data_image);
 
-	for (i = 0; i < machine_code_size; i++) {
-		if (machine_code[i]) free(machine_code[i]);
+	if (machine_code) {
+		for (i = 0; i < machine_code_size; i++) {
+			if (machine_code[i])
+				free(machine_code[i]);
+		}
+		free(machine_code);
 	}
-	free(machine_code);
 
-/* 	print_hashmap(sym_table, (void (*)(void *))print_symbol); */
-	free_hashmap(sym_table, (void (*)(void *))free_symbol);
-	free_hashmap(mcro_tb, (void (*)(void *))free_macro);
-	free_line(line);
+	if (sym_table) {
+		print_hashmap(sym_table, (void (*)(void *))print_symbol); /* debug line */
+		free_hashmap(sym_table, (void (*)(void *))free_symbol);
+	}
+
+	if (mcro_tb)
+		free_hashmap(mcro_tb, (void (*)(void *))free_macro);
+
+	if (line)
+		free_line(line);
 }
 
+/* debug method */
 void print_symbol(Symbol *sym) {
 	printf("Symbol Name: %s, Attribute: %s, Value: %d",
 		   sym->name ? sym->name : "NULL",

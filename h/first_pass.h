@@ -55,7 +55,7 @@ int add_data_word(int value, int *data_cap, int **data_image);
 
 int add_string_word(char *string, int *data_cap, int **data_image);
 
-int add_instruction(Line *line, FirstInstruction **machine_code, hashmap_t *sym_tb, int L, int line_num, int *machine_code_size);
+int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym_tb, int L, int line_num, int *machine_code_size);
 
 int find_in_opcode(char *string); 
 
