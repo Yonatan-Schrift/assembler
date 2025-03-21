@@ -1,22 +1,6 @@
 #include "../h/error.h"
 #include <stdio.h>
 
-#define LINE_TOO_LONG -2
-#define TOO_MANY_ARGS -3
-#define MISSING_ARGS -4
-#define MACRO_ALREADY_EXISTS -5
-
-#define NOT_ALLOWED_MACRO_NAME -10
-#define SYMBOL_ALREADY_EXISTS -11
-#define SYMBOL_IS_MACRO -12
-#define MISSING_SYMBOL_VALUES -13
-#define OPCODE_NOT_FOUND -14
-#define NOT_A_LABEL -15
-
-
-#define NO_FILES -20
-
-
 void printerror(const char *message, int line_num, int error_code) {
 	const char *error_msg;
 
@@ -57,13 +41,22 @@ void printerror(const char *message, int line_num, int error_code) {
         case NO_FILES:
             error_msg = "No files provided";
             break;
+        case COULD_NOT_OPEN_FILE:
+            error_msg = "Could not open the file, check that it exists";
+            break;
+        case FILE_INCLUDES_EXTENSION:
+            error_msg = "File includes an extension, the input should not have an extension";
+            break;
+        case EMPTY_LABEL:
+            error_msg = "Empty label is not allowed";
+            break;
         default:
             error_msg = "Unknown error";
     }
 
     if (line_num == NO_LINE) {
-        printf("Error: %s\n", error_msg);
+        printf(">>> Error: %s\n", error_msg);
     } else {
-        printf("Error in line %d: %s\n", line_num, error_msg);
+        printf(">>> Error in line %d: %s\n", line_num, error_msg);
     }
 }

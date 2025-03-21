@@ -33,10 +33,10 @@ char *is_macro_start(char *input, Line *line) {
 	char *name;
 
 	/* Check for NULL input */
-	if (input == NULL)
+	if (input == NULL || isEmpty(input))
 		return NULL;
 
-	split_line(input, line);
+	if (!line->command) return NULL;
 
 	if (strcmp(line->command, MACRO_START_STRING) != STRCMP_SUCCESS) {
 		/* Didn't find a macro definition */

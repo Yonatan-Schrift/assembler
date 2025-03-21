@@ -83,8 +83,13 @@ void insert(hashmap_t *map, void *value, char *key) {
 
 /* Lookup a value via key */
 void *lookup(hashmap_t *map, char *key) {
-    unsigned int index = hash(key, map->size);
-    HashNode *node = map->table[index];
+    unsigned int index;
+    HashNode *node;
+
+    if (!key || !map) return NULL;
+    
+    index = hash(key, map->size);
+    node = map->table[index];
 
     while (node != NULL) {
         if (strcmp(node->key, key) == 0) {
