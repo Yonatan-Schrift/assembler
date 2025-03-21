@@ -1,9 +1,9 @@
 
 
 #include "../h/second_pass.h"
+#include "../h/first_pass.h"
 #include "../h/globals.h"
 #include "../h/hashmap.h"
-#include "../h/first_pass.h"
 #include "../h/line.h"
 
 #define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
@@ -17,7 +17,7 @@ int second_pass(char *src_path) {
 	int line_count = 0, i, value, opcode_index, L;
 	hashmap_t sym_table;
 	int is_entry = FALSE;
-	
+
 	file_in = open_file(src_path, ".am", READ_MODE);
 	file_ob = open_file(src_path, ".ob", WRITE_MODE);
 	if (!file_in || !file_ob) {
@@ -26,8 +26,7 @@ int second_pass(char *src_path) {
 	}
 	init_line(&parsed_line);
 
-	while ((current_error = read_line(file_in, line)) != EXIT_FAILURE)
-	{
+	while ((current_error = read_line(file_in, line)) != EXIT_FAILURE) {
 		if (line_count > 0) free_line(&parsed_line);
 		init_line(&parsed_line);
 
@@ -50,24 +49,21 @@ int second_pass(char *src_path) {
 			}
 
 			/* Stage 3 */
-			if (!COMPARE_STR(parsed_line.command, ".data") & 
-			!COMPARE_STR(parsed_line.command, ".string") & 
-			!COMPARE_STR(parsed_line.command, ".extern")) {
-				
+			if (!COMPARE_STR(parsed_line.command, ".data") &
+				!COMPARE_STR(parsed_line.command, ".string") &
+				!COMPARE_STR(parsed_line.command, ".extern")) {
+
 				/* Stage 4 */
 				if (COMPARE_STR(parsed_line.command, ".entry")) {
 					is_entry = TRUE;
 
 					/*need to do stage 5 in this if */
 				}
-				
+			}
 		}
-			
-		
-	}
-	
 
-    return EXIT_SUCCESS;
+		return EXIT_SUCCESS;
+	}
 }
 
 int build_instruction_word(int opcode, int source_addressing, int source_register, int des_addressing, int des_register, int funct, int are) {
@@ -125,4 +121,3 @@ int build_info_words(Line *line, hashmap_t *sym_tb) {
 	}
 	return L;
 }
-

@@ -4,6 +4,7 @@
 #include "../h/hashmap.h"
 #include "../h/line.h"
 #include "../h/pre_assembler.h"
+#include "../h/second_pass.h"
 
 #define IS_STORE_INST(a) (strcmp((a), ".string") == STRCMP_SUCCESS || strcmp((a), ".data") == STRCMP_SUCCESS)
 #define IS_ENTRY_OR_EXTERN(a) (strcmp((a), ".extern") == STRCMP_SUCCESS || strcmp((a), ".entry") == STRCMP_SUCCESS)
@@ -236,7 +237,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 
 	/* Check if the program used too much memory */
-	if(IC + DC >= MAX_MEMORY) {
+	if (IC + DC >= MAX_MEMORY) {
 		printerror("Too much memory", NO_LINE, OUT_OF_MEMORY);
 		error_flag = TRUE;
 	}
@@ -376,6 +377,9 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 			return TRUE;
 		}
 		arg_index++;
+	} else {
+		inst->src_register = 0;
+		inst->src_addressing = 0;
 	}
 	/* checking if the operation has a destionation argument */
 	if (OPCODES[index].is_dest) {
@@ -384,6 +388,9 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 			free(inst);
 			return TRUE;
 		}
+	} else {
+		inst->dest_register = 0;
+		inst->dest_addressing = 0;
 	}
 
 	(*machine_code)[IC - IC_START] = inst;
@@ -509,7 +516,7 @@ int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, 
 	/* Check if the argument is a register */
 	if ((num = is_register(argument)) != FALSE) {
 		*reg = num;
-		*addr = 0;
+		*addr = REGISTER_DIRECT;
 		return SUCCESS_CODE;
 	} else {
 		*reg = 0;
