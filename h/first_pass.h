@@ -21,6 +21,8 @@
 
 #define INITIAL_ARRAY_SIZE 128
 #define IC_START 100
+#define MAX_METHODS 3
+#define EMPTY_VALUE -1
 
 typedef struct FirstInstruction {
     int opcode;
@@ -40,6 +42,8 @@ typedef struct op_code {
 	int args_num;
     int is_source;
     int is_dest;
+    int valid_source_method[MAX_METHODS];
+    int valid_deest_method[MAX_METHODS];
 } op_code;
 
 typedef struct Symbol {
