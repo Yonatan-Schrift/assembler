@@ -10,7 +10,11 @@ FILE *open_file(const char *filename, const char *extension, const char *mode) {
 
 	/* checks that the file opened */
 	if (!file) {
-		printerror("failed to open the file\n", NO_LINE, EXIT_FAILURE);
+		if (find_extension(filename)) {
+			printerror("error", NO_LINE, FILE_INCLUDES_EXTENSION);
+		} else {
+			printerror("failed to open the file\n", NO_LINE, EXIT_FAILURE);
+		}
 		return NULL;
 	}
 
@@ -48,22 +52,21 @@ char *change_extension(const char *filename, const char *extension) {
 	return new_filename;
 }
 
-/* char *find_extension(const char *filename) {
+char *find_extension(const char *filename) {
 	char *ext;
 
-	// Find the last occurrence of '.' in the filename
+	/* Find the last occurrence of '.' in the filename */
 	ext = strrchr(filename, '.');
 
 	if (ext != NULL && *(ext + 1) != '\0') {
 		ext++;
 	} else {
+		/* No extension found */
 		ext = NULL;
-		printf("No extension found in the filename.\n");
 	}
 
 	return ext;
-	}
- */
+}
 
 void close_mult_files(FILE *file1, FILE *file2, FILE *file3, FILE *file4, FILE *file5, FILE *file6) {
 	if (file1 != NULL) {

@@ -26,7 +26,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 
 	while ((read_line_err_flag = read_line(file_in, line)) != EXIT_FAILURE) {
 		line_count++;
-		printf("Read line: %s\n", line);
+		/* printf("Read line: %s\n", line); */
 
 		if (read_line_err_flag < EXIT_SUCCESS) {
 			printerror("ERROR", line_count, read_line_err_flag);
@@ -87,11 +87,11 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		free(new_file_name);
 		free_hashmap(mcro_table, (void (*)(void *))free_macro);
 
-		printf("\npre-compilation failed\n");
+		printf("\n\npre-compilation failed\n\n");
 		return EXIT_FAILURE;
 	}
 
-	printf("\nPRECOMPILE SUCCESS\n");
+	printf("\n\nPRECOMPILE SUCCESS\n\n");
 	return SUCCESS_CODE;
 }
 
@@ -108,6 +108,8 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 		return EXIT_FAILURE;
 	}
 
+	split_line(input, &line);
+	
 	if (!(macro_name = is_macro_start(input, &line))) {
 		/* Not a macro start */
 		free(macro_body);

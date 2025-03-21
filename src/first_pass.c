@@ -89,7 +89,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 
 		/* Read a line from the source */
-		printf("Read line is: %d:%s\n", IC + DC, line); /* debug line */
+		/* printf("Read line is: %d:%s\n", IC + DC, line); */ /* debug line */
 
 		/* Skips the line if it's empty */
 		if (isEmpty(line) == TRUE) {
@@ -102,7 +102,12 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			if (parsed_line.label != NULL) {
 				is_symbol = TRUE;
 			}
-
+			/* check for an empty label */
+			if (!parsed_line.command) {
+				printerror("label without a command", line_count, EMPTY_LABEL);
+				error_flag = TRUE;
+				continue;
+			}
 			/* Stages 5-7 */
 			/* check if the instruction stores data in the memory */
 			if (IS_STORE_INST(parsed_line.command)) {
@@ -230,8 +235,14 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	/* Stage 17 */
 	close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 
+	/* Check if the program used too much memory */
+	if(IC + DC >= MAX_MEMORY) {
+		printerror("Too much memory", NO_LINE, OUT_OF_MEMORY);
+		error_flag = TRUE;
+	}
+
 	if (error_flag == TRUE) {
-		printf("ERRORS WERE FOUND DURING THE FIRST PASS!\n\n");
+		printf("\n\n>>> ERRORS WERE FOUND DURING THE FIRST PASS!\n\n");
 
 		free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
 

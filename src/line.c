@@ -14,16 +14,19 @@ void init_line(Line *line) {
 int read_line(FILE *file, char *line) {
 	char cur;
 	int index = 0;
+	int finished_line = FALSE;
 
-	/* Read input character by character */
+	/* Read input character by character, stopping at EOF, '\n' */
 	while ((cur = fgetc(file)) != EOF && cur != '\n') {
-
+		if (cur == ';') {
+			finished_line = TRUE;
+		}
 		if (index > MAX_LINE_LENGTH || (index == MAX_LINE_LENGTH && line[index - 1] != '\n')) {
 			/* Line too long */
 			line[index] = '\0';
 			return LINE_TOO_LONG;
 		}
-		line[index++] = cur;
+		if (!finished_line) line[index++] = cur;
 	}
 
 	/* Handle EOF or when when no input is given */
@@ -44,6 +47,9 @@ int split_line(char *line, Line *output) {
 	if (line == NULL) {
 		return EXIT_FAILURE;
 	}
+	output->command = NULL;
+	output->label = NULL;
+
 	strcpy(input_copy, line);
 
 	/* Allocate memory for the array on the heap */
@@ -51,10 +57,6 @@ int split_line(char *line, Line *output) {
 	if (!args) {
 		return EXIT_FAILURE;
 	}
-	output->arguments = args;
-
-	/* removing the comments from the line. */
-	remove_after_delim(input_copy, ';');
 
 	/* Extract label if found */
 	token = strtok(input_copy, delims);
