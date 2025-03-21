@@ -317,25 +317,6 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 	return EXIT_SUCCESS;
 }
 
-/**
- * @brief Adds an instruction to the machine code buffer.
- *
- * This function processes the instruction line, determines the appropriate opcode,
- * addressing methods, and other instruction components. It then builds a FirstInstruction
- * structure and adds it to the machine code buffer.
- *
- * @param line The parsed line containing the command and arguments.
- * @param machine_code Pointer to the machine code buffer array.
- * @param sym_tb Hash map containing the symbol table.
- * @param L The number of info-words for this instruction.
- * @param line_num The current line number in the source code.
- * @param machine_code_size Pointer to the current size of the machine code buffer.
- *
- * @return TRUE if an error was found during processing, FALSE otherwise.
- *
- * @note The function dynamically resizes the machine code buffer if needed.
- * @note IC (Instruction Counter) is a global variable starting at 100.
- */
 int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym_tb, int L, int line_num, int *machine_code_size) {
 	FirstInstruction *inst, **machine_code_buffer;
 	int return_code, index, arg_index = 0;
@@ -344,8 +325,8 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	/* checking for null input */
 	if (!machine_code || !sym_tb || !line || !machine_code_size) return TRUE;
 
-	/* Using IC-100 because IC starts at 100. */
-	if ((IC - 100) >= *machine_code_size) {
+	/* Using IC - 100 because IC starts at 100. */
+	if ((IC - IC_START) >= *machine_code_size) {
 		*machine_code_size *= 2;
 		machine_code_buffer = realloc(*machine_code, *machine_code_size * sizeof(FirstInstruction *));
 
@@ -394,7 +375,7 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 		}
 	}
 
-	(*machine_code)[IC - 100] = inst;
+	(*machine_code)[IC - IC_START] = inst;
 
 	return found_error;
 }

@@ -20,6 +20,7 @@
 #define ARE_ABSOLUTE 4
 
 #define INITIAL_ARRAY_SIZE 128
+#define IC_START 100
 
 typedef struct FirstInstruction {
     int opcode;
@@ -55,6 +56,25 @@ int add_data_word(int value, int *data_cap, int **data_image);
 
 int add_string_word(char *string, int *data_cap, int **data_image);
 
+/**
+ * @brief Adds an instruction to the machine code buffer.
+ *
+ * This function processes the instruction line, determines the appropriate opcode,
+ * addressing methods, and other instruction components. It then builds a FirstInstruction
+ * structure and adds it to the machine code buffer.
+ *
+ * @param line The parsed line containing the command and arguments.
+ * @param machine_code Pointer to the machine code buffer array.
+ * @param sym_tb Hash map containing the symbol table.
+ * @param L The number of info-words for this instruction.
+ * @param line_num The current line number in the source code.
+ * @param machine_code_size Pointer to the current size of the machine code buffer.
+ *
+ * @return TRUE if an error was found during processing, FALSE otherwise.
+ *
+ * @note The function dynamically resizes the machine code buffer if needed.
+ * @note IC (Instruction Counter) is a global variable starting at 100.
+ */
 int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym_tb, int L, int line_num, int *machine_code_size);
 
 int find_in_opcode(char *string); 
