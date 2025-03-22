@@ -237,7 +237,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
 
 	/* Check if the program used too much memory */
-	if (IC + DC >= MAX_MEMORY) {
+	if ((IC-100) + DC >= MAX_MEMORY) {
 		printerror("Too much memory", NO_LINE, OUT_OF_MEMORY);
 		error_flag = TRUE;
 	}
