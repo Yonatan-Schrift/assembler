@@ -69,6 +69,15 @@ int second_pass(char *src_path, hashmap_t *sym_tb) {
 		}
 	}
 
+	/* Stage 7 */
+	if (error_flag == TRUE) {
+		printf("\n\n>>> ERRORS WERE FOUND DURING THE SECOND PASS!\n\n");
+
+		/* Need to free every thing that we used */
+
+		return FAIL_CODE;
+	}
+
 	return EXIT_SUCCESS;
 }
 
