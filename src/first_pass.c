@@ -61,7 +61,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	file_in = open_file(src_path, ".am", READ_MODE);
 	file_ob = open_file(src_path, ".ob", WRITE_MODE);
 	if (!file_in || !file_ob) {
-		close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
+		close_mult_files(file_in, file_ob, NULL, NULL);
 		free(data_image);
 		free(machine_code);
 
@@ -136,7 +136,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						if (add_data_word(value, &data_size, &data_image) != EXIT_SUCCESS) {
 							/* Memory failure */
 							free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
-							close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
+							close_mult_files(file_in, file_ob, NULL, NULL);
 
 							return EXIT_FAILURE;
 						}
@@ -152,7 +152,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					if (add_string_word(parsed_line.arguments[0], &data_size, &data_image) != EXIT_SUCCESS) {
 
 						/* Memory failure */
-						close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
+						close_mult_files(file_in, file_ob, NULL, NULL);
 						free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
 
 						return EXIT_FAILURE;
@@ -234,7 +234,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	}
 
 	/* Stage 17 */
-	close_mult_files(file_in, file_ob, NULL, NULL, NULL, NULL);
+	close_mult_files(file_in, file_ob, NULL, NULL);
 
 	/* Check if the program used too much memory */
 	if ((IC-100) + DC >= MAX_MEMORY) {
