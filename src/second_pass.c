@@ -21,15 +21,17 @@ int second_pass(char *src_path, hashmap_t *sym_tb) {
 	file_ext = open_file(src_path, ".ext", WRITE_MODE);
 	file_am = open_file(src_path, ".am", WRITE_MODE);
 
-
-	if (!file_ext || !file_ob || !file_ent) {
+	if (!file_ext || !file_ob || !file_ent || !file_am) {
 		close_mult_files(file_ext, file_ob, file_ent, file_am);
 		return FAIL_CODE;
 	}
 	init_line(&parsed_line);
 
 	while ((current_error = read_line(file_am, line)) != EXIT_FAILURE) {
+		/* For iterations after the first, free the memory allocated for the previous line.
+		 * (On the first iteration, no memory has been allocated yet.) */
 		if (line_count > 0) free_line(&parsed_line);
+		/* Reinitialize parsed_line to prepare for processing the next line. */
 		init_line(&parsed_line);
 
 		line_count++;
@@ -45,28 +47,31 @@ int second_pass(char *src_path, hashmap_t *sym_tb) {
 
 		if (split_line(line, &parsed_line) != EXIT_FAILURE) {
 
-			/* Stage 2 */
+			/* Stage 2 - might be used
 			if (parsed_line.label != NULL) {
 				continue;
-			}
+			} */
 
 			/* Stage 3 */
-			if (!COMPARE_STR(parsed_line.command, ".data") &
-				!COMPARE_STR(parsed_line.command, ".string") &
-				!COMPARE_STR(parsed_line.command, ".extern")) {
+			/* ignore extern / data / string */
+			if (COMPARE_STR(parsed_line.command, ".data") &
+				COMPARE_STR(parsed_line.command, ".string") &
+				COMPARE_STR(parsed_line.command, ".extern"))
+				continue;
 
-				/* Stage 4 */
-				if (COMPARE_STR(parsed_line.command, ".entry")) {
-
-
-					/*need to do stage 5 in this if */
-				}
+			/* Stage 4 */
+			/* is .entry, insert it to the sym table */
+			if (COMPARE_STR(parsed_line.command, ".entry")) {
+				lookup(sym_tb, parsed_line.arguments[0]);
+				
+				/*need to do stage 5 in this if */
 			}
 		}
-
-		return EXIT_SUCCESS;
 	}
+
+	return EXIT_SUCCESS;
 }
+
 
 int build_instruction_word(int opcode, int source_addressing, int source_register, int des_addressing, int des_register, int funct, int are) {
 	int instruction = 0;
