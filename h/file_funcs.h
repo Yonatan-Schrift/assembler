@@ -16,6 +16,6 @@ char *change_extension(const char *filename, const char *extension);
 
 char *find_extension(const char *filename);
 
-void close_mult_files(FILE *file1, FILE *file2, FILE *file3, FILE *file4, FILE *file5, FILE *file6);
+void close_mult_files(FILE *file1, FILE *file2, FILE *file3, FILE *file4);
 
 #endif /* FILE_FUNCS_H */

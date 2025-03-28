@@ -68,7 +68,7 @@ char *find_extension(const char *filename) {
 	return ext;
 }
 
-void close_mult_files(FILE *file1, FILE *file2, FILE *file3, FILE *file4, FILE *file5, FILE *file6) {
+void close_mult_files(FILE *file1, FILE *file2, FILE *file3, FILE *file4) {
 	if (file1 != NULL) {
 		fclose(file1);
 	}
@@ -80,11 +80,5 @@ void close_mult_files(FILE *file1, FILE *file2, FILE *file3, FILE *file4, FILE *
 	}
 	if (file4 != NULL) {
 		fclose(file4);
-	}
-	if (file5 != NULL) {
-		fclose(file5);
-	}
-	if (file6 != NULL) {
-		fclose(file6);
 	}
 }
