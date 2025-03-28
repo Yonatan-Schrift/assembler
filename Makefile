@@ -2,7 +2,7 @@
 CC = gcc
 CFLAGS = -Wall -ansi -pedantic -std=c90 -g -fsanitize=address
 
-TARGET = main
+TARGET = assembler
 
 SOURCES = $(wildcard src/*.c)
 OBJECTS = $(SOURCES:.c=.o)

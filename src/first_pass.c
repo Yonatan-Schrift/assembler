@@ -36,7 +36,7 @@ int DC;
 
 int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	char line[MAX_LINE_LENGTH + 1];
-	FILE *file_in, *file_ob;
+	FILE *file_in;
 	Line parsed_line;
 	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
 	int line_count = 0, i, value, opcode_index, L;
@@ -44,7 +44,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	int data_size, *data_image, machine_code_size;
 	FirstInstruction **machine_code;
 	int ICF;
-	/* int DCF */
+	int DCF;
 
 	machine_code_size = INITIAL_ARRAY_SIZE;
 	data_size = INITIAL_ARRAY_SIZE;
@@ -59,9 +59,8 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	}
 
 	file_in = open_file(src_path, ".am", READ_MODE);
-	file_ob = open_file(src_path, ".ob", WRITE_MODE);
-	if (!file_in || !file_ob) {
-		close_mult_files(file_in, file_ob, NULL, NULL);
+	if (!file_in) {
+		close_mult_files(file_in, NULL, NULL, NULL);
 		free(data_image);
 		free(machine_code);
 
@@ -136,7 +135,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						if (add_data_word(value, &data_size, &data_image) != EXIT_SUCCESS) {
 							/* Memory failure */
 							free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
-							close_mult_files(file_in, file_ob, NULL, NULL);
+							close_mult_files(file_in, NULL, NULL, NULL);
 
 							return EXIT_FAILURE;
 						}
@@ -152,7 +151,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					if (add_string_word(parsed_line.arguments[0], &data_size, &data_image) != EXIT_SUCCESS) {
 
 						/* Memory failure */
-						close_mult_files(file_in, file_ob, NULL, NULL);
+						close_mult_files(file_in, NULL, NULL, NULL);
 						free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
 
 						return EXIT_FAILURE;
@@ -202,7 +201,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				}
 
 				/* checking the amount of arguments */
-				current_error = check_arg_count(parsed_line.arguments, opcode_index);
+				current_error = check_arg_count(parsed_line.arguments, opcode_index, NO_ARG_COUNT);
 				if (current_error != SUCCESS_CODE) {
 					printerror("Argument Error found\n", line_count, current_error);
 					error_flag = TRUE;
@@ -234,10 +233,10 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	}
 
 	/* Stage 17 */
-	close_mult_files(file_in, file_ob, NULL, NULL);
+	close_mult_files(file_in, NULL, NULL, NULL);
 
 	/* Check if the program used too much memory */
-	if ((IC-100) + DC >= MAX_MEMORY) {
+	if ((IC - 100) + DC >= MAX_MEMORY) {
 		printerror("Too much memory", NO_LINE, OUT_OF_MEMORY);
 		error_flag = TRUE;
 	}
@@ -252,21 +251,24 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 	/* Stage 18 */
 	ICF = IC;
-	/* DCF = DC;  DCF unused rn*/
+	DCF = DC;
 
 	/* Stage 19 */
 	/* Update the symbol table with ICF for DATA symbols */
 	set_data_to_icf(&sym_table, ICF);
 
+	free_hashmap(mcro_tb, (void (*)(void *))free_macro);
+
 	/* start second pass */
+	second_pass(src_path, &sym_table, data_image, machine_code, machine_code_size, ICF, DCF);
 
 	/* free everything */
-	free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
+	free_everything(data_image, machine_code, machine_code_size, &sym_table, NULL, &parsed_line);
 
 	return SUCCESS_CODE;
 }
 
-int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
+int insert_symbol(char *name, int attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
 	Symbol *sym;
 
 	if (!attribute) {
@@ -288,7 +290,7 @@ int insert_symbol(char *name, char *attribute, int value, hashmap_t *sym_tb, has
 	}
 
 	sym->name = copy_string(name);
-	sym->attribute = copy_string(attribute);
+	sym->attribute = attribute;
 	sym->value = value;
 
 	insert(sym_tb, (void *)sym, name);
@@ -381,7 +383,7 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 		inst->src_register = 0;
 		inst->src_addressing = 0;
 	}
-	/* checking if the operation has a destionation argument */
+	/* checking if the operation has a destination argument */
 	if (OPCODES[index].is_dest) {
 		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->dest_register, &inst->dest_addressing);
 		if (return_code != SUCCESS_CODE) {
@@ -418,21 +420,21 @@ int find_in_opcode(char *string) {
 	return OPCODE_NOT_FOUND;
 }
 
-int check_arg_count(char **args, int index) {
-	int i;
+int check_arg_count(char **args, int index, int required_arg_count) {
+	int actual_arg_count = 0;
+	int expected_arg_count;
 
 	if (!args)
-		return 0;
-	/* Counting the amount of arguments given */
-	for (i = 0; args[i] != NULL; i++);
+		return FAIL_CODE;
 
-	/* Check if there are more operands than required */
-	if (i > OPCODES[index].args_num) return TOO_MANY_ARGS;
+	while (args[actual_arg_count]) actual_arg_count++;
 
-	/* Check if there are less operands than required */
-	if (i < OPCODES[index].args_num) return MISSING_ARGS;
+	/* Checking if an index is given, otherwise uses the given arg_count */
+	expected_arg_count = (index != NO_INDEX) ? OPCODES[index].args_num : required_arg_count;
 
-	/* The amount of operands is correct. */
+	if (actual_arg_count > expected_arg_count) return TOO_MANY_ARGS;
+	if (actual_arg_count < expected_arg_count) return MISSING_ARGS;
+
 	return SUCCESS_CODE;
 }
 
@@ -494,7 +496,7 @@ void set_data_to_icf(hashmap_t *sym_tb, int ICF) {
 
 			sym = (Symbol *)temp->value;
 
-			if (COMPARE_STR(sym->attribute, DATA)) {
+			if (sym->attribute == DATA) {
 				sym->value += ICF;
 			}
 		}
@@ -502,9 +504,6 @@ void set_data_to_icf(hashmap_t *sym_tb, int ICF) {
 }
 
 void free_symbol(Symbol *sym) {
-	if (sym->attribute != NULL) {
-		free(sym->attribute);
-	}
 	if (sym->name != NULL) {
 		free(sym->name);
 	}
@@ -513,6 +512,7 @@ void free_symbol(Symbol *sym) {
 
 int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr) {
 	int num;
+	
 	/* Check if the argument is a register */
 	if ((num = is_register(argument)) != FALSE) {
 		*reg = num;
@@ -559,8 +559,8 @@ void free_everything(int *data_image, FirstInstruction **machine_code, int machi
 
 /* debug method */
 void print_symbol(Symbol *sym) {
-	printf("Symbol Name: %s, Attribute: %s, Value: %d",
+	printf("Symbol Name: %s, Attribute: %d, Value: %d",
 		   sym->name ? sym->name : "NULL",
-		   sym->attribute ? sym->attribute : "NULL",
+		   sym->attribute ? sym->attribute : 999,
 		   sym->value);
 }
