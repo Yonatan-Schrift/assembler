@@ -1,6 +1,5 @@
 #include "../h/first_pass.h"
 #include "../h/file_funcs.h"
-#include "../h/globals.h"
 #include "../h/hashmap.h"
 #include "../h/line.h"
 #include "../h/pre_assembler.h"
@@ -364,7 +363,8 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 
 	/* L is the number of info-words */
 	inst->L = L;
-
+	inst->index = index;
+	
 	/* update the instruction based on the operations table. */
 	inst->funct = OPCODES[index].funct;
 	inst->are = ARE_ABSOLUTE;
@@ -373,7 +373,7 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	/* checking if the operation has a source argument */
 	if (OPCODES[index].is_source) {
 
-		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->src_register, &inst->src_addressing);
+		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->src_register, &inst->src_addressing, &inst->src_operand, &inst->immediate_value);
 		if (return_code != SUCCESS_CODE) {
 			free(inst);
 			return TRUE;
@@ -385,7 +385,7 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	}
 	/* checking if the operation has a destination argument */
 	if (OPCODES[index].is_dest) {
-		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->dest_register, &inst->dest_addressing);
+		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->dest_register, &inst->dest_addressing, &inst->dest_operand, &inst->immediate_value);
 		if (return_code != SUCCESS_CODE) {
 			free(inst);
 			return TRUE;
@@ -510,7 +510,7 @@ void free_symbol(Symbol *sym) {
 	free(sym);
 }
 
-int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr) {
+int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr, char **operand, int *value) {
 	int num;
 	
 	/* Check if the argument is a register */
@@ -527,6 +527,23 @@ int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, 
 			return FAIL_CODE;
 		}
 		*addr = num;
+
+		/* Check which addressing method is used for the operand */
+		switch (num) {
+			case IMMEDIATE:
+				*value = atoi(argument);
+				operand = NULL;
+				break;
+			case RELATIVE:
+				*operand = copy_string(argument);
+				value = 0;
+				break;
+			case DIRECT:
+				*operand = copy_string(argument);
+				value = 0;
+				break;
+		}
+
 		return SUCCESS_CODE;
 	}
 }

@@ -9,6 +9,7 @@
 
 /* Memory Limit - 2^21 */
 #define MAX_MEMORY 2097152
+#define OPERATION_COUNT 16
 
 #define TRUE 1
 #define FALSE 0
@@ -19,6 +20,6 @@
 #define INSTRUCTIONS {".data", ".string", ".extern", ".entry", NULL}
 #define REGISTERS {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", NULL}
 
-#define REGISTER_COUNT 8
+
 
 #endif /* GLOBALS_H */

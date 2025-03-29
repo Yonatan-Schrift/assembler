@@ -77,17 +77,11 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, FirstInstruc
 					continue;
 				}
 			}
-
-			
-		}
-		if (error_flag) {
-			free_everything(data_image, machine_code, machine_code_size, sym_tb, NULL, &parsed_line);
 		}
 
 		/* finish the binary coding */
 		for (i = 0; i < machine_code_size; i++) {
-			binary_code = build_binary_instruction(NULL, NULL, NULL);
-			fprintf(file_ob, "%06X\n", binary_code);
+			binary_code = build_binary_instruction(machine_code[i], sym_tb, file_ob);
 		}
 	}
 
@@ -95,7 +89,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, FirstInstruc
 	if (error_flag == TRUE) {
 		printf("\n\n>>> ERRORS WERE FOUND DURING THE SECOND PASS!\n\n");
 
-		/* Need to free every thing that we used */
+		free_everything(data_image, machine_code, machine_code_size, sym_tb, NULL, &parsed_line);
 
 		return FAIL_CODE;
 	}
@@ -117,14 +111,15 @@ int build_instruction_word(int opcode, int source_addressing, int source_registe
 	return instruction;
 }
 
-int build_info_word(int address, int addressing_method, int type) {
+int build_info_word(int value, int addressing_method, int type) {
 	int info_word = 0, ARE;
 
-	info_word = (address << 3);
+	info_word = (value << 3);
 
 	switch (addressing_method) {
 	case IMMEDIATE:
 		ARE = ARE_ABSOLUTE; /*  (A=1, R=0, E=0) */
+
 		break;
 	case DIRECT:
 		ARE = (type == EXTERNAL) ? ARE_EXTERNAL : ARE_RELOCATEABLE; /* 001 for external addresses, 010 for internal addresses */
@@ -142,27 +137,39 @@ int build_info_word(int address, int addressing_method, int type) {
 	return info_word;
 }
 
-int build_binary_instruction(FirstInstruction *machine_code_line, hashmap_t *sym_tb, FILE *file_ob) {
-	int word, i;
-	/* 	int opcode;
-	int src_addressing;
-	int src_register;
-	int dest_addressing;
-	int dest_register;
-	int funct;
-	int are;
-	int L; */
+int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *file_ob) {
+	int word, value, type;
+	Symbol *sym;
+
+	if (!code || !sym_tb || !file_ob) return FAIL_CODE;
 
 	/* Building the first word */
-	word = build_instruction_word(machine_code_line->opcode, machine_code_line->src_addressing,
-								  machine_code_line->src_register, machine_code_line->dest_addressing,
-								  machine_code_line->dest_register, machine_code_line->funct, machine_code_line->are);
+	word = build_instruction_word(code->opcode, code->src_addressing,
+								  code->src_register, code->dest_addressing,
+								  code->dest_register, code->funct, code->are);
 
 	fprintf(file_ob, "%06X\n", word);
 
-	for(i = 0; i <= machine_code_line->L; i++) {
-		build_info_word();
+	/* Checking that there's a source operand and that it needs another info-word */
+	if (OPCODES[code->index].is_source && code->src_addressing != REGISTER_DIRECT) {
+		/* Checking if the source is a symbol */
+		if (code->src_operand) {
+			sym = (Symbol *)lookup(sym_tb, code->src_operand);
+			if (!sym) return SYMBOL_NOT_FOUND;
+
+			value = sym->value;
+			type = sym->attribute;
+		}
+		/* Otherwise the source is immedi */
+		else if(code){
+			value = code->immediate_value;
+			type = IMMEDIATE;
+		}
 	}
+
+	word = build_info_word(value, code->src_addressing, type);
+
+	fprintf(file_ob, "%06X\n", word);
 
 	return SUCCESS_CODE;
 }

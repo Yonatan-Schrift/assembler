@@ -27,6 +27,7 @@
 #define OUT_OF_MEMORY -16
 #define EMPTY_LABEL -17
 #define ENTRY_SYMBOL_NOT_FOUND -18
+#define SYMBOL_NOT_FOUND -19
 
 #define NO_FILES -20
 #define NO_ARG_COUNT -24

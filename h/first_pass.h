@@ -3,6 +3,7 @@
 
 #include "hashmap.h"
 #include "line.h"
+#include "globals.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,8 +39,11 @@ typedef struct FirstInstruction {
 	int funct;
 	int are;
 	
-	int L;
-	char *src_sym;
+	int L; /* useless */
+	int index;           /* The index inside the op-codes array */
+	char *src_operand;   /* if a symbol, the name of the symbol */
+	char *dest_operand;  /* if a symbol, the name of the symbol */
+	int immediate_value; /* if immediate addressing is used */
 } FirstInstruction;
 
 typedef struct op_code {
@@ -58,6 +62,9 @@ typedef struct Symbol {
 	int attribute;
 	int value;
 } Symbol;
+
+/* Declaring the OPCODES array - 16 for the number of operations*/
+const op_code OPCODES[OPERATION_COUNT];
 
 int first_pass(char *file_path, hashmap_t *mcro_tb);
 
@@ -128,10 +135,12 @@ void free_symbol(Symbol *sym);
  * @param line_num Current line number in the assembly source file
  * @param reg Pointer to store register number (if applicable, otherwise 0)
  * @param addr Pointer to store addressing method code or error code
- *
+ * @param operand Pointer to store the operand name if a symbol
+ * @param value Pointer to store value if immidiete
+ * 
  * @return SUCCESS_CODE if processing was successful, FAIL_CODE if an error occurred
  */
-int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr);
+int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr, char **operand, int *value);
 
 void free_everything(int *data_image, FirstInstruction **machine_code, int machine_code_size, hashmap_t *sym_table, hashmap_t *mcro_tb, Line *line);
 
