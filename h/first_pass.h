@@ -1,15 +1,16 @@
 #ifndef FIRST_PASS_H
 #define FIRST_PASS_H
 
+#include "globals.h"
 #include "hashmap.h"
 #include "line.h"
-#include "globals.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+/* Types of symbol, starting from 10 to differ from other values */
 enum SymbolType {
-	DATA,
+	DATA = 10,
 	CODE,
 	EXTERNAL,
 	ENTRY
@@ -19,7 +20,6 @@ enum SymbolType {
 #define DIRECT 1
 #define RELATIVE 2
 #define REGISTER_DIRECT 3
-
 
 #define ARE_ABSOLUTE 4
 #define ARE_EXTERNAL 1
@@ -38,11 +38,11 @@ typedef struct FirstInstruction {
 	int dest_register;
 	int funct;
 	int are;
-	
-	int L; /* useless */
-	int index;           /* The index inside the op-codes array */
-	char *src_operand;   /* if a symbol, the name of the symbol */
-	char *dest_operand;  /* if a symbol, the name of the symbol */
+
+	int L;				 /* useless */
+	int index;			 /* The index inside the op-codes array */
+	char *src_operand;	 /* if a symbol, the name of the symbol */
+	char *dest_operand;	 /* if a symbol, the name of the symbol */
 	int immediate_value; /* if immediate addressing is used */
 } FirstInstruction;
 
@@ -137,7 +137,7 @@ void free_symbol(Symbol *sym);
  * @param addr Pointer to store addressing method code or error code
  * @param operand Pointer to store the operand name if a symbol
  * @param value Pointer to store value if immidiete
- * 
+ *
  * @return SUCCESS_CODE if processing was successful, FAIL_CODE if an error occurred
  */
 int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr, char **operand, int *value);

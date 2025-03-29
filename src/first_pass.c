@@ -88,7 +88,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 
 		/* Read a line from the source */
-		/* printf("Read line is: %d:%s\n", IC + DC, line); */ /* debug line */
+		printf("Read line is: %d : %s\n", IC + DC, line); /* debug line */
 
 		/* Skips the line if it's empty */
 		if (isEmpty(line) == TRUE) {
@@ -161,9 +161,15 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			/* Stages 8-10 */
 			/* check if the instruction is an entry or extern variable */
 			else if (IS_ENTRY_OR_EXTERN(parsed_line.command)) {
+				current_error = check_arg_count(parsed_line.arguments, NO_INDEX, REQUIRED_ARGS_FOR_DIRECTIVE);
+				if (current_error) {
+					printerror("current error", line_count, current_error);
+					error_flag = TRUE;
+					continue;
+				}
 				if (COMPARE_STR(parsed_line.command, ".extern")) {
 					/* Is '.extern' instruction */
-					current_error = insert_symbol(parsed_line.label, EXTERNAL, 0, &sym_table, mcro_tb);
+					current_error = insert_symbol(parsed_line.arguments[0], EXTERNAL, 0, &sym_table, mcro_tb);
 
 					if (current_error != SUCCESS_CODE) {
 						printerror("IF_ERROR", line_count, current_error);
@@ -259,7 +265,8 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	free_hashmap(mcro_tb, (void (*)(void *))free_macro);
 
 	/* start second pass */
-	second_pass(src_path, &sym_table, data_image, machine_code, machine_code_size, ICF, DCF);
+	printf(">>> Finished first pass successfuly \n\n");
+	second_pass(src_path, &sym_table, data_image, data_size, machine_code, machine_code_size, ICF, DCF);
 
 	/* free everything */
 	free_everything(data_image, machine_code, machine_code_size, &sym_table, NULL, &parsed_line);
@@ -270,10 +277,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 int insert_symbol(char *name, int attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
 	Symbol *sym;
 
-	if (!attribute) {
-		/* Missing values for the symbol */
-		return MISSING_SYMBOL_VALUES;
-	}
 	if (lookup(sym_tb, name)) {
 		/* Checks if a symbol is defined twice */
 		return SYMBOL_ALREADY_EXISTS;
@@ -364,11 +367,15 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	/* L is the number of info-words */
 	inst->L = L;
 	inst->index = index;
-	
+
 	/* update the instruction based on the operations table. */
 	inst->funct = OPCODES[index].funct;
 	inst->are = ARE_ABSOLUTE;
 	inst->opcode = OPCODES[index].opcode;
+
+	/* initiallizing the operands */
+	inst->dest_operand = NULL;
+	inst->src_operand = NULL;
 
 	/* checking if the operation has a source argument */
 	if (OPCODES[index].is_source) {
@@ -512,7 +519,7 @@ void free_symbol(Symbol *sym) {
 
 int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr, char **operand, int *value) {
 	int num;
-	
+
 	/* Check if the argument is a register */
 	if ((num = is_register(argument)) != FALSE) {
 		*reg = num;
@@ -530,18 +537,18 @@ int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, 
 
 		/* Check which addressing method is used for the operand */
 		switch (num) {
-			case IMMEDIATE:
-				*value = atoi(argument);
-				operand = NULL;
-				break;
-			case RELATIVE:
-				*operand = copy_string(argument);
-				value = 0;
-				break;
-			case DIRECT:
-				*operand = copy_string(argument);
-				value = 0;
-				break;
+		case IMMEDIATE:
+			*value = atoi(argument + 1); /* +1 to skip '#' */
+			operand = NULL;
+			break;
+		case RELATIVE:
+			*operand = copy_string((argument + 1)); /* +1 to skip '&' */
+			value = 0;
+			break;
+		case DIRECT:
+			*operand = copy_string(argument);
+			value = 0;
+			break;
 		}
 
 		return SUCCESS_CODE;

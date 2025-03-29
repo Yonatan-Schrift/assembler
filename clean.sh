@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script deletes all files with the extensions: .am, .as, .ob, .ext, and .ent
+# This script deletes all files with the extensions: .am, .ob, .ext, and .ent
 # Use with caution!
 
 echo "Cleaning everything"

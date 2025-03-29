@@ -204,3 +204,16 @@ char *clean_arg(char *arg) {
 	output[j] = '\0'; /* Null-terminate the output string */
 	return output;
 }
+
+void remove_special_chars(char *str) {
+	char *dst = str; /* Destination pointer */
+
+	while (*str) {
+		if (isalnum(*str) || isspace(*str) || *str == '_') {
+			*dst++ = *str;
+		}
+		str++;
+	}
+	/* Null-terminate the modified string. */
+	*dst = '\0';
+}

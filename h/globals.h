@@ -16,6 +16,9 @@
 
 #define STRCMP_SUCCESS 0
 
+#define NO_ARG_COUNT 999
+#define NO_INDEX 998
+
 #define OP_NAMES {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc", "dec", "jmp", "bne", "jsr", "red", "prn", "rts", "stop", NULL}
 #define INSTRUCTIONS {".data", ".string", ".extern", ".entry", NULL}
 #define REGISTERS {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", NULL}

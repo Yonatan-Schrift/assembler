@@ -20,6 +20,12 @@ void printerror(const char *message, int line_num, int error_code) {
         case MACRO_ALREADY_EXISTS:
             error_msg = "Macro already exists";
             break;
+        case FILE_INCLUDES_EXTENSION:
+            error_msg = "File includes an extension, the input should not have an extension";
+            break;
+        case COULD_NOT_OPEN_FILE:
+            error_msg = "Could not open the file, check that it exists";
+            break;
         case NOT_ALLOWED_MACRO_NAME:
             error_msg = "Not allowed macro name";
             break;
@@ -38,17 +44,20 @@ void printerror(const char *message, int line_num, int error_code) {
         case NOT_A_LABEL:
             error_msg = "Not a valid label";
             break;
-        case NO_FILES:
-            error_msg = "No files provided";
-            break;
-        case COULD_NOT_OPEN_FILE:
-            error_msg = "Could not open the file, check that it exists";
-            break;
-        case FILE_INCLUDES_EXTENSION:
-            error_msg = "File includes an extension, the input should not have an extension";
+        case OUT_OF_MEMORY:
+            error_msg = "Out of memory";
             break;
         case EMPTY_LABEL:
             error_msg = "Empty label is not allowed";
+            break;
+        case ENTRY_SYMBOL_NOT_FOUND:
+            error_msg = "Entry symbol not found";
+            break;
+        case SYMBOL_NOT_FOUND_DURING_BUILD:
+            error_msg = "Symbol not found during build";
+            break;
+        case NO_FILES:
+            error_msg = "No files provided";
             break;
         default:
             error_msg = "Unknown error";
