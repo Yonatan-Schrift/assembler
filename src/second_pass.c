@@ -88,7 +88,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 		return FAIL_CODE;
 	}
 
-	/* building the machine code (object file) */
+	/* writing the machine code into the object file */
 	for (i = 0; i < machine_code_size; i++) {
 		ic = i + 100;
 		current_error = build_binary_instruction(machine_code[i], sym_tb, file_ob, &ic);
@@ -98,14 +98,15 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 			continue;
 		}
 	}
-	for(i = 0, ic = ICF; i < DCF ; i++) {
+	/* writing the data image into the object file */
+	for (i = 0, ic = ICF; i < DCF; i++) {
 		ic = ICF + i;
-		
+
 		fprintf(file_ob, "%07d %06x\n", ic, data_image[i] & 0xFFFFFF);
 	}
 
 	if (error_flag == TRUE) {
-
+		/* needs to continue */
 	}
 
 	free_line(&parsed_line);
