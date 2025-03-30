@@ -105,8 +105,24 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 		fprintf(file_ob, "%07d %06x\n", ic, data_image[i] & 0xFFFFFF);
 	}
 
+	for (i = 0; i < sym_tb->size; i++){
+		sym = sym_tb->table[i]->value;
+		if (sym->attribute == ENTRY){
+			fprintf(file_ent, "%s %d\n", sym->name, sym->value);
+		}
+	}
+	
+	/* helpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp*/
+
+	for (i = 0; i < sym_tb->size; i++){
+		sym = sym_tb->table[i]->value;
+		if (sym->attribute == EXTERNAL){
+			fprintf(file_ext, "%s %d\n", sym->name, sym->value);
+		}
+	}
+
 	if (error_flag == TRUE) {
-		/* needs to continue */
+		/* need to continue */
 	}
 
 	free_line(&parsed_line);
