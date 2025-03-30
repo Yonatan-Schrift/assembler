@@ -13,7 +13,8 @@ enum SymbolType {
 	DATA = 10,
 	CODE,
 	EXTERNAL,
-	ENTRY
+	ENTRY,
+	NO_ATTR
 };
 
 #define IMMEDIATE 0
@@ -59,6 +60,7 @@ typedef struct op_code {
 
 typedef struct Symbol {
 	char *name;
+	int entry_or_extern;
 	int attribute;
 	int value;
 } Symbol;
@@ -68,7 +70,7 @@ const op_code OPCODES[OPERATION_COUNT];
 
 int first_pass(char *file_path, hashmap_t *mcro_tb);
 
-int insert_symbol(char *name, int attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb);
+int insert_symbol(char *name, int attribute, int is_ext, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb);
 
 int add_data_word(int value, int *data_cap, int **data_image);
 
@@ -145,5 +147,7 @@ int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, 
 void free_everything(int *data_image, FirstInstruction **machine_code, int machine_code_size, hashmap_t *sym_table, hashmap_t *mcro_tb, Line *line);
 
 void print_symbol(Symbol *sym);
+
+int compare_symbols_by_value(const void *a, const void *b);
 
 #endif /* FIRST_PASS_H */

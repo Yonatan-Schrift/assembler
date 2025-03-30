@@ -70,7 +70,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 				}
 
 				if ((sym = (Symbol *)lookup(sym_tb, parsed_line.arguments[0]))) {
-					sym->attribute = ENTRY; /* setting the attribute to ENTRY */
+					sym->entry_or_extern = ENTRY; /* setting the attribute to ENTRY */
 				} else {
 					printerror("Symbol not found", line_count, ENTRY_SYMBOL_NOT_FOUND);
 					error_flag = TRUE;
@@ -83,7 +83,6 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 	if (error_flag == TRUE) {
 		printf("\n\n>>> ERRORS WERE FOUND DURING THE SECOND PASS!\n\n");
 
-		free_everything(data_image, machine_code, machine_code_size, sym_tb, NULL, &parsed_line);
 
 		return FAIL_CODE;
 	}
@@ -91,7 +90,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 	/* writing the machine code into the object file */
 	for (i = 0; i < machine_code_size; i++) {
 		ic = i + 100;
-		current_error = build_binary_instruction(machine_code[i], sym_tb, file_ob, &ic);
+		current_error = build_binary_instruction(machine_code[i], sym_tb, file_ob, file_ent, file_ext, &ic);
 		if (current_error) {
 			printerror("current error", ic, current_error);
 			error_flag = TRUE;
@@ -105,27 +104,20 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 		fprintf(file_ob, "%07d %06x\n", ic, data_image[i] & 0xFFFFFF);
 	}
 
-	for (i = 0; i < sym_tb->size; i++){
-		sym = sym_tb->table[i]->value;
-		if (sym->attribute == ENTRY){
-			fprintf(file_ent, "%s %d\n", sym->name, sym->value);
-		}
-	}
-	
-	/* helpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp*/
-
-	for (i = 0; i < sym_tb->size; i++){
-		sym = sym_tb->table[i]->value;
-		if (sym->attribute == EXTERNAL){
-			fprintf(file_ext, "%s %d\n", sym->name, sym->value);
-		}
-	}
+	write_symbols_to_files(sym_tb, file_ent, file_ext);
 
 	if (error_flag == TRUE) {
-		/* need to continue */
+		printf("\n\n>>> ERRORS WERE FOUND DURING THE SECOND PASS!\n\n");
+		
+		delete_mult_files(src_path, ".ob", ".ent", ".ext");
+
+		return FAIL_CODE;
 	}
 
-	free_line(&parsed_line);
+	/* Checking if the output files are empty and removing them if so */
+	delete_if_empty(file_ent, src_path, ".ent");
+	delete_if_empty(file_ext, src_path, ".ext");
+	delete_if_empty(file_ob, src_path, ".ob");	
 
 	return EXIT_SUCCESS;
 }
@@ -170,8 +162,8 @@ int build_info_word(int value, int addressing_method, int type) {
 	return info_word;
 }
 
-int process_operand(char *operand, int addressing, int immediate_value, hashmap_t *sym_tb, FILE *file_ob, int *ic) {
-	int value, type, word;
+int process_operand(char *operand, int addressing, int immediate_value, hashmap_t *sym_tb, FILE *file_ob, int *ic, FILE *file_ent, FILE *file_ext) {
+	int value, type = NO_ATTR, word;
 	Symbol *sym;
 
 	if (operand) {
@@ -181,22 +173,30 @@ int process_operand(char *operand, int addressing, int immediate_value, hashmap_
 			return SYMBOL_NOT_FOUND_DURING_BUILD;
 		}
 		value = sym->value;
-		type = sym->attribute;
+		type = sym->entry_or_extern;
 	} else {
 		/* Use immediate value if no symbol is provided */
 		value = immediate_value;
-		type = IMMEDIATE;
+		addressing = IMMEDIATE;
 	}
+	/* Specific check for relative adressing */
 	if (addressing == RELATIVE) {
 		value = (value - (*ic - 1)); /* removing 1 from ic to return to the instruction's adress */
 	}
+
+	/* writing into the externs file */
+	if (type == EXTERNAL) {
+		fprintf(file_ext, "%s %07d\n", operand, *ic);
+		fflush(file_ext);
+	}
+
 	word = build_info_word(value, addressing, type);
 	fprintf(file_ob, "%07d %06x\n", *ic, word & 0xFFFFFF);
 	fflush(file_ob);
 	return SUCCESS_CODE;
 }
 
-int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *file_ob, int *ic) {
+int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *file_ob, FILE *file_ent, FILE *file_ext, int *ic) {
 	int word, ret;
 
 	if (!sym_tb || !file_ob) return FAIL_CODE;
@@ -213,7 +213,7 @@ int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *fi
 	/* Process source operand if required */
 	if (OPCODES[code->index].is_source && code->src_addressing != REGISTER_DIRECT) {
 		(*ic)++;
-		ret = process_operand(code->src_operand, code->src_addressing, code->immediate_value, sym_tb, file_ob, ic);
+		ret = process_operand(code->src_operand, code->src_addressing, code->immediate_value, sym_tb, file_ob, ic, file_ent, file_ext);
 		if (ret != SUCCESS_CODE)
 			return ret;
 	}
@@ -221,10 +221,55 @@ int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *fi
 	/* Process destination operand if required */
 	if (OPCODES[code->index].is_dest && code->dest_addressing != REGISTER_DIRECT) {
 		(*ic)++;
-		ret = process_operand(code->dest_operand, code->dest_addressing, code->immediate_value, sym_tb, file_ob, ic);
+		ret = process_operand(code->dest_operand, code->dest_addressing, code->immediate_value, sym_tb, file_ob, ic, file_ent, file_ext);
 		if (ret != SUCCESS_CODE)
 			return ret;
 	}
 
 	return SUCCESS_CODE;
+}
+
+void write_symbols_to_files(hashmap_t *sym_tb, FILE *file_ent, FILE *file_ext) {
+	int i;
+	int capacity = 128;
+	int count = 0;
+	Symbol **symbols, *sym;
+	HashNode *node;
+
+	if (!sym_tb) return;
+
+	symbols = malloc(capacity * sizeof(Symbol *));
+	if (!symbols) {
+		printf(" !!! Memory error when writing the entry file !!! \n");
+		return;
+	}
+
+	/* Collect all Symbol* pointers into array */
+	for (i = 0; i < sym_tb->size; i++) {
+		node = sym_tb->table[i];
+		while (node) {
+			if (count == capacity) {
+				capacity *= 2;
+				symbols = realloc(symbols, capacity * sizeof(Symbol *));
+				if (!symbols) {
+					printf(" !!! Memory error when writing the entry file !!! \n");
+					return;
+				}
+			}
+			symbols[count++] = (Symbol *)node->value;
+			node = node->next;
+		}
+	}
+
+	/* Sort by symbol value */
+	qsort(symbols, count, sizeof(Symbol *), compare_symbols_by_value);
+
+	/* Write sorted symbols */
+	for (i = 0; i < count; i++) {
+		sym = symbols[i];
+		if (sym->entry_or_extern == ENTRY) {
+			fprintf(file_ent, "%s %d\n", sym->name, sym->value);
+		}
+	}
+	free(symbols);
 }

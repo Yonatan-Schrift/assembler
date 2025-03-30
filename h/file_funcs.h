@@ -18,4 +18,10 @@ char *find_extension(const char *filename);
 
 void close_mult_files(FILE *file1, FILE *file2, FILE *file3, FILE *file4);
 
+
+void delete_mult_files(char *base_file_path, char *ext1, char *ext2, char *ext3);
+
+int is_file_empty(FILE *fp);
+
+void delete_if_empty(FILE *fp, char *src_path, char *extension);
 #endif /* FILE_FUNCS_H */

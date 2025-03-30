@@ -88,7 +88,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 
 		/* Read a line from the source */
-		printf("Read line is: %d : %s\n", IC + DC, line); /* debug line */
+		/* printf("Read line is: %d : %s\n", IC + DC, line);  DEBUG */
 
 		/* Skips the line if it's empty */
 		if (isEmpty(line) == TRUE) {
@@ -111,7 +111,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			/* check if the instruction stores data in the memory */
 			if (IS_STORE_INST(parsed_line.command)) {
 				if (is_symbol) {
-					current_error = insert_symbol(parsed_line.label, DATA, DC, &sym_table, mcro_tb);
+					current_error = insert_symbol(parsed_line.label, DATA, FALSE, DC, &sym_table, mcro_tb);
 
 					if (current_error != SUCCESS_CODE) {
 						printerror("IF_ERROR", line_count, current_error);
@@ -169,7 +169,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				}
 				if (COMPARE_STR(parsed_line.command, ".extern")) {
 					/* Is '.extern' instruction */
-					current_error = insert_symbol(parsed_line.arguments[0], EXTERNAL, 0, &sym_table, mcro_tb);
+					current_error = insert_symbol(parsed_line.arguments[0], NO_ATTR, EXTERNAL, 0, &sym_table, mcro_tb); /* probl */
 
 					if (current_error != SUCCESS_CODE) {
 						printerror("IF_ERROR", line_count, current_error);
@@ -188,7 +188,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			/* Is an instructive statement */
 			else {
 				if (is_symbol) {
-					current_error = insert_symbol(parsed_line.label, CODE, IC, &sym_table, mcro_tb);
+					current_error = insert_symbol(parsed_line.label, CODE, FALSE, IC, &sym_table, mcro_tb);
 					if (current_error != SUCCESS_CODE) {
 						printerror("SYMBOL ERROR\n", line_count, current_error);
 						error_flag = TRUE;
@@ -274,7 +274,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	return SUCCESS_CODE;
 }
 
-int insert_symbol(char *name, int attribute, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
+int insert_symbol(char *name, int attribute, int is_ext, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
 	Symbol *sym;
 
 	if (lookup(sym_tb, name)) {
@@ -290,6 +290,8 @@ int insert_symbol(char *name, int attribute, int value, hashmap_t *sym_tb, hashm
 	if (!sym) {
 		return EXIT_FAILURE;
 	}
+
+	sym->entry_or_extern = is_ext;
 
 	sym->name = copy_string(name);
 	sym->attribute = attribute;
@@ -579,6 +581,12 @@ void free_everything(int *data_image, FirstInstruction **machine_code, int machi
 
 	if (line)
 		free_line(line);
+}
+
+int compare_symbols_by_value(const void *a, const void *b) {
+    Symbol *sym_a = *(Symbol **)a;
+    Symbol *sym_b = *(Symbol **)b;
+    return sym_a->value - sym_b->value;
 }
 
 /* debug method */
