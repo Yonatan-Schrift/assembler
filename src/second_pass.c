@@ -119,6 +119,8 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 	delete_if_empty(file_ext, src_path, ".ext");
 	delete_if_empty(file_ob, src_path, ".ob");	
 
+	free_line(&parsed_line);
+	
 	return EXIT_SUCCESS;
 }
 

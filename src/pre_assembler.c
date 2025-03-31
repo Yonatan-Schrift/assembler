@@ -7,7 +7,7 @@
 
 int pre_comp(char *src_path, hashmap_t *mcro_table) {
 	char line[MAX_LINE_LENGTH + 2], *name;
-	int error_flag = FALSE, read_line_err_flag = FALSE, is_error_string, line_count = 0;
+	int error_flag = FALSE, current_error = FALSE, line_count = 0;
 	FILE *file_in, *file_out;
 	Macro *mcro;
 	Macro *lookup_result;
@@ -20,16 +20,16 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 	file_out = open_file(src_path, ".am", WRITE_MODE);
 
 	if (!file_in || !file_out) {
+		delete_mult_files(src_path, ".as", ".am", NULL);
 		free_hashmap(mcro_table, (void (*)(void *))free_macro);
 		return FAIL_CODE;
 	}
 
-	while ((read_line_err_flag = read_line(file_in, line)) != EXIT_FAILURE) {
+	while ((current_error = read_line(file_in, line)) != EXIT_FAILURE) {
 		line_count++;
-		/* printf("Read line: %s\n", line); */
 
-		if (read_line_err_flag < EXIT_SUCCESS) {
-			printerror("ERROR", line_count, read_line_err_flag);
+		if (current_error < EXIT_SUCCESS) {
+			printerror("ERROR", line_count, current_error);
 			continue;
 		}
 
@@ -45,20 +45,16 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		init_macro(mcro);
 
 		/* Check for a macro definition */
-		if (parse_macro(line, &line_count, file_in, mcro) == EXIT_SUCCESS) {
-			is_error_string = (strcmp(mcro->name, ERROR_STRING) == STRCMP_SUCCESS);
+		if ((current_error = parse_macro(line, &line_count, file_in, mcro)) == EXIT_SUCCESS) {
+			
 
-			if (is_error_string) {
-				error_flag = TRUE;
-				free_macro(mcro);
-			} else {
 				if (lookup(mcro_table, mcro->name) != NULL) {
 					error_flag = TRUE;
 					printerror("ERROR\n", line_count, MACRO_ALREADY_EXISTS);
 				}
 				insert(mcro_table, (void *)mcro, mcro->name);
-			}
-		}
+			
+		} else ()
 		/* Check for a macro usage*/
 		else if ((name = find_macro(line, mcro_table))) {
 			free_macro(mcro);
@@ -91,7 +87,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		return EXIT_FAILURE;
 	}
 
-	printf("\n\nPRECOMPILE SUCCESS\n\n");
+	printf("\n\n>>> Finished precompiling successfully\n\n");
 	return SUCCESS_CODE;
 }
 
@@ -122,7 +118,7 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 		free(macro_body);
 		free_line(&line);
 
-		mcro->name = ERROR_STRING;
+		mcro->name = NULL;
 		return NOT_ALLOWED_MACRO_NAME;
 	}
 
@@ -179,5 +175,5 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 	free_line(&line);
 
 	mcro->body = macro_body;
-	return EXIT_SUCCESS;
+	return FALSE; /* No error */
 }

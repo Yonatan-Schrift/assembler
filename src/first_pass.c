@@ -239,7 +239,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 	/* Stage 17 */
 	close_mult_files(file_in, NULL, NULL, NULL);
-
+	
 	/* Check if the program used too much memory */
 	if ((IC - 100) + DC >= MAX_MEMORY) {
 		printerror("Too much memory", NO_LINE, OUT_OF_MEMORY);
@@ -265,7 +265,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	free_hashmap(mcro_tb, (void (*)(void *))free_macro);
 
 	/* start second pass */
-	printf(">>> Finished first pass successfuly \n\n");
+	printf(">>> Finished first pass successfully \n\n");
 	second_pass(src_path, &sym_table, data_image, data_size, machine_code, machine_code_size, ICF, DCF);
 
 	/* free everything */

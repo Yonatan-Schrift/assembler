@@ -66,7 +66,7 @@ typedef struct Symbol {
 } Symbol;
 
 /* Declaring the OPCODES array - 16 for the number of operations*/
-const op_code OPCODES[OPERATION_COUNT];
+extern const op_code OPCODES[OPERATION_COUNT];
 
 int first_pass(char *file_path, hashmap_t *mcro_tb);
 

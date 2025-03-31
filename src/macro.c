@@ -13,6 +13,10 @@ int is_valid_macro_name(char *name) {
 	if (!name || !(*name)) /* Check if name is not NULL or empty */
 		return FALSE;
 
+	/* Check if the name is a reserved name */
+	if(is_op_name(name) == FALSE || is_register(name) == FALSE || is_instruction(name) == FALSE) 
+		return FALSE;
+	
 	if (isalpha(*name) == FALSE && *name != '_') /* Check if the first character is alphabetic or underscore */
 		return FALSE;
 
@@ -25,8 +29,8 @@ int is_valid_macro_name(char *name) {
 		name++;
 	}
 
-	/* Check if the name is a reserved name */
-	return !(is_op_name(name) && is_register(name) && is_instruction(name));
+	
+	return TRUE;
 }
 
 char *is_macro_start(char *input, Line *line) {
@@ -74,9 +78,18 @@ char *find_macro(char *input, hashmap_t *map) {
 }
 
 void free_macro(Macro *mcro) {
-	if (mcro->name)
-		free(mcro->name);
-	if (mcro->body)
-		free(mcro->body);
-	free(mcro);
+    if (!mcro) return;  
+
+    if (mcro->name) {
+        free(mcro->name);
+        mcro->name = NULL;
+    }	
+
+    if (mcro->body) {
+        free(mcro->body);
+        mcro->body = NULL;
+    }
+
+    free(mcro);
 }
+
