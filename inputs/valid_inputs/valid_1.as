@@ -1,6 +1,6 @@
-MS1:.string "Lets test"
+MS1: .string "Lets test"
 
-LENGTH:.data  6,-9,15
+LENGTH: .data  6,-9,15
 
     .extern Test
 

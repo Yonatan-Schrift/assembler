@@ -17,8 +17,10 @@
 #define MACRO_ALREADY_EXISTS -5
 #define FILE_INCLUDES_EXTENSION -6
 #define COULD_NOT_OPEN_FILE -7
+#define MACRO_NAME_TOO_LONG -8
+#define NAME_DOESNT_START_WITH_LETTER -9
 
-#define NOT_ALLOWED_MACRO_NAME -10
+#define RESERVED_MACRO_NAME -10
 #define SYMBOL_ALREADY_EXISTS -11
 #define SYMBOL_IS_MACRO -12
 #define MISSING_SYMBOL_VALUES -13
@@ -30,8 +32,8 @@
 #define SYMBOL_NOT_FOUND_DURING_BUILD -19
 
 #define NO_FILES -20
-
-
+#define MACRO_USING_UNALLOWED_LETTERS -21
+#define MISSING_COMMA -22
 
 /* Print an error message and continue execution. */
 void printerror(const char *message, int line_num, int error_code);

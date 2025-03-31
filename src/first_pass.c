@@ -34,11 +34,11 @@ int IC;
 int DC;
 
 int first_pass(char *src_path, hashmap_t *mcro_tb) {
-	char line[MAX_LINE_LENGTH + 1];
+	char line[MAX_LINE_LENGTH + 1], *last_arg;
 	FILE *file_in;
 	Line parsed_line;
 	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
-	int line_count = 0, i, value, opcode_index, L;
+	int line_count = 0, i, value, opcode_index, L, ret;
 	hashmap_t sym_table;
 	int data_size, *data_image, machine_code_size;
 	FirstInstruction **machine_code;
@@ -143,8 +143,13 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 				else {
 					/* is '.string' instruction */
-					if (string_array_len(parsed_line.arguments) != 1) {
-						printerror("TOO_MANY_ARGUMENTS", line_count, TOO_MANY_ARGS);
+					if ((ret = string_array_len(parsed_line.arguments)) != 1) {
+						last_arg = parsed_line.arguments[ret - 1];
+						/* Checking if the string is missing a closing quote*/
+						if (last_arg[strlen(last_arg)] != '"')
+							printerror("MISSING COMMA", line_count, MISSING_COMMA);
+						else
+							printerror("TOO_MANY_ARGUMENTS", line_count, TOO_MANY_ARGS);
 						error_flag = TRUE;
 					}
 					if (add_string_word(parsed_line.arguments[0], &data_size, &data_image) != EXIT_SUCCESS) {
@@ -239,7 +244,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 	/* Stage 17 */
 	close_mult_files(file_in, NULL, NULL, NULL);
-	
+
 	/* Check if the program used too much memory */
 	if ((IC - 100) + DC >= MAX_MEMORY) {
 		printerror("Too much memory", NO_LINE, OUT_OF_MEMORY);
@@ -264,14 +269,15 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 	free_hashmap(mcro_tb, (void (*)(void *))free_macro);
 
-	/* start second pass */
 	printf(">>> Finished first pass successfully \n\n");
-	second_pass(src_path, &sym_table, data_image, data_size, machine_code, machine_code_size, ICF, DCF);
+
+	/* starts the second pass, saves the return code*/
+	current_error = second_pass(src_path, &sym_table, data_image, data_size, machine_code, machine_code_size, ICF, DCF);
 
 	/* free everything */
 	free_everything(data_image, machine_code, machine_code_size, &sym_table, NULL, &parsed_line);
 
-	return SUCCESS_CODE;
+	return current_error;
 }
 
 int insert_symbol(char *name, int attribute, int is_ext, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
@@ -544,11 +550,11 @@ int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, 
 			operand = NULL;
 			break;
 		case RELATIVE:
-			*operand = copy_string((argument + 1)); /* +1 to skip '&' */
+			*operand = NULL; /* +1 to skip '&' */
 			value = 0;
 			break;
 		case DIRECT:
-			*operand = copy_string(argument);
+			*operand = NULL;
 			value = 0;
 			break;
 		}
@@ -572,7 +578,6 @@ void free_everything(int *data_image, FirstInstruction **machine_code, int machi
 	}
 
 	if (sym_table) {
-		print_hashmap(sym_table, (void (*)(void *))print_symbol); /* debug line */
 		free_hashmap(sym_table, (void (*)(void *))free_symbol);
 	}
 
@@ -584,15 +589,7 @@ void free_everything(int *data_image, FirstInstruction **machine_code, int machi
 }
 
 int compare_symbols_by_value(const void *a, const void *b) {
-    Symbol *sym_a = *(Symbol **)a;
-    Symbol *sym_b = *(Symbol **)b;
-    return sym_a->value - sym_b->value;
-}
-
-/* debug method */
-void print_symbol(Symbol *sym) {
-	printf("Symbol Name: %s, Attribute: %d, Value: %d",
-		   sym->name ? sym->name : "NULL",
-		   sym->attribute ? sym->attribute : 999,
-		   sym->value);
+	Symbol *sym_a = *(Symbol **)a;
+	Symbol *sym_b = *(Symbol **)b;
+	return sym_a->value - sym_b->value;
 }

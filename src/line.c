@@ -53,7 +53,7 @@ int split_line(char *line, Line *output) {
 	strcpy(input_copy, line);
 
 	/* Allocate memory for the array on the heap */
-	args = malloc(sizeof(char *) * (MAX_ARGS + 1));
+	args = malloc(sizeof(char *) * (arg_count + 1)); /* +1 for NULL */
 	if (!args) {
 		return EXIT_FAILURE;
 	}
@@ -81,7 +81,7 @@ int split_line(char *line, Line *output) {
 	for (i = 0; token; token = strtok(NULL, delims), i++) {
 		if (i >= arg_count) {
 			arg_count *= 2;
-			args_buffer = realloc(args, arg_count);
+			args_buffer = realloc(args, (arg_count + 1) * sizeof(*args)); /* +1 for null */
 			if (!args_buffer) {
 				return EXIT_FAILURE;
 			}

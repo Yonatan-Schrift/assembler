@@ -26,20 +26,26 @@ void printerror(const char *message, int line_num, int error_code) {
         case COULD_NOT_OPEN_FILE:
             error_msg = "Could not open the file, check that it exists";
             break;
-        case NOT_ALLOWED_MACRO_NAME:
-            error_msg = "Not allowed macro name";
+        case MACRO_NAME_TOO_LONG:
+            error_msg = "Macro name too long ";
+            break;
+        case NAME_DOESNT_START_WITH_LETTER:
+            error_msg = "Macro name doesn't start with a letter or underscore";
+            break;
+        case RESERVED_MACRO_NAME:
+            error_msg = "Macro using reserved name";
             break;
         case SYMBOL_ALREADY_EXISTS:
             error_msg = "Symbol already exists";
             break;
         case SYMBOL_IS_MACRO:
-            error_msg = "Symbol is defined as a macro";
+            error_msg = "Symbol is already defined as a macro";
             break;
         case MISSING_SYMBOL_VALUES:
             error_msg = "Missing symbol values";
             break;
         case OPCODE_NOT_FOUND:
-            error_msg = "Opcode not found";
+            error_msg = "Command not found";
             break;
         case NOT_A_LABEL:
             error_msg = "Not a valid label";
@@ -58,6 +64,12 @@ void printerror(const char *message, int line_num, int error_code) {
             break;
         case NO_FILES:
             error_msg = "No files provided";
+            break;
+        case MACRO_USING_UNALLOWED_LETTERS:
+            error_msg = "Macro uses unallowed characters";
+            break;
+        case MISSING_COMMA:
+            error_msg = "Missing closing quote";
             break;
         default:
             error_msg = "Unknown error";

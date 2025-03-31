@@ -120,7 +120,9 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 	delete_if_empty(file_ob, src_path, ".ob");	
 
 	free_line(&parsed_line);
-	
+
+	printf(">>> Finished second pass successfully\n");
+
 	return EXIT_SUCCESS;
 }
 
@@ -195,6 +197,7 @@ int process_operand(char *operand, int addressing, int immediate_value, hashmap_
 	word = build_info_word(value, addressing, type);
 	fprintf(file_ob, "%07d %06x\n", *ic, word & 0xFFFFFF);
 	fflush(file_ob);
+	
 	return SUCCESS_CODE;
 }
 

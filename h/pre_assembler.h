@@ -6,8 +6,8 @@
 #include "hashmap.h"
 #include "macro.h"
 
-#define MACRO_FOUND 1
-#define MACRO_NOT_FOUND 0
+#define NOT_A_MACRO 999
+
 
 #define INITIAL_MACRO_SIZE 256 
 #define MACRO_GROWTH_FACTOR 2

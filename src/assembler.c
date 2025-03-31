@@ -9,9 +9,9 @@
  */
 
 #include "../h/file_funcs.h"
+#include "../h/first_pass.h"
 #include "../h/globals.h"
 #include "../h/pre_assembler.h"
-#include "../h/first_pass.h"
 #include <stdio.h>
 
 #define REQ_ARGUMENT_COUNT 2
@@ -37,13 +37,17 @@ int main(int argc, char *argv[]) {
 	}
 
 	for (i = 1; i < argc; i++) {
-		printf("Working on file: %s\n\n", argv[i]);
+		printf("Working on file: %s\n", argv[i]);
 
 		if (pre_comp(argv[i], &mcro_tb) != SUCCESS_CODE) {
 			printf("File: %s failed pre-proccessing\n", argv[i]);
-			
-		}else {
-			first_pass(argv[i], &mcro_tb);
+			error_flag = TRUE;
+
+		} else {
+			if (first_pass(argv[i], &mcro_tb) != SUCCESS_CODE) /* First pass goes into second pass */ {
+				error_flag = TRUE;
+			} else
+				printf("Successfully compiled file %s\n\n", argv[i]);
 		}
 	}
 

@@ -69,7 +69,7 @@ mcroend
 ;------------------------------------------------------------
 ; Code Section: Compute and Print the Fibonacci Numbers
 ;------------------------------------------------------------
-MAIN:
+; MAIN:
     ; Compute the Fibonacci numbers one by one
     CALC_FIB_2
     CALC_FIB_3
