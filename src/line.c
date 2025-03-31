@@ -41,7 +41,7 @@ int read_line(FILE *file, char *line) {
 
 int split_line(char *line, Line *output) {
 	char input_copy[MAX_LINE_LENGTH + 2], *token, **args, **args_buffer;
-	char *delims = " ,";
+	char *delims = " ,\t";
 	int i, arg_count = MAX_ARGS;
 
 	if (line == NULL) {
