@@ -13,7 +13,6 @@ sub r1, r4
     mcroend
 
     .entry GGG
-prn -5
 bne LOOP
 
 M1

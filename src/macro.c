@@ -9,28 +9,28 @@ void init_macro(Macro *mcro) {
 	mcro->name = NULL;
 }
 
-int is_valid_macro_name(char *name) {
+int is_reserved_name(char *name) {
 	if (!name || !(*name)) /* Check if name is not NULL or empty */
-		return FALSE;
+		return TRUE;
 
 	/* Check if the name is a reserved name */
 	if(!(is_op_name(name) == FALSE && is_register(name) == FALSE && is_instruction(name) == FALSE)) 
-		return RESERVED_MACRO_NAME;
+		return RESERVED_NAME;
 	
 	if (isalpha(*name) == FALSE && *name != '_') /* Check if the first character is alphabetic or underscore */
 		return NAME_DOESNT_START_WITH_LETTER;
 
 	if (strlen(name) > MAX_MCRO_NAME_LENGTH) /* Check if the name is in the allowed size */
-		return MACRO_NAME_TOO_LONG;
+		return NAME_TOO_LONG;
 
 	while (*name) {
 		if (!isalnum(*name) && *name != '_')
-			return MACRO_USING_UNALLOWED_LETTERS; /* Check if the name contains only the allowed characters */
+			return NAME_USING_UNALLOWED_LETTERS; /* Check if the name contains only the allowed characters */
 		name++;
 	}
 
 	
-	return TRUE;
+	return FALSE;
 }
 
 char *is_macro_start(char *input, Line *line) {

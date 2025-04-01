@@ -9,7 +9,7 @@ MAIN:        mov r3 ,    r2
         K:   .data  10,12  ,     13,    14
 ;This is a coment, !@#&%%#+!)+$
 LOOP: jmp L1
-prn -5
+prn MS1
 sub r6    ,      r4
     bne      Test
 

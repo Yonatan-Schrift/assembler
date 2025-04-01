@@ -32,7 +32,7 @@ void init_macro(Macro *mcro);
  * @param name The macro name to validate.
  * @return TRUE if valid, FALSE otherwise.
  */
-int is_valid_macro_name(char *name);
+int is_reserved_name(char *name);
 
 /**
  * Determines if the input line starts a macro definition.

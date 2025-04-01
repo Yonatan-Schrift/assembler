@@ -30,4 +30,6 @@ void remove_quotes(char *string);
 
 int find_quotes(char *string);
 
+int check_for_commas(char *string);
+
 #endif /* STRING_FUNCS_H */

@@ -55,6 +55,19 @@ int string_array_len(char **args) {
 	return count;
 }
 
+int check_for_commas(char *string) {
+	if (!string) return FAIL_CODE;
+
+	/* Check for commas before and after each param */
+	if(*(string + 1) == ',') {
+		return EXTRA_COMMA_AFTER_PARAM;
+	}
+	if(*(string - 1) == ',') {
+		return EXTRA_COMMA_BEFORE_PARAM;
+	}
+	return EXIT_SUCCESS;
+}
+
 int find_quotes(char *string) {
 	int i, ret = -1, count = 0;
 

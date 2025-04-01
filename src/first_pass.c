@@ -283,6 +283,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 int insert_symbol(char *name, int attribute, int is_ext, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
 	Symbol *sym, *lookup_ret;
+	int ret;
 
 	if ((lookup_ret = (Symbol*)lookup(sym_tb, name))) {
 		/* Checks if a symbol is defined twice */
@@ -294,13 +295,17 @@ int insert_symbol(char *name, int attribute, int is_ext, int value, hashmap_t *s
 		return SYMBOL_IS_MACRO;
 	}
 
+	/* Check for unallowed names */
+	if ((ret = is_reserved_name(name)) != FALSE) {
+		return ret;
+	}
+
 	sym = malloc(sizeof(Symbol));
 	if (!sym) {
 		return EXIT_FAILURE;
 	}
 
 	sym->entry_or_extern = is_ext;
-
 	sym->name = copy_string(name);
 	sym->attribute = attribute;
 	sym->value = value;

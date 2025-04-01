@@ -10,7 +10,6 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 	int error_flag = FALSE, current_error = FALSE, line_count = 0;
 	FILE *file_in, *file_out;
 	Macro *mcro, *lookup_result;
-	char *new_file_name;
 
 	init_hashmap(mcro_table, TABLE_SIZE);
 
@@ -80,11 +79,9 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 	fclose(file_out);
 
 	if (error_flag != FALSE) {
-		new_file_name = change_extension(src_path, ".am");
+		/* Deleting the .am file */
+		delete_mult_files(src_path, ".am", NULL, NULL);
 
-		remove(new_file_name); /* Removing the .am file */
-
-		free(new_file_name);
 		free_hashmap(mcro_table, (void (*)(void *))free_macro);
 
 		return EXIT_FAILURE;
@@ -107,7 +104,10 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 		return FAIL_CODE;
 	}
 
-	split_line(input, &line);
+	if((current_error = split_line(input, &line)) < SUCCESS_CODE) {
+		free(macro_body);
+		return current_error;
+	}
 
 	if (!(macro_name = is_macro_start(input, &line))) {
 		/* Not a macro start */
@@ -116,7 +116,7 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 		return NOT_A_MACRO;
 	}
 
-	if ((current_error = is_valid_macro_name(macro_name)) != TRUE) {
+	if ((current_error = is_reserved_name(macro_name)) != FALSE) {
 		/* Invalid macro name */
 		free(macro_body);
 		free_line(&line);

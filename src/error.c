@@ -26,14 +26,14 @@ void printerror(const char *message, int line_num, int error_code) {
         case COULD_NOT_OPEN_FILE:
             error_msg = "Could not open the file, check that it exists";
             break;
-        case MACRO_NAME_TOO_LONG:
+        case NAME_TOO_LONG:
             error_msg = "Macro name too long ";
             break;
         case NAME_DOESNT_START_WITH_LETTER:
-            error_msg = "Macro name doesn't start with a letter or underscore";
+            error_msg = "Macro / Symbol name doesn't start with a letter or underscore";
             break;
-        case RESERVED_MACRO_NAME:
-            error_msg = "Macro using reserved name";
+        case RESERVED_NAME:
+            error_msg = "Macro / Symbol using reserved name";
             break;
         case SYMBOL_ALREADY_EXISTS:
             error_msg = "Symbol already exists";
@@ -65,8 +65,8 @@ void printerror(const char *message, int line_num, int error_code) {
         case NO_FILES:
             error_msg = "No files provided";
             break;
-        case MACRO_USING_UNALLOWED_LETTERS:
-            error_msg = "Macro uses unallowed characters";
+        case NAME_USING_UNALLOWED_LETTERS:
+            error_msg = "Macro / Label uses unallowed characters";
             break;
         case MISSING_COMMA:
             error_msg = "Missing closing quote";
@@ -85,6 +85,12 @@ void printerror(const char *message, int line_num, int error_code) {
             break;
         case INITIALIZING_EXTERN:
             error_msg = "Cannot give value to external symbol";
+            break;
+        case EXTRA_COMMA_AFTER_PARAM:
+            error_msg = "Extra comma after parameter";
+            break;
+        case EXTRA_COMMA_BEFORE_PARAM:
+            error_msg = "Extra comma before parameter";
             break;
         default:
             error_msg = "Unknown error";

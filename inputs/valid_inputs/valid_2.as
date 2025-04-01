@@ -2,7 +2,6 @@
     .extern Z
 MAIN: mov r2, START
 LOOP1: jmp L2
-prn -4
 bne Z
 sub r1, r3
     bne L4

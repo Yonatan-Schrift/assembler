@@ -13,7 +13,7 @@ sub r1, r9
     mcroend
 
     .entry GGG
-prn -5
+prn #5
 bne LOOP
 
 XYZ: mov r4, r2
