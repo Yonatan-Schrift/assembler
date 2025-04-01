@@ -1,7 +1,7 @@
 #include "../h/error.h"
 #include <stdio.h>
 
-void printerror(const char *message, int line_num, int error_code) {
+void printerror(int line_num, int error_code) {
 	const char *error_msg;
 
     if (error_code == EXIT_SUCCESS)
