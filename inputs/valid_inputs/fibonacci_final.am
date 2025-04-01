@@ -1,0 +1,45 @@
+FIB0:       .data 0          
+FIB1:       .data 1          
+FIB2:       .data 0          
+FIB3:       .data 0          
+FIB4:       .data 0          
+FIB5:       .data 0          
+FIB6:       .data 0          
+FIB7:       .data 0          
+FIB8:       .data 0          
+FIB9:       .data 0          
+    mov FIB0, r0    
+    add FIB1, r0    
+    mov r0, FIB2    
+    mov FIB1, r0    
+    add FIB2, r0    
+    mov r0, FIB3    
+    mov FIB2, r0    
+    add FIB3, r0    
+    mov r0, FIB4    
+    mov FIB3, r0    
+    add FIB4, r0    
+    mov r0, FIB5    
+    mov FIB4, r0    
+    add FIB5, r0    
+    mov r0, FIB6    
+    mov FIB5, r0    
+    add FIB6, r0    
+    mov r0, FIB7    
+    mov FIB6, r0    
+    add FIB7, r0    
+    mov r0, FIB8    
+    mov FIB7, r0    
+    add FIB8, r0    
+    mov r0, FIB9    
+    prn FIB0
+    prn FIB1
+    prn FIB2
+    prn FIB3
+    prn FIB4
+    prn FIB5
+    prn FIB6
+    prn FIB7
+    prn FIB8
+    prn FIB9
+    stop         
