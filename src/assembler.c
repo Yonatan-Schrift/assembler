@@ -37,17 +37,17 @@ int main(int argc, char *argv[]) {
 	}
 
 	for (i = 1; i < argc; i++) {
-		printf("Working on file: %s\n", argv[i]);
+		printf("\nWorking on file: %s\n", argv[i]);
 
 		if (pre_comp(argv[i], &mcro_tb) != SUCCESS_CODE) {
-			printf("File: %s failed pre-proccessing\n", argv[i]);
+			printf("\nFile: %s failed pre-proccessing\n", argv[i]);
 			error_flag = TRUE;
 
 		} else {
 			if (first_pass(argv[i], &mcro_tb) != SUCCESS_CODE) /* First pass goes into second pass */ {
 				error_flag = TRUE;
 			} else
-				printf("Successfully compiled file %s\n\n", argv[i]);
+				printf("\nSuccessfully compiled file %s\n\n", argv[i]);
 		}
 	}
 

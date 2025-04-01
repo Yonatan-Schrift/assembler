@@ -71,9 +71,24 @@ void printerror(const char *message, int line_num, int error_code) {
         case MISSING_COMMA:
             error_msg = "Missing closing quote";
             break;
+        case MISSING_CLOSING_QUOTE:
+            error_msg = "Missing closing quote";
+            break;
+        case EXTRA_QUOTATION_MARK:
+            error_msg = "Extra quotation mark";
+            break;
+        case MISSING_OPENING_QUOTE:
+            error_msg = "Missing opening quote";
+            break;
+        case EXTRA_TEXT_AFTER_STRING:
+            error_msg = "Extra text after quote end";
+            break;
+        case INITIALIZING_EXTERN:
+            error_msg = "Cannot give value to external symbol";
+            break;
         default:
             error_msg = "Unknown error";
-    }
+        }
 
     if (line_num == NO_LINE) {
         printf(">>> Error: %s\n", error_msg);

@@ -90,7 +90,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		return EXIT_FAILURE;
 	}
 
-	printf("\n\n>>> Finished pre-compiling successfully\n\n");
+	printf("\n>>> Finished pre-compiling successfully\n");
 	return SUCCESS_CODE;
 }
 
@@ -145,6 +145,10 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 			break;
 		}
 		split_line(input, &line);
+
+		if (!line.command) {
+			break;
+		}
 
 		if (strcmp(line.command, MACRO_END_STRING) == STRCMP_SUCCESS) {
 			IS_MACRO = FALSE;

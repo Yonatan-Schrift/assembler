@@ -35,6 +35,12 @@
 #define MACRO_USING_UNALLOWED_LETTERS -21
 #define MISSING_COMMA -22
 
+#define MISSING_CLOSING_QUOTE -23
+#define EXTRA_QUOTATION_MARK -24
+#define MISSING_OPENING_QUOTE -25
+#define EXTRA_TEXT_AFTER_STRING -26
+#define INITIALIZING_EXTERN -27
+
 /* Print an error message and continue execution. */
 void printerror(const char *message, int line_num, int error_code);
 

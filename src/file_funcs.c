@@ -13,7 +13,7 @@ FILE *open_file(const char *filename, const char *extension, const char *mode) {
 		if (find_extension(filename)) {
 			printerror("error", NO_LINE, FILE_INCLUDES_EXTENSION);
 		} else {
-			printerror("failed to open the file\n", NO_LINE, EXIT_FAILURE);
+			printerror("failed to open the file\n", NO_LINE, COULD_NOT_OPEN_FILE);
 		}
 		return NULL;
 	}

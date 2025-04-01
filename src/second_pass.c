@@ -30,7 +30,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 	init_line(&parsed_line);
 
 	/* Write the first line in the object file */
-	fprintf(file_ob, "%d %d\n", ICF - 100, DCF);
+	fprintf(file_ob, "     %d %d\n", ICF - 100, DCF);
 
 	while ((current_error = read_line(file_am, line)) != EXIT_FAILURE) {
 		/* For iterations after the first, free the memory allocated for the previous line.
@@ -82,7 +82,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 	/* check for errors before building the files */
 	if (error_flag == TRUE) {
 		printf("\n\n>>> ERRORS WERE FOUND DURING THE SECOND PASS!\n\n");
-
+		delete_mult_files(src_path, ".ob", ".ent", ".ext");
 
 		return FAIL_CODE;
 	}
@@ -106,9 +106,9 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 
 	write_symbols_to_files(sym_tb, file_ent, file_ext);
 
+	/* Check for any errors that might happen during file building */
 	if (error_flag == TRUE) {
 		printf("\n\n>>> ERRORS WERE FOUND DURING THE SECOND PASS!\n\n");
-		
 		delete_mult_files(src_path, ".ob", ".ent", ".ext");
 
 		return FAIL_CODE;

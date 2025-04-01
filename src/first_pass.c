@@ -34,7 +34,7 @@ int IC;
 int DC;
 
 int first_pass(char *src_path, hashmap_t *mcro_tb) {
-	char line[MAX_LINE_LENGTH + 1], *last_arg;
+	char line[MAX_LINE_LENGTH + 1], *string_arg;
 	FILE *file_in;
 	Line parsed_line;
 	int error_flag = FALSE, current_error = FALSE, is_symbol = FALSE;
@@ -88,7 +88,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 
 		/* Read a line from the source */
-		/* printf("Read line is: %d : %s\n", IC + DC, line);  DEBUG */
+		/* 		printf("Read line is: %d : %s\n", IC + DC, line);  DEBUG */
 
 		/* Skips the line if it's empty */
 		if (isEmpty(line) == TRUE) {
@@ -141,18 +141,19 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					}
 				}
 
-				else {
+				else if (COMPARE_STR(parsed_line.command, ".string")) {
 					/* is '.string' instruction */
-					if ((ret = string_array_len(parsed_line.arguments)) != 1) {
-						last_arg = parsed_line.arguments[ret - 1];
-						/* Checking if the string is missing a closing quote*/
-						if (last_arg[strlen(last_arg)] != '"')
-							printerror("MISSING COMMA", line_count, MISSING_COMMA);
-						else
-							printerror("TOO_MANY_ARGUMENTS", line_count, TOO_MANY_ARGS);
+
+					ret = find_quotes(line);
+					/* Checking if the quote has an error */
+					if (ret < SUCCESS_CODE) {
 						error_flag = TRUE;
+						printerror("err", line_count, ret);
+						continue;
 					}
-					if (add_string_word(parsed_line.arguments[0], &data_size, &data_image) != EXIT_SUCCESS) {
+					string_arg = copy_string(line + ret);
+
+					if (add_string_word(string_arg, &data_size, &data_image) != EXIT_SUCCESS) {
 
 						/* Memory failure */
 						close_mult_files(file_in, NULL, NULL, NULL);
@@ -269,7 +270,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 	free_hashmap(mcro_tb, (void (*)(void *))free_macro);
 
-	printf(">>> Finished first pass successfully \n\n");
+	printf(">>> Finished first pass successfully \n");
 
 	/* starts the second pass, saves the return code*/
 	current_error = second_pass(src_path, &sym_table, data_image, data_size, machine_code, machine_code_size, ICF, DCF);
@@ -281,10 +282,11 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 }
 
 int insert_symbol(char *name, int attribute, int is_ext, int value, hashmap_t *sym_tb, hashmap_t *mcro_tb) {
-	Symbol *sym;
+	Symbol *sym, *lookup_ret;
 
-	if (lookup(sym_tb, name)) {
+	if ((lookup_ret = (Symbol*)lookup(sym_tb, name))) {
 		/* Checks if a symbol is defined twice */
+		if(lookup_ret->entry_or_extern == EXTERNAL) return INITIALIZING_EXTERN;
 		return SYMBOL_ALREADY_EXISTS;
 	}
 	if (lookup(mcro_tb, name)) {

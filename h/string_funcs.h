@@ -28,4 +28,6 @@ int string_array_len(char **args);
 
 void remove_quotes(char *string);
 
+int find_quotes(char *string);
+
 #endif /* STRING_FUNCS_H */

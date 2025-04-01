@@ -10,7 +10,7 @@ LOOP:   jmp L1
     mcro M1
 sub r1, r9
     bne END
-    endmcro
+    mcroend
 
     .entry GGG
 prn -5
@@ -34,7 +34,7 @@ K:      .data 4    ,  ,  -55,4,4,4,6
     mcro M2
 mov reg1, val
 add reg2, reg1
-    endmcro
+    mcroend
 
 M2
 ABC: mov XYZ, r3

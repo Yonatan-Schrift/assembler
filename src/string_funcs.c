@@ -1,4 +1,5 @@
 #include "../h/string_funcs.h"
+#include "../h/globals.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,7 +11,7 @@ char *copy_string(const char *origin) {
 	copy = malloc(strlen(origin) + 1);
 	if (!copy) {
 		/* Memory allocation failed */
-		return NULL; 
+		return NULL;
 	}
 	/* Copy the string contents to new memory */
 	strcpy(copy, origin);
@@ -24,7 +25,7 @@ void remove_quotes(char *string) {
 
 	len = strlen(string);
 	/* Check if string has at least opening and closing quotes */
-	if (len >= 2 && string[0] == '"' && string[len-1] == '"') {
+	if (len >= 2 && string[0] == '"' && string[len - 1] == '"') {
 		/* Shift all characters left by one position */
 		memmove(string, string + 1, len - 2);
 		/* Null terminate the string after removing quotes */
@@ -49,7 +50,40 @@ int string_array_len(char **args) {
 	if (args == NULL) return EXIT_FAILURE;
 
 	/* Count strings until NULL terminator is found */
-	for(count = 0; args[count] != NULL; count++);
+	for (count = 0; args[count] != NULL; count++);
 
 	return count;
+}
+
+int find_quotes(char *string) {
+	int i, ret = -1, count = 0;
+
+	/* Check if string is valid */
+	if (!string) return FAIL_CODE;
+
+	/* Search for the first quote character */
+	for (i = 0; string[i] != '\0'; i++) {
+		if (string[i] == '"') {
+			count++;
+			/* save the index of the first quote */
+			if (ret == -1) ret = i;
+		}
+	}
+
+	/* If found exactly 2 quotes return the index of the first one */
+	if (count == 2) {
+		if (string[i - 1] == '"') return ret;
+		return EXTRA_TEXT_AFTER_STRING;
+	}
+	/* If found more than 2, there's (at least) one extra quote */
+	else if (count > 2) {
+		return EXTRA_QUOTATION_MARK;
+	}
+	/* If found exactly 1 quote, there's missing a quotation mark */
+	else if (count == 1) {
+		return (string[i - 1] == '"') ? MISSING_OPENING_QUOTE : MISSING_CLOSING_QUOTE;
+	}
+
+	/* No quote found */
+	return MISSING_ARGS;
 }
