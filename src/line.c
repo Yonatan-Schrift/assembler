@@ -7,6 +7,7 @@ void init_line(Line *line) {
 		return;
 	}
 
+	line->input_copy = NULL;
 	line->label = NULL;
 	line->command = NULL;
 }
@@ -40,45 +41,50 @@ int read_line(FILE *file, char *line) {
 }
 
 int split_line(char *line, Line *output) {
-	char input_copy[MAX_LINE_LENGTH + 2], *token, **args, **args_buffer;
-	char *delims = " ,\t";
+	char *input_copy, *token, **args, **args_buffer;
 	int i, arg_count = MAX_ARGS;
 
 	if (line == NULL) {
-		return EXIT_FAILURE;
+		return FAIL_CODE;
 	}
 	output->command = NULL;
 	output->label = NULL;
 
+	input_copy = malloc(sizeof(char) * (MAX_LINE_LENGTH + 2)); /* +2 for null terminator and newline */
+	if (!input_copy) {
+		return FAIL_CODE;
+	}
 	strcpy(input_copy, line);
-
 	/* Allocate memory for the array on the heap */
 	args = malloc(sizeof(char *) * (arg_count + 1)); /* +1 for NULL */
 	if (!args) {
-		return EXIT_FAILURE;
+		free(input_copy);
+		return FAIL_CODE;
 	}
 
 	/* Extract label if found */
-	token = strtok(input_copy, delims);
+	token = strtok(input_copy, " ");
+	
+	output->input_copy = input_copy;
 
 	if (token && strchr(token, ':')) {
 
-		output->label = clean_arg(token);
+		output->label = token;
 
 		/* removing the ':' from the label name. */
 		remove_after_delim(output->label, ':');
 
-		token = strtok(NULL, delims);
+		token = strtok(NULL, " ");
 	}
 
 	/* Extract command */
 	if (token) {
-		output->command = clean_arg(token);
-		token = strtok(NULL, delims);
+		output->command = token;
+		token = strtok(NULL, " ");
 	}
 
 	/* Puts the rest of the tokens as arguments */
-	for (i = 0; token; token = strtok(NULL, delims), i++) {
+	for (i = 0; token; token = strtok(NULL, ","), i++) {
 		if (i >= arg_count) {
 			arg_count *= 2;
 			args_buffer = realloc(args, (arg_count + 1) * sizeof(*args)); /* +1 for null */
@@ -87,7 +93,8 @@ int split_line(char *line, Line *output) {
 			}
 			args = args_buffer;
 		}
-		args[i] = clean_arg(token);
+		/* args[i] = clean_arg(token); */
+		args[i] = token;
 	}
 
 	/* NULL TERMINATE THE ARRAY */
@@ -99,20 +106,19 @@ int split_line(char *line, Line *output) {
 }
 
 void free_line(Line *line) {
-	int i;
-
 	if (!line) return;
 
-	if (line->label) free(line->label);
-	if (line->command) free(line->command);
+	if (line->label) line->label = NULL;
+	if (line->command) line->command = NULL;
 
 	if (line->arguments) {
-		for (i = 0; line->arguments[i] != NULL; i++) {
-			free(line->arguments[i]);
-			line->arguments[i] = NULL;
-		}
 		free(line->arguments);
 		line->arguments = NULL;
+	}
+
+	if (line->input_copy) {
+		free(line->input_copy);
+		line->input_copy = NULL;
 	}
 }
 

@@ -74,7 +74,9 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	while ((current_error = read_line(file_in, line)) != EXIT_FAILURE) {
 		/* For iterations after the first, free the memory allocated for the previous line.
 		 * (On the first iteration, no memory has been allocated yet.) */
-		if (line_count > 0) free_line(&parsed_line);
+		if (line_count > 0) {
+			free_line(&parsed_line);
+		}
 		/* Reinitialize parsed_line to prepare for processing the next line. */
 		init_line(&parsed_line);
 
@@ -88,7 +90,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 
 		/* Read a line from the source */
-		/* 		printf("Read line is: %d : %s\n", IC + DC, line);  DEBUG */
+		 printf("Read line is: %d : %s\n", IC + DC, line);  /*  DEBUG */
 
 		/* Skips the line if it's empty */
 		if (isEmpty(line) == TRUE) {
@@ -130,7 +132,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					for (i = 0; parsed_line.arguments[i] != NULL; i++) {
 						/* saves each integer to the data-image */
 						value = atoi(parsed_line.arguments[i]);
-
+						
 						if (add_data_word(value, &data_size, &data_image) != EXIT_SUCCESS) {
 							/* Memory failure */
 							free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
@@ -139,11 +141,17 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 							return EXIT_FAILURE;
 						}
 					}
+					/* Check for an extra comma on the last param */
+					if((current_error = check_for_commas(parsed_line.arguments[i])) < SUCCESS_CODE) {
+						printerror("comma error", line_count, current_error);
+						error_flag = TRUE;
+						continue;
+					}
 				}
 
 				else if (COMPARE_STR(parsed_line.command, ".string")) {
 					/* is '.string' instruction */
-
+					
 					ret = find_quotes(line);
 					/* Checking if the quote has an error */
 					if (ret < SUCCESS_CODE) {
@@ -152,7 +160,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						continue;
 					}
 					string_arg = copy_string(line + ret);
-					
+
 					if (add_string_word(string_arg, &data_size, &data_image) != EXIT_SUCCESS) {
 
 						/* Memory failure */
@@ -168,7 +176,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			/* check if the instruction is an entry or extern variable */
 			else if (IS_ENTRY_OR_EXTERN(parsed_line.command)) {
 				current_error = check_arg_count(parsed_line.arguments, NO_INDEX, REQUIRED_ARGS_FOR_DIRECTIVE);
-				if (current_error) {
+				if (current_error != SUCCESS_CODE) {
 					printerror("current error", line_count, current_error);
 					error_flag = TRUE;
 					continue;
@@ -232,7 +240,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 				current_error = add_instruction(&parsed_line, &machine_code, &sym_table, L, line_count, &machine_code_size);
 				if (current_error != SUCCESS_CODE) {
-					printerror("Error doing something cool\n", line_count, current_error);
+					/* error is printed in the function */
 					error_flag = TRUE;
 					continue;
 				}
@@ -285,9 +293,9 @@ int insert_symbol(char *name, int attribute, int is_ext, int value, hashmap_t *s
 	Symbol *sym, *lookup_ret;
 	int ret;
 
-	if ((lookup_ret = (Symbol*)lookup(sym_tb, name))) {
+	if ((lookup_ret = (Symbol *)lookup(sym_tb, name))) {
 		/* Checks if a symbol is defined twice */
-		if(lookup_ret->entry_or_extern == EXTERNAL) return INITIALIZING_EXTERN;
+		if (lookup_ret->entry_or_extern == EXTERNAL) return INITIALIZING_EXTERN;
 		return SYMBOL_ALREADY_EXISTS;
 	}
 	if (lookup(mcro_tb, name)) {
@@ -374,8 +382,12 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	if (index < SUCCESS_CODE) {
 		/* OPCODE not found */
 		printerror("Error,\n", line_num, index);
-		found_error = TRUE;
-		return found_error;
+		return TRUE;
+	}
+	/* Check for errors with commas */
+	if((return_code = check_for_commas(line->command)) < SUCCESS_CODE) {
+		printerror("ERROR", line_num, return_code);
+		return TRUE;
 	}
 
 	/* allocating memory for the instruction */
@@ -537,6 +549,14 @@ void free_symbol(Symbol *sym) {
 
 int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr, char **operand, int *value) {
 	int num;
+
+	/* Check for errors with commas */
+	if((num = check_for_commas(argument)) < SUCCESS_CODE) {
+		printerror("ERROR", line_num, num);
+		*addr = num;
+		return FAIL_CODE;
+	}
+
 
 	/* Check if the argument is a register */
 	if ((num = is_register(argument)) != FALSE) {

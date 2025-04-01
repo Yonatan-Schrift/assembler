@@ -29,7 +29,7 @@
 int main(int argc, char *argv[]) {
 	int i, error_flag = FALSE;
 	hashmap_t mcro_tb;
-
+	
 	/* Checks if recieved at least 1 input file */
 	if (argc < REQ_ARGUMENT_COUNT) {
 		printerror("MISSING FILE TO PROCESS\n", NO_LINE, NO_FILES);

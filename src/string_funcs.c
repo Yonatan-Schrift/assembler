@@ -59,12 +59,14 @@ int check_for_commas(char *string) {
 	if (!string) return FAIL_CODE;
 
 	/* Check for commas before and after each param */
-	if(*(string + 1) == ',') {
-		return EXTRA_COMMA_AFTER_PARAM;
-	}
-	if(*(string - 1) == ',') {
-		return EXTRA_COMMA_BEFORE_PARAM;
-	}
+	if (*(string + 1))
+		if (*(string + 1) == ',') {
+			return EXTRA_COMMA_AFTER_PARAM;
+		}
+	if (*(string - 1))
+		if (*(string - 1) == ',') {
+			return EXTRA_COMMA_BEFORE_PARAM;
+		}
 	return EXIT_SUCCESS;
 }
 
