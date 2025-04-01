@@ -152,7 +152,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						continue;
 					}
 					string_arg = copy_string(line + ret);
-
+					
 					if (add_string_word(string_arg, &data_size, &data_image) != EXIT_SUCCESS) {
 
 						/* Memory failure */
@@ -332,14 +332,17 @@ int add_string_word(char *string, int *data_cap, int **data_image) {
 	for (i = 0; string[i] != '\0'; i++) {
 		value = (int)string[i];
 		if (add_data_word(value, data_cap, data_image) == EXIT_FAILURE) {
+			free(string);
 			return EXIT_FAILURE;
 		}
 	}
 	/* adding the null terminator */
 	value = (int)string[i];
 	if (add_data_word(value, data_cap, data_image) == EXIT_FAILURE) {
+		free(string);
 		return EXIT_FAILURE;
 	}
+	free(string);
 	return EXIT_SUCCESS;
 }
 

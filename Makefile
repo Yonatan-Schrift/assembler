@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -ansi -pedantic -std=c90 -g 
-# -fsanitize=address
+CFLAGS = -Wall -ansi -pedantic -std=c90 -g -fsanitize=address
+#  
 TARGET = assembler
 
 SOURCES = $(wildcard src/*.c)
