@@ -45,6 +45,6 @@
 
 
 /* Print an error message and continue execution. */
-void printerror(const char *message, int line_num, int error_code);
+void printerror(int line_num, int error_code);
 
 #endif /* ERROR_H */

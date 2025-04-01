@@ -27,7 +27,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		line_count++;
 
 		if (current_error < EXIT_SUCCESS) {
-			printerror("ERROR", line_count, current_error);
+			printerror(line_count, current_error);
 			continue;
 		}
 
@@ -46,7 +46,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		if ((current_error = parse_macro(line, &line_count, file_in, mcro)) == EXIT_SUCCESS) {
 			if (lookup(mcro_table, mcro->name) != NULL) {
 				error_flag = TRUE;
-				printerror("ERROR\n", line_count, MACRO_ALREADY_EXISTS);
+				printerror(line_count, MACRO_ALREADY_EXISTS);
 			}
 			insert(mcro_table, (void *)mcro, mcro->name);
 
@@ -55,7 +55,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 		else if (current_error < EXIT_SUCCESS) {
 			free_macro(mcro);
 			error_flag = TRUE;
-			printerror("Error\n", line_count, current_error);
+			printerror(line_count, current_error);
 		}
 
 		/* Check for a macro usage*/

@@ -42,7 +42,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 		line_count++;
 
 		if (current_error < SUCCESS_CODE) {
-			printerror("error_flag", line_count, current_error);
+			printerror(line_count, current_error);
 			continue;
 		}
 
@@ -64,7 +64,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 				/* A check that there is only the argument */
 				current_error = check_arg_count(parsed_line.arguments, NO_INDEX, REQUIRED_ARGS_FOR_DIRECTIVE);
 				if (current_error) {
-					printerror("current error", line_count, current_error);
+					printerror(line_count, current_error);
 					error_flag = TRUE;
 					continue;
 				}
@@ -72,7 +72,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 				if ((sym = (Symbol *)lookup(sym_tb, parsed_line.arguments[0]))) {
 					sym->entry_or_extern = ENTRY; /* setting the attribute to ENTRY */
 				} else {
-					printerror("Symbol not found", line_count, ENTRY_SYMBOL_NOT_FOUND);
+					printerror(line_count, ENTRY_SYMBOL_NOT_FOUND);
 					error_flag = TRUE;
 					continue;
 				}
@@ -92,7 +92,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 		ic = i + 100;
 		current_error = build_binary_instruction(machine_code[i], sym_tb, file_ob, file_ent, file_ext, &ic);
 		if (current_error) {
-			printerror("current error", ic, current_error);
+			printerror(ic, current_error);
 			error_flag = TRUE;
 			continue;
 		}

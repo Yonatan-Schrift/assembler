@@ -83,7 +83,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 		/* Check if the line encountered an error */
 		if (current_error < SUCCESS_CODE) {
-			printerror("error_flag", line_count, current_error);
+			printerror(line_count, current_error);
 			continue;
 		}
 
@@ -103,7 +103,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			}
 			/* check for an empty label */
 			if (!parsed_line.command) {
-				printerror("label without a command", line_count, EMPTY_LABEL);
+				printerror(line_count, EMPTY_LABEL);
 				error_flag = TRUE;
 				continue;
 			}
@@ -114,7 +114,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					current_error = insert_symbol(parsed_line.label, DATA, FALSE, DC, &sym_table, mcro_tb);
 
 					if (current_error != SUCCESS_CODE) {
-						printerror("IF_ERROR", line_count, current_error);
+						printerror(line_count, current_error);
 						error_flag = TRUE;
 					}
 				}
@@ -123,7 +123,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					/* is '.data' instruction */
 					if (parsed_line.arguments[0] == NULL) {
 						/* Checks that the data does exist */
-						printerror("MISSING PARAMETERS", line_count, MISSING_ARGS);
+						printerror(line_count, MISSING_ARGS);
 						error_flag = TRUE;
 						continue;
 					}
@@ -148,7 +148,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					/* Checking if the quote has an error */
 					if (ret < SUCCESS_CODE) {
 						error_flag = TRUE;
-						printerror("err", line_count, ret);
+						printerror(line_count, ret);
 						continue;
 					}
 					string_arg = copy_string(line + ret);
@@ -169,7 +169,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 			else if (IS_ENTRY_OR_EXTERN(parsed_line.command)) {
 				current_error = check_arg_count(parsed_line.arguments, NO_INDEX, REQUIRED_ARGS_FOR_DIRECTIVE);
 				if (current_error) {
-					printerror("current error", line_count, current_error);
+					printerror(line_count, current_error);
 					error_flag = TRUE;
 					continue;
 				}
@@ -178,7 +178,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					current_error = insert_symbol(parsed_line.arguments[0], NO_ATTR, EXTERNAL, 0, &sym_table, mcro_tb); /* probl */
 
 					if (current_error != SUCCESS_CODE) {
-						printerror("IF_ERROR", line_count, current_error);
+						printerror(line_count, current_error);
 						error_flag = TRUE;
 					}
 				}
@@ -196,7 +196,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				if (is_symbol) {
 					current_error = insert_symbol(parsed_line.label, CODE, FALSE, IC, &sym_table, mcro_tb);
 					if (current_error != SUCCESS_CODE) {
-						printerror("SYMBOL ERROR\n", line_count, current_error);
+						printerror(line_count, current_error);
 						error_flag = TRUE;
 					}
 				}
@@ -206,7 +206,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				opcode_index = find_in_opcode(parsed_line.command);
 				/* Saving the opcode and checking if it failed. */
 				if (opcode_index < SUCCESS_CODE) {
-					printerror("OPERATION NOT FOUND", line_count, opcode_index);
+					printerror(line_count, opcode_index);
 					error_flag = TRUE;
 					continue;
 				}
@@ -214,7 +214,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				/* checking the amount of arguments */
 				current_error = check_arg_count(parsed_line.arguments, opcode_index, NO_ARG_COUNT);
 				if (current_error != SUCCESS_CODE) {
-					printerror("Argument Error found\n", line_count, current_error);
+					printerror(line_count, current_error);
 					error_flag = TRUE;
 					continue;
 				}
@@ -223,7 +223,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				/* find L - the number of info-words required */
 				L = count_info_words_required(parsed_line.arguments, &sym_table);
 				if (L < SUCCESS_CODE) {
-					printerror("Info word error found: \n", line_count, L);
+					printerror(line_count, L);
 					error_flag = TRUE;
 					continue;
 				}
@@ -232,7 +232,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 				current_error = add_instruction(&parsed_line, &machine_code, &sym_table, L, line_count, &machine_code_size);
 				if (current_error != SUCCESS_CODE) {
-					printerror("Error doing something cool\n", line_count, current_error);
+					printerror(line_count, current_error);
 					error_flag = TRUE;
 					continue;
 				}
@@ -248,7 +248,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 	/* Check if the program used too much memory */
 	if ((IC - 100) + DC >= MAX_MEMORY) {
-		printerror("Too much memory", NO_LINE, OUT_OF_MEMORY);
+		printerror(NO_LINE, OUT_OF_MEMORY);
 		error_flag = TRUE;
 	}
 
@@ -321,7 +321,7 @@ int add_data_word(int value, int *data_cap, int **data_image) {
 		*data_cap *= 2;
 		img_buffer = realloc(*data_image, *data_cap * sizeof(int));
 		if (!img_buffer) {
-			printerror("Memory failue", NO_LINE, 0);
+			printerror(NO_LINE, 0);
 			return EXIT_FAILURE;
 		}
 		*data_image = img_buffer;
@@ -373,7 +373,7 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	index = find_in_opcode(line->command);
 	if (index < SUCCESS_CODE) {
 		/* OPCODE not found */
-		printerror("Error,\n", line_num, index);
+		printerror(line_num, index);
 		found_error = TRUE;
 		return found_error;
 	}
@@ -547,7 +547,7 @@ int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, 
 		*reg = 0;
 		num = find_addressing_method(argument, sym_tb);
 		if (num < SUCCESS_CODE) {
-			printerror("Error,\n", line_num, num);
+			printerror(line_num, num);
 			*addr = num; /* Store the error code in the addressing field */
 			return FAIL_CODE;
 		}

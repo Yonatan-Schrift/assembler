@@ -11,9 +11,9 @@ FILE *open_file(const char *filename, const char *extension, const char *mode) {
 	/* checks that the file opened */
 	if (!file) {
 		if (find_extension(filename)) {
-			printerror("error", NO_LINE, FILE_INCLUDES_EXTENSION);
+			printerror(NO_LINE, FILE_INCLUDES_EXTENSION);
 		} else {
-			printerror("failed to open the file\n", NO_LINE, COULD_NOT_OPEN_FILE);
+			printerror(NO_LINE, COULD_NOT_OPEN_FILE);
 		}
 		return NULL;
 	}
