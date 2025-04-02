@@ -6,9 +6,14 @@ mcro a_mc
 ;nothing
 mcroend
 
-;mcro a_mc
+mcro mcro ; unallowed name
+prn #62
+mcroend
+
+mcro a_mc
 ;duplicate macro
-;mcroend
+prn #566
+mcroend
 
         .data 5, 10, 15
 LABEL1:	 mov r1, r2 ; SYMBOL_ALREADY_EXISTS
