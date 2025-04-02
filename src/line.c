@@ -104,7 +104,7 @@ int split_line(char *line, Line *output) {
 
 	/* Check for extra comma after the last argument */
 	if (i != 0) {
-		found = strstr(line, args[i - 1]);
+		found = find_last_occurrence(line, args[i - 1]);
 		if (found != NULL) {
 			ret_index = strlen(args[i - 1]);
 			if (found[ret_index] == ',') {

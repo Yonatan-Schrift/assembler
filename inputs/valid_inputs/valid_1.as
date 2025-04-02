@@ -7,7 +7,7 @@ LENGTH: .data  6,-9,15
 MAIN:        mov r3 ,    r2
 
         K:   .data  10,12  ,     13,    14
-;This is a coment, !@#&%%#+!)+$
+;This is a comment, !@#&%%#+!)+$
 LOOP: jmp L1
 prn MS1
 sub r6    ,      r4

@@ -45,9 +45,11 @@
 #define EXTRA_COMMA_AFTER_COMMAND -30
 #define UNALLOWED_CHARS_IN_DATA -31
 #define EXTRA_COMMA_AFTER_PARAM_PRE_ASS -32
-
-
-
+#define INCORRECT_PARAM_TYPE -33
+#define MCRO_CANNOT_BE_A_LABEL -34
+#define EXTRA_TEXT_AFTER_MCRO -35
+#define MCRO_DEFINITION_WITH_NO_NAME -36
+#define NOT_AN_INT_WHEN_USING_IMMEDIATE -37
 
 /* Print an error message and continue execution. */
 void printerror(int line_num, int error_code);

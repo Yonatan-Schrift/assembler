@@ -41,7 +41,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 			return EXIT_FAILURE;
 		}
 		init_macro(mcro);
-		
+
 		/* Check for a macro definition */
 		if ((current_error = parse_macro(line, &line_count, file_in, mcro)) == EXIT_SUCCESS) {
 			if (lookup(mcro_table, mcro->name) != NULL) {
@@ -72,7 +72,6 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 			fprintf(file_out, "%s\n", line);
 			fflush(file_out);
 		}
-		
 	}
 
 	fclose(file_in);
@@ -104,7 +103,7 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 		return FAIL_CODE;
 	}
 
-	if((current_error = split_line(input, &line)) < SUCCESS_CODE) {
+	if ((current_error = split_line(input, &line)) < SUCCESS_CODE) {
 		free(macro_body);
 		return current_error;
 	}
@@ -123,6 +122,14 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 
 		mcro->name = NULL;
 		return current_error;
+	}
+
+	/* Checks that the macro doesn't have a label */
+	if (line.label != NULL) {
+		free(macro_body);
+		free_line(&line);
+		mcro->name = NULL;
+		return MCRO_CANNOT_BE_A_LABEL;
 	}
 
 	mcro->name = copy_string(macro_name);
@@ -147,10 +154,18 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 		split_line(input, &line);
 
 		if (!line.command) {
-			break;
+			/* Empty line */
+			continue;
 		}
 
 		if (strcmp(line.command, MACRO_END_STRING) == STRCMP_SUCCESS) {
+			/* Check if mcroend has any text afterwards */
+			if (line.arguments[0] != NULL) {
+				free(macro_body);
+				free_line(&line);
+				mcro->body = NULL;
+				return EXTRA_TEXT_AFTER_MCRO;
+			}
 			IS_MACRO = FALSE;
 			continue;
 		}

@@ -132,6 +132,22 @@ int find_quotes(char *string) {
 	return MISSING_ARGS;
 }
 
+char *find_last_occurrence(const char *haystack, const char *needle) {
+    char *result = NULL;
+    char *temp = (char *)haystack;
+    
+    /* Edge case: if needle is an empty string, return haystack */
+    if (*needle == '\0') {
+        return (char *)haystack;
+    }
+
+    while ((temp = strstr(temp, needle)) != NULL) {
+        result = temp;
+        temp++;  /* Advance pointer to search for further occurrences */
+    }
+    return result;
+}
+
 char *clean_arg(char *arg) {
 	char *output = NULL;
 	int i, j;

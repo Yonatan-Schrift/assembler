@@ -101,6 +101,21 @@ void printerror(int line_num, int error_code) {
         case EXTRA_COMMA_AFTER_PARAM_PRE_ASS:
             error_msg = "Extra comma after parameter - found during the pre-assembler";
             break;
+        case MCRO_CANNOT_BE_A_LABEL:
+            error_msg = "A macro definition cannot be a label";
+            break;
+        case EXTRA_TEXT_AFTER_MCRO:
+            error_msg = "Extra text after macro definition / end";
+            break;
+        case MCRO_DEFINITION_WITH_NO_NAME:
+            error_msg = "Macro definition with no name";
+            break;
+        case NOT_AN_INT_WHEN_USING_IMMEDIATE:
+            error_msg = "Not a digit when using #";
+            break;
+        case INCORRECT_PARAM_TYPE:
+            error_msg = "Incorrect parameter type";
+            break;
         default:
             error_msg = "Unknown error";
         }

@@ -5,14 +5,17 @@
 #include "../h/macro.h"
 #include "../h/second_pass.h"
 #include <string.h>
+
 #define IS_STORE_INST(a) (strcmp((a), ".string") == STRCMP_SUCCESS || strcmp((a), ".data") == STRCMP_SUCCESS)
 #define IS_ENTRY_OR_EXTERN(a) (strcmp((a), ".extern") == STRCMP_SUCCESS || strcmp((a), ".entry") == STRCMP_SUCCESS)
 #define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
+#define METHOD_COUNT_TO_CHECK 3
+
 
 const op_code OPCODES[] = {
 	/* {"command", "opcode", "funct", "req_args", "is_source", "is_dest", allowed_source_methods, allowed_dest_methods} */
 	{"mov", 0, 0, 2, TRUE, TRUE, {IMMEDIATE, DIRECT, REGISTER_DIRECT}, {DIRECT, REGISTER_DIRECT, EMPTY_VALUE}},
-	{"cmp", 1, 0, 2, TRUE, TRUE, {IMMEDIATE, DIRECT, REGISTER_DIRECT}, {DIRECT, DIRECT, REGISTER_DIRECT}},
+	{"cmp", 1, 0, 2, TRUE, TRUE, {IMMEDIATE, DIRECT, REGISTER_DIRECT}, {IMMEDIATE, DIRECT, REGISTER_DIRECT}},
 	{"add", 2, 1, 2, TRUE, TRUE, {IMMEDIATE, DIRECT, REGISTER_DIRECT}, {DIRECT, REGISTER_DIRECT, EMPTY_VALUE}},
 	{"sub", 2, 2, 2, TRUE, TRUE, {IMMEDIATE, DIRECT, REGISTER_DIRECT}, {DIRECT, REGISTER_DIRECT, EMPTY_VALUE}},
 	{"lea", 4, 0, 2, TRUE, TRUE, {DIRECT, EMPTY_VALUE, EMPTY_VALUE}, {DIRECT, REGISTER_DIRECT, EMPTY_VALUE}},
@@ -91,7 +94,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 
 		/* Read a line from the source */
-		/* printf("Read line is: %d : %s\n", IC + DC, line); */ /*  DEBUG */
 
 		/* Skips the line if it's empty */
 		if (isEmpty(line) == TRUE) {
@@ -134,7 +136,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						/* saves each integer to the data-image */
 						value = atoi(parsed_line.arguments[i]);
 						/* Here error check the data */
-						if((current_error = check_valid_number(parsed_line.arguments[i])) < SUCCESS_CODE) {
+						if ((current_error = check_valid_number(parsed_line.arguments[i])) < SUCCESS_CODE) {
 							printerror(line_count, current_error);
 							error_flag = TRUE;
 							break;
@@ -148,7 +150,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						}
 					}
 					/* Check for an extra comma on the last param */
-					i = (i != 0) ? i - 1: i; /* Lower the index by 1 if there are more than one number */
+					i = (i != 0) ? i - 1 : i; /* Lower the index by 1 if there are more than one number */
 					if ((current_error = check_for_commas(parsed_line.arguments[i])) < SUCCESS_CODE) {
 						printerror(line_count, current_error);
 						error_flag = TRUE;
@@ -409,6 +411,14 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	inst->dest_operand = NULL;
 	inst->src_operand = NULL;
 
+	/* Validate the argument types (addressing method) */
+	return_code = validate_arguments(line->arguments, index);
+	if (return_code != SUCCESS_CODE) {
+		printerror(line_num, return_code);
+		free(inst);
+		return TRUE;
+	}
+
 	/* checking if the operation has a source argument */
 	if (OPCODES[index].is_source) {
 
@@ -484,7 +494,10 @@ int find_addressing_method(char *operand) {
 
 	if (!operand || isEmpty(operand)) return FAIL_CODE;
 
-	if (*operand == '#') return IMMEDIATE;
+	if (*operand == '#') {
+		if (check_valid_number((operand + 1))) return NOT_AN_INT_WHEN_USING_IMMEDIATE;
+		return IMMEDIATE;
+	}
 
 	if (is_register(operand)) return REGISTER_DIRECT;
 
@@ -646,4 +659,44 @@ int compare_symbols_by_value(const void *a, const void *b) {
 	Symbol *sym_a = *(Symbol **)a;
 	Symbol *sym_b = *(Symbol **)b;
 	return sym_a->value - sym_b->value;
+}
+
+int validate_arguments(char **args, int index) {
+	int i, arg_index = 0, addr, found;
+	char *cur_arg;
+
+	if (OPCODES[index].is_source) {
+		cur_arg = clean_arg(args[arg_index++]);
+
+		addr = find_addressing_method(cur_arg);
+
+		free(cur_arg);
+
+		found = FALSE;
+		for (i = 0; i < METHOD_COUNT_TO_CHECK; i++) {
+			if (addr == OPCODES[index].valid_source_method[i]) {
+				found = TRUE;
+				break;
+			}
+		}
+		if (!found) return INCORRECT_PARAM_TYPE;
+	}
+	if (OPCODES[index].is_dest) {
+		cur_arg = clean_arg(args[arg_index]);
+
+		addr = find_addressing_method(cur_arg);
+
+		free(cur_arg);
+
+		found = FALSE;
+		for (i = 0; i < METHOD_COUNT_TO_CHECK; i++) {
+			if (addr == OPCODES[index].valid_dest_method[i]) {
+				found = TRUE;
+				break;
+			}
+		}
+		if (!found) return INCORRECT_PARAM_TYPE;
+	}
+
+	return SUCCESS_CODE;
 }

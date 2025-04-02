@@ -55,7 +55,7 @@ typedef struct op_code {
 	int is_source;
 	int is_dest;
 	int valid_source_method[MAX_METHODS];
-	int valid_deest_method[MAX_METHODS];
+	int valid_dest_method[MAX_METHODS];
 } op_code;
 
 typedef struct Symbol {
@@ -102,5 +102,7 @@ void free_everything(int *data_image, FirstInstruction **machine_code, int machi
 void print_symbol(Symbol *sym);
 
 int compare_symbols_by_value(const void *a, const void *b);
+
+int validate_arguments(char **args, int index);
 
 #endif /* FIRST_PASS_H */

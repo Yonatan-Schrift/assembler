@@ -11,7 +11,7 @@ void init_macro(Macro *mcro) {
 
 int is_reserved_name(char *name) {
 	if (!name || !(*name)) /* Check if name is not NULL or empty */
-		return TRUE;
+		return MCRO_DEFINITION_WITH_NO_NAME;
 
 	/* Check if the name is a reserved name */
 	if(!(is_op_name(name) == FALSE && is_register(name) == FALSE && is_instruction(name) == FALSE)) 

@@ -1,6 +1,6 @@
 .entry LENGTH
 
-MAIN:,,mov r3 , LENGTH
+MAIN: ,,mov r3 , LENGTH
 LOOP: jmp L1
 prn a
 bne W
@@ -10,7 +10,8 @@ L1:  in K2
     .entry 1LOOP
 jmp W and A
 END: stop
-STR:..string. "abcdef"
-LENGTH:.data  6,,-9,15
-K:.data  22, a
+STR: ..string. "abcdef"
+LENGTH: .data  6,,-9,15
+K: .data  22, a
+.string 
     .extern L3

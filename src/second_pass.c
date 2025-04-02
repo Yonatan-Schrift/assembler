@@ -90,7 +90,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 	/* writing the machine code into the object file */
 	for (i = 0; i < machine_code_size; i++) {
 		ic = i + 100;
-		current_error = build_binary_instruction(machine_code[i], sym_tb, file_ob, file_ent, file_ext, &ic);
+		current_error = build_binary_instruction(machine_code[i], sym_tb, file_ob, file_ext, &ic);
 		if (current_error) {
 			printerror(ic, current_error);
 			error_flag = TRUE;
@@ -104,7 +104,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 		fprintf(file_ob, "%07d %06x\n", ic, data_image[i] & 0xFFFFFF);
 	}
 
-	write_symbols_to_files(sym_tb, file_ent, file_ext);
+	write_symbols_to_files(sym_tb, file_ent);
 
 	/* Check for any errors that might happen during file building */
 	if (error_flag == TRUE) {
@@ -166,7 +166,7 @@ int build_info_word(int value, int addressing_method, int type) {
 	return info_word;
 }
 
-int process_operand(char *operand, int addressing, int immediate_value, hashmap_t *sym_tb, FILE *file_ob, int *ic, FILE *file_ent, FILE *file_ext) {
+int process_operand(char *operand, int addressing, int immediate_value, hashmap_t *sym_tb, FILE *file_ob, int *ic, FILE *file_ext) {
 	int value, type = NO_ATTR, word;
 	Symbol *sym;
 	char *cur_operand = clean_arg(operand);
@@ -203,7 +203,7 @@ int process_operand(char *operand, int addressing, int immediate_value, hashmap_
 	return SUCCESS_CODE;
 }
 
-int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *file_ob, FILE *file_ent, FILE *file_ext, int *ic) {
+int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *file_ob, FILE *file_ext, int *ic) {
 	int word, ret;
 
 	if (!sym_tb || !file_ob) return FAIL_CODE;
@@ -220,7 +220,7 @@ int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *fi
 	/* Process source operand if required */
 	if (OPCODES[code->index].is_source && code->src_addressing != REGISTER_DIRECT) {
 		(*ic)++;
-		ret = process_operand(code->src_operand, code->src_addressing, code->immediate_value, sym_tb, file_ob, ic, file_ent, file_ext);
+		ret = process_operand(code->src_operand, code->src_addressing, code->immediate_value, sym_tb, file_ob, ic, file_ext);
 		if (ret != SUCCESS_CODE)
 			return ret;
 	}
@@ -228,7 +228,7 @@ int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *fi
 	/* Process destination operand if required */
 	if (OPCODES[code->index].is_dest && code->dest_addressing != REGISTER_DIRECT) {
 		(*ic)++;
-		ret = process_operand(code->dest_operand, code->dest_addressing, code->immediate_value, sym_tb, file_ob, ic, file_ent, file_ext);
+		ret = process_operand(code->dest_operand, code->dest_addressing, code->immediate_value, sym_tb, file_ob, ic, file_ext);
 		if (ret != SUCCESS_CODE)
 			return ret;
 	}
@@ -236,7 +236,7 @@ int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *fi
 	return SUCCESS_CODE;
 }
 
-void write_symbols_to_files(hashmap_t *sym_tb, FILE *file_ent, FILE *file_ext) {
+void write_symbols_to_files(hashmap_t *sym_tb, FILE *file_ent) {
 	int i;
 	int capacity = 128;
 	int count = 0;
@@ -275,7 +275,7 @@ void write_symbols_to_files(hashmap_t *sym_tb, FILE *file_ent, FILE *file_ext) {
 	for (i = 0; i < count; i++) {
 		sym = symbols[i];
 		if (sym->entry_or_extern == ENTRY) {
-			fprintf(file_ent, "%s %d\n", sym->name, sym->value);
+			fprintf(file_ent, "%s %07d\n", sym->name, sym->value);
 		}
 	}
 	free(symbols);
