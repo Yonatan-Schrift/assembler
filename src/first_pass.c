@@ -492,7 +492,7 @@ int check_arg_count(char **args, int index, int required_arg_count) {
 
 int find_addressing_method(char *operand) {
 
-	if (!operand || isEmpty(operand)) return FAIL_CODE;
+	if (!operand || isEmpty(operand)) return EXTRA_COMMA_AFTER_PARAM;
 
 	if (*operand == '#') {
 		if (check_valid_number((operand + 1))) return NOT_AN_INT_WHEN_USING_IMMEDIATE;
@@ -531,8 +531,8 @@ int count_info_words_required(char **args) {
 			break;
 		case NOT_A_LABEL:
 			return NOT_A_LABEL;
-		case FAIL_CODE:
-			return FAIL_CODE;
+		case EXTRA_COMMA_AFTER_PARAM:
+			return EXTRA_COMMA_AFTER_PARAM;
 		};
 	}
 	return L;

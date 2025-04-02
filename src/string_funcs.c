@@ -83,6 +83,11 @@ int check_valid_number(char *string) {
 	
 	copy = clean_arg(string);
 
+	if (*copy == '\0') {
+		free(copy);
+		return EXTRA_COMMA_AFTER_PARAM;
+	}
+
 	/* Check if first character is minus sign for negative numbers */
 	i = (copy[0] == '-') ? 1 : 0;
 
