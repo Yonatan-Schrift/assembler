@@ -133,8 +133,13 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					for (i = 0; parsed_line.arguments[i] != NULL; i++) {
 						/* saves each integer to the data-image */
 						value = atoi(parsed_line.arguments[i]);
-
-						if (add_data_word(value, &data_size, &data_image) != EXIT_SUCCESS) {
+						/* Here error check the data */
+						if((current_error = check_valid_number(parsed_line.arguments[i])) < SUCCESS_CODE) {
+							printerror(line_count, current_error);
+							error_flag = TRUE;
+							break;
+						}
+						if (add_data_word(value, &data_size, &data_image) != SUCCESS_CODE) {
 							/* Memory failure */
 							free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
 							close_mult_files(file_in, NULL, NULL, NULL);
@@ -143,7 +148,8 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						}
 					}
 					/* Check for an extra comma on the last param */
-					if ((current_error = check_for_commas(parsed_line.arguments[i - 1])) < SUCCESS_CODE) {
+					i = (i != 0) ? i - 1: i; /* Lower the index by 1 if there are more than one number */
+					if ((current_error = check_for_commas(parsed_line.arguments[i])) < SUCCESS_CODE) {
 						printerror(line_count, current_error);
 						error_flag = TRUE;
 						continue;

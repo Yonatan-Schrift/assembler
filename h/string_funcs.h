@@ -32,4 +32,22 @@ int find_quotes(char *string);
 
 int check_for_commas(char *string);
 
+int check_valid_number(char *string) ;
+
+/**
+ * Cleans a string argument by removing all whitespace characters.
+ *
+ * @param arg The input string to be cleaned.
+ *
+ * @return A newly allocated string with all whitespace characters removed,
+ *         or NULL if:
+ *         - Input is NULL
+ *         - Input is empty string
+ *         - Memory allocation fails
+ *
+ * @note The caller is responsible for freeing the returned string.
+ * code taken from Maman 22 by Yonatan Schrift
+ */
+ char *clean_arg( char *arg);
+
 #endif /* STRING_FUNCS_H */

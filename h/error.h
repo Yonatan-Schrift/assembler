@@ -43,6 +43,11 @@
 #define EXTRA_COMMA_AFTER_PARAM -28
 #define EXTRA_COMMA_BEFORE_PARAM -29
 #define EXTRA_COMMA_AFTER_COMMAND -30
+#define UNALLOWED_CHARS_IN_DATA -31
+#define EXTRA_COMMA_AFTER_PARAM_PRE_ASS -32
+
+
+
 
 /* Print an error message and continue execution. */
 void printerror(int line_num, int error_code);

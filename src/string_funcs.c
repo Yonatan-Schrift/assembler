@@ -1,5 +1,6 @@
 #include "../h/string_funcs.h"
 #include "../h/error.h"
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -70,6 +71,34 @@ int check_for_commas(char *string) {
 	return EXIT_SUCCESS;
 }
 
+int check_valid_number(char *string) {
+	int i;
+	char *copy;
+
+	/* Check if string is valid */
+	if (!string) return FAIL_CODE;
+
+	/* Check if string is empty */
+	if (string[0] == '\0') return FAIL_CODE;
+	
+	copy = clean_arg(string);
+
+	/* Check if first character is minus sign for negative numbers */
+	i = (copy[0] == '-') ? 1 : 0;
+
+	/* Iterate through string and check if each character is a digit */
+	for (; copy[i] != '\0'; i++) {
+		if ((copy[i] < '0' || copy[i] > '9')) {
+			free(copy);
+			return UNALLOWED_CHARS_IN_DATA;
+		}
+	}
+
+	free(copy);
+
+	return EXIT_SUCCESS;
+}
+
 int find_quotes(char *string) {
 	int i, ret = -1, count = 0;
 
@@ -101,4 +130,33 @@ int find_quotes(char *string) {
 
 	/* No quote found */
 	return MISSING_ARGS;
+}
+
+char *clean_arg(char *arg) {
+	char *output = NULL;
+	int i, j;
+	int len;
+
+	if (arg == NULL || *arg == '\0') {
+		return NULL; /* Return NULL if the input is null or an empty string */
+	}
+
+	len = strlen(arg);
+
+	/* Allocating memory with the length of arg. */
+	output = malloc(len + 1); /* +1 for the null terminator */
+	if (!output) {
+		printf("Failed memory allocation\n");
+		return NULL; /* Memory allocation failed */
+	}
+
+	/* Iterate through the input string and copy only non-whitespace characters */
+	for (i = 0, j = 0; i < len; i++) {
+		if (!isspace(arg[i])) {
+			output[j] = arg[i];
+			j++;
+		}
+	}
+	output[j] = '\0'; /* Null-terminate the output string */
+	return output;
 }

@@ -69,7 +69,7 @@ void printerror(int line_num, int error_code) {
             error_msg = "Macro / Label uses unallowed characters";
             break;
         case MISSING_COMMA:
-            error_msg = "Missing closing quote";
+            error_msg = "Missing comma between arguments";
             break;
         case MISSING_CLOSING_QUOTE:
             error_msg = "Missing closing quote";
@@ -94,6 +94,12 @@ void printerror(int line_num, int error_code) {
             break;
         case EXTRA_COMMA_AFTER_COMMAND:
             error_msg = "Extra comma after command";
+            break;
+        case UNALLOWED_CHARS_IN_DATA:
+            error_msg = "Unallowed characters in .data directive, expected numbers";
+            break;
+        case EXTRA_COMMA_AFTER_PARAM_PRE_ASS:
+            error_msg = "Extra comma after parameter - found during the pre-assembler";
             break;
         default:
             error_msg = "Unknown error";

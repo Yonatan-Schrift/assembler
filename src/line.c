@@ -1,6 +1,7 @@
 #include "../h/line.h"
 #include "../h/globals.h"
 #include "../h/string_funcs.h"
+#include <string.h>
 
 void init_line(Line *line) {
 	if (line == NULL) {
@@ -41,8 +42,8 @@ int read_line(FILE *file, char *line) {
 }
 
 int split_line(char *line, Line *output) {
-	char *input_copy, *token, **args, **args_buffer;
-	int i, arg_count = MAX_ARGS;
+	char *input_copy, *found, *token, **args, **args_buffer;
+	int i, arg_count = MAX_ARGS, ret_index;
 
 	if (line == NULL) {
 		return FAIL_CODE;
@@ -64,7 +65,7 @@ int split_line(char *line, Line *output) {
 
 	/* Extract label if found */
 	token = strtok(input_copy, " ");
-	
+
 	output->input_copy = input_copy;
 
 	if (token && strchr(token, ':')) {
@@ -100,6 +101,19 @@ int split_line(char *line, Line *output) {
 	args[i] = NULL;
 
 	output->arguments = args;
+
+	/* Check for extra comma after the last argument */
+	if (i != 0) {
+		found = strstr(line, args[i - 1]);
+		if (found != NULL) {
+			ret_index = strlen(args[i - 1]);
+			if (found[ret_index] == ',') {
+				free(args);
+				free(input_copy);
+				return EXTRA_COMMA_AFTER_PARAM_PRE_ASS;
+			}
+		}
+	}
 
 	return EXIT_SUCCESS;
 }
@@ -179,35 +193,6 @@ int is_instruction(char *name) {
 	}
 
 	return is_in_array(name, array);
-}
-
-char *clean_arg(char *arg) {
-	char *output = NULL;
-	int i, j;
-	int len;
-
-	if (arg == NULL || *arg == '\0') {
-		return NULL; /* Return NULL if the input is null or an empty string */
-	}
-
-	len = strlen(arg);
-
-	/* Allocating memory with the length of arg. */
-	output = malloc(len + 1); /* +1 for the null terminator */
-	if (!output) {
-		printf("Failed memory allocation\n");
-		return NULL; /* Memory allocation failed */
-	}
-
-	/* Iterate through the input string and copy only non-whitespace characters */
-	for (i = 0, j = 0; i < len; i++) {
-		if (!isspace(arg[i])) {
-			output[j] = arg[i];
-			j++;
-		}
-	}
-	output[j] = '\0'; /* Null-terminate the output string */
-	return output;
 }
 
 void remove_special_chars(char *str) {
