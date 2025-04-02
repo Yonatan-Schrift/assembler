@@ -42,7 +42,7 @@
 #define INITIALIZING_EXTERN -27
 #define EXTRA_COMMA_AFTER_PARAM -28
 #define EXTRA_COMMA_BEFORE_PARAM -29
-
+#define EXTRA_COMMA_AFTER_COMMAND -30
 
 /* Print an error message and continue execution. */
 void printerror(int line_num, int error_code);

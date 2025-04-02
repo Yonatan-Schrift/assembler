@@ -80,7 +80,7 @@ int split_line(char *line, Line *output) {
 	/* Extract command */
 	if (token) {
 		output->command = token;
-		token = strtok(NULL, " ");
+		token = strtok(NULL, ",");
 	}
 
 	/* Puts the rest of the tokens as arguments */
@@ -93,7 +93,6 @@ int split_line(char *line, Line *output) {
 			}
 			args = args_buffer;
 		}
-		/* args[i] = clean_arg(token); */
 		args[i] = token;
 	}
 

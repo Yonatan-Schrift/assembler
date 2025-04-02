@@ -76,48 +76,15 @@ int add_data_word(int value, int *data_cap, int **data_image);
 
 int add_string_word(char *string, int *data_cap, int **data_image);
 
-/**
- * @brief Adds an instruction to the machine code buffer.
- *
- * This function processes the instruction line, determines the appropriate opcode,
- * addressing methods, and other instruction components. It then builds a FirstInstruction
- * structure and adds it to the machine code buffer.
- *
- * @param line The parsed line containing the command and arguments.
- * @param machine_code Pointer to the machine code buffer array.
- * @param sym_tb Hash map containing the symbol table.
- * @param L The number of info-words for this instruction.
- * @param line_num The current line number in the source code.
- * @param machine_code_size Pointer to the current size of the machine code buffer.
- *
- * @return TRUE if an error was found during processing, FALSE otherwise.
- *
- * @note The function dynamically resizes the machine code buffer if needed.
- * @note IC (Instruction Counter) is a global variable starting at 100.
- */
 int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym_tb, int L, int line_num, int *machine_code_size);
 
 int find_in_opcode(char *string);
 
 int check_arg_count(char **args, int index, int required_arg_count);
 
-/**
- * @brief Determines the addressing method of an operand.
- *
- * This function analyzes the given operand string and determines its addressing method
- * based on the following criteria:
- * - 0: Immediate addressing (operand starts with '#')
- * - 1: Direct addressing (operand exists in the symbol table)
- * - 2: Relative addressing (operand starts with '&' and the rest exists in the symbol table)
- * - 3: Direct register addressing (operand is a valid register)
- *
- * @param operand The operand string to analyze
- * @param sym_tb A hash map containing the symbol table
- * @return The addressing method code (0-3) or FAIL_CODE if the addressing method is invalid
- */
-int find_addressing_method(char *operand, hashmap_t *sym_tb);
+int find_addressing_method(char *operand);
 
-int count_info_words_required(char **args, hashmap_t *sym_tb);
+int count_info_words_required(char **args);
 
 void set_data_to_icf(hashmap_t *sym_tb, int ICF);
 
@@ -128,21 +95,7 @@ void set_data_to_icf(hashmap_t *sym_tb, int ICF);
  */
 void free_symbol(Symbol *sym);
 
-/**
- * @brief Process an argument to determine its type (register or immediate/direct/index)
- * and addressing method.
- *
- * @param argument The argument string to process
- * @param sym_tb Pointer to the symbol table
- * @param line_num Current line number in the assembly source file
- * @param reg Pointer to store register number (if applicable, otherwise 0)
- * @param addr Pointer to store addressing method code or error code
- * @param operand Pointer to store the operand name if a symbol
- * @param value Pointer to store value if immidiete
- *
- * @return SUCCESS_CODE if processing was successful, FAIL_CODE if an error occurred
- */
-int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr, char **operand, int *value);
+int process_argument(char *argument, int line_num, int *reg, int *addr, char **operand, int *value);
 
 void free_everything(int *data_image, FirstInstruction **machine_code, int machine_code_size, hashmap_t *sym_table, hashmap_t *mcro_tb, Line *line);
 

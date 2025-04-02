@@ -2,9 +2,9 @@
 #include "../h/file_funcs.h"
 #include "../h/hashmap.h"
 #include "../h/line.h"
-#include "../h/pre_assembler.h"
+#include "../h/macro.h"
 #include "../h/second_pass.h"
-
+#include <string.h>
 #define IS_STORE_INST(a) (strcmp((a), ".string") == STRCMP_SUCCESS || strcmp((a), ".data") == STRCMP_SUCCESS)
 #define IS_ENTRY_OR_EXTERN(a) (strcmp((a), ".extern") == STRCMP_SUCCESS || strcmp((a), ".entry") == STRCMP_SUCCESS)
 #define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
@@ -72,11 +72,12 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 	DC = 0;
 
 	while ((current_error = read_line(file_in, line)) != EXIT_FAILURE) {
-		/* For iterations after the first, free the memory allocated for the previous line.
+		/*  For iterations after the first, free the memory allocated for the previous line.
 		 * (On the first iteration, no memory has been allocated yet.) */
 		if (line_count > 0) {
 			free_line(&parsed_line);
 		}
+
 		/* Reinitialize parsed_line to prepare for processing the next line. */
 		init_line(&parsed_line);
 
@@ -90,7 +91,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 		}
 
 		/* Read a line from the source */
-		 printf("Read line is: %d : %s\n", IC + DC, line);  /*  DEBUG */
+		/* printf("Read line is: %d : %s\n", IC + DC, line); */ /*  DEBUG */
 
 		/* Skips the line if it's empty */
 		if (isEmpty(line) == TRUE) {
@@ -132,7 +133,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					for (i = 0; parsed_line.arguments[i] != NULL; i++) {
 						/* saves each integer to the data-image */
 						value = atoi(parsed_line.arguments[i]);
-						
+
 						if (add_data_word(value, &data_size, &data_image) != EXIT_SUCCESS) {
 							/* Memory failure */
 							free_everything(data_image, machine_code, machine_code_size, &sym_table, mcro_tb, &parsed_line);
@@ -142,8 +143,8 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 						}
 					}
 					/* Check for an extra comma on the last param */
-					if((current_error = check_for_commas(parsed_line.arguments[i])) < SUCCESS_CODE) {
-						printerror("comma error", line_count, current_error);
+					if ((current_error = check_for_commas(parsed_line.arguments[i - 1])) < SUCCESS_CODE) {
+						printerror(line_count, current_error);
 						error_flag = TRUE;
 						continue;
 					}
@@ -151,7 +152,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 				else if (COMPARE_STR(parsed_line.command, ".string")) {
 					/* is '.string' instruction */
-					
+
 					ret = find_quotes(line);
 					/* Checking if the quote has an error */
 					if (ret < SUCCESS_CODE) {
@@ -229,7 +230,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 				/* Stage 13 */
 				/* find L - the number of info-words required */
-				L = count_info_words_required(parsed_line.arguments, &sym_table);
+				L = count_info_words_required(parsed_line.arguments);
 				if (L < SUCCESS_CODE) {
 					printerror(line_count, L);
 					error_flag = TRUE;
@@ -384,11 +385,6 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 		printerror(line_num, index);
 		return TRUE;
 	}
-	/* Check for errors with commas */
-	if((return_code = check_for_commas(line->command)) < SUCCESS_CODE) {
-		printerror(line_num, return_code);
-		return TRUE;
-	}
 
 	/* allocating memory for the instruction */
 	inst = malloc(sizeof(FirstInstruction));
@@ -410,7 +406,7 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	/* checking if the operation has a source argument */
 	if (OPCODES[index].is_source) {
 
-		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->src_register, &inst->src_addressing, &inst->src_operand, &inst->immediate_value);
+		return_code = process_argument(line->arguments[arg_index], line_num, &inst->src_register, &inst->src_addressing, &inst->src_operand, &inst->immediate_value);
 		if (return_code != SUCCESS_CODE) {
 			free(inst);
 			return TRUE;
@@ -422,7 +418,7 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	}
 	/* checking if the operation has a destination argument */
 	if (OPCODES[index].is_dest) {
-		return_code = process_argument(line->arguments[arg_index], sym_tb, line_num, &inst->dest_register, &inst->dest_addressing, &inst->dest_operand, &inst->immediate_value);
+		return_code = process_argument(line->arguments[arg_index], line_num, &inst->dest_register, &inst->dest_addressing, &inst->dest_operand, &inst->immediate_value);
 		if (return_code != SUCCESS_CODE) {
 			free(inst);
 			return TRUE;
@@ -448,6 +444,9 @@ int find_in_opcode(char *string) {
 	if (!string) {
 		return OPCODE_NOT_FOUND;
 	}
+
+	if (string[strlen(string) - 1] == ',') return EXTRA_COMMA_AFTER_COMMAND;
+
 	for (i = 0; i < num_opcodes; i++) {
 		if (COMPARE_STR(string, OPCODES[i].op_code_name)) {
 			return i;
@@ -475,7 +474,7 @@ int check_arg_count(char **args, int index, int required_arg_count) {
 	return SUCCESS_CODE;
 }
 
-int find_addressing_method(char *operand, hashmap_t *sym_tb) {
+int find_addressing_method(char *operand) {
 
 	if (!operand || isEmpty(operand)) return FAIL_CODE;
 
@@ -488,14 +487,17 @@ int find_addressing_method(char *operand, hashmap_t *sym_tb) {
 	return DIRECT;
 }
 
-int count_info_words_required(char **args, hashmap_t *sym_tb) {
+int count_info_words_required(char **args) {
 	int L = 1; /* At least 1 is required */
 	int i, arg_count, addressing_method;
+	char *cur_arg;
 
 	arg_count = string_array_len(args);
 
 	for (i = 0; i < arg_count; i++) {
-		addressing_method = find_addressing_method(args[i], sym_tb);
+		cur_arg = clean_arg(args[i]);
+		addressing_method = find_addressing_method(cur_arg);
+		free(cur_arg);
 		switch (addressing_method) {
 		case IMMEDIATE:
 			L += 1;
@@ -547,26 +549,29 @@ void free_symbol(Symbol *sym) {
 	free(sym);
 }
 
-int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, int *addr, char **operand, int *value) {
+int process_argument(char *arg, int line_num, int *reg, int *addr, char **operand, int *value) {
 	int num;
+	char *cur_arg = clean_arg(arg);
 
 	/* Check for errors with commas */
-	if((num = check_for_commas(argument)) < SUCCESS_CODE) {
-		printerror("ERROR", line_num, num);
+	if ((num = check_for_commas(arg)) < SUCCESS_CODE) {
+		free(cur_arg);
+		printerror(line_num, num);
 		*addr = num;
 		return FAIL_CODE;
 	}
 
-
 	/* Check if the argument is a register */
-	if ((num = is_register(argument)) != FALSE) {
+	if ((num = is_register(cur_arg)) != FALSE) {
+		free(cur_arg);
 		*reg = num;
 		*addr = REGISTER_DIRECT;
 		return SUCCESS_CODE;
 	} else {
 		*reg = 0;
-		num = find_addressing_method(argument, sym_tb);
+		num = find_addressing_method(cur_arg);
 		if (num < SUCCESS_CODE) {
+			free(cur_arg);
 			printerror(line_num, num);
 			*addr = num; /* Store the error code in the addressing field */
 			return FAIL_CODE;
@@ -576,15 +581,16 @@ int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, 
 		/* Check which addressing method is used for the operand */
 		switch (num) {
 		case IMMEDIATE:
-			*value = atoi(argument + 1); /* +1 to skip '#' */
+			*value = atoi(cur_arg + 1); /* +1 to skip '#' */
+			free(cur_arg);
 			operand = NULL;
 			break;
 		case RELATIVE:
-			*operand = NULL; /* +1 to skip '&' */
+			*operand = (cur_arg + 1); /* + 1 to skip '&' */
 			value = 0;
 			break;
 		case DIRECT:
-			*operand = NULL;
+			*operand = cur_arg;
 			value = 0;
 			break;
 		}
@@ -595,14 +601,26 @@ int process_argument(char *argument, hashmap_t *sym_tb, int line_num, int *reg, 
 
 void free_everything(int *data_image, FirstInstruction **machine_code, int machine_code_size, hashmap_t *sym_table, hashmap_t *mcro_tb, Line *line) {
 	int i;
-
+	FirstInstruction *cur_inst;
 	if (data_image)
 		free(data_image);
 
 	if (machine_code) {
 		for (i = 0; i < machine_code_size; i++) {
-			if (machine_code[i])
-				free(machine_code[i]);
+			if (machine_code[i]) {
+				cur_inst = machine_code[i];
+
+				if (cur_inst->src_operand) {
+					if (cur_inst->src_addressing == RELATIVE) cur_inst->src_operand--; /* if relative addressing, offset the operand back by 1 */
+					free(cur_inst->src_operand);
+				}
+				if (machine_code[i]->dest_operand) {
+					if (cur_inst->dest_addressing == RELATIVE) cur_inst->dest_operand--; /* if relative addressing, offset the operand back by 1 */
+					free(cur_inst->dest_operand);
+				}
+
+				free(cur_inst);
+			}
 		}
 		free(machine_code);
 	}

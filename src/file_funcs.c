@@ -1,6 +1,6 @@
 
 #include "../h/file_funcs.h"
-#include "../h/globals.h"
+#include "../h/error.h"
 
 FILE *open_file(const char *filename, const char *extension, const char *mode) {
 	char *file_name_with_ext = change_extension(filename, extension);

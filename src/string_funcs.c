@@ -1,5 +1,5 @@
 #include "../h/string_funcs.h"
-#include "../h/globals.h"
+#include "../h/error.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -60,11 +60,11 @@ int check_for_commas(char *string) {
 
 	/* Check for commas before and after each param */
 	if (*(string + 1))
-		if (*(string + 1) == ',') {
+		if ((string[strlen(string) - 1]) == ',') {
 			return EXTRA_COMMA_AFTER_PARAM;
 		}
 	if (*(string - 1))
-		if (*(string - 1) == ',') {
+		if ((*string) == ','){
 			return EXTRA_COMMA_BEFORE_PARAM;
 		}
 	return EXIT_SUCCESS;

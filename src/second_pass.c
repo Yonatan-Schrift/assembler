@@ -169,11 +169,12 @@ int build_info_word(int value, int addressing_method, int type) {
 int process_operand(char *operand, int addressing, int immediate_value, hashmap_t *sym_tb, FILE *file_ob, int *ic, FILE *file_ent, FILE *file_ext) {
 	int value, type = NO_ATTR, word;
 	Symbol *sym;
-
-	if (operand) {
+	char *cur_operand = clean_arg(operand);
+	if (cur_operand) {
 		/* Lookup the symbol */
-		sym = (Symbol *)lookup(sym_tb, operand);
+		sym = (Symbol *)lookup(sym_tb, cur_operand);
 		if (!sym) {
+			free(cur_operand);
 			return SYMBOL_NOT_FOUND_DURING_BUILD;
 		}
 		value = sym->value;
@@ -190,14 +191,15 @@ int process_operand(char *operand, int addressing, int immediate_value, hashmap_
 
 	/* writing into the externs file */
 	if (type == EXTERNAL) {
-		fprintf(file_ext, "%s %07d\n", operand, *ic);
+		fprintf(file_ext, "%s %07d\n", cur_operand, *ic);
 		fflush(file_ext);
 	}
 
 	word = build_info_word(value, addressing, type);
 	fprintf(file_ob, "%07d %06x\n", *ic, word & 0xFFFFFF);
 	fflush(file_ob);
-	
+
+	free(cur_operand);
 	return SUCCESS_CODE;
 }
 

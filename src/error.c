@@ -92,6 +92,9 @@ void printerror(int line_num, int error_code) {
         case EXTRA_COMMA_BEFORE_PARAM:
             error_msg = "Extra comma before parameter";
             break;
+        case EXTRA_COMMA_AFTER_COMMAND:
+            error_msg = "Extra comma after command";
+            break;
         default:
             error_msg = "Unknown error";
         }
