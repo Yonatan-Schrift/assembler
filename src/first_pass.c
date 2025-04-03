@@ -11,7 +11,6 @@
 #define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
 #define METHOD_COUNT_TO_CHECK 3
 
-
 const op_code OPCODES[] = {
 	/* {"command", "opcode", "funct", "req_args", "is_source", "is_dest", allowed_source_methods, allowed_dest_methods} */
 	{"mov", 0, 0, 2, TRUE, TRUE, {IMMEDIATE, DIRECT, REGISTER_DIRECT}, {DIRECT, REGISTER_DIRECT, EMPTY_VALUE}},
@@ -302,13 +301,15 @@ int insert_symbol(char *name, int attribute, int is_ext, int value, hashmap_t *s
 	Symbol *sym, *lookup_ret;
 	int ret;
 
+	/* Check if the symbol already exists in the symbol table */
 	if ((lookup_ret = (Symbol *)lookup(sym_tb, name))) {
 		/* Checks if a symbol is defined twice */
 		if (lookup_ret->entry_or_extern == EXTERNAL) return INITIALIZING_EXTERN;
 		return SYMBOL_ALREADY_EXISTS;
 	}
+
+	/* Check if a macro with the same name exists */
 	if (lookup(mcro_tb, name)) {
-		/* Checks if a symbol is defined with the same name as a macro */
 		return SYMBOL_IS_MACRO;
 	}
 
@@ -317,16 +318,19 @@ int insert_symbol(char *name, int attribute, int is_ext, int value, hashmap_t *s
 		return ret;
 	}
 
+	/* Allocate memory for the new symbol */
 	sym = malloc(sizeof(Symbol));
 	if (!sym) {
 		return EXIT_FAILURE;
 	}
 
+	/* Initialize symbol fields */
 	sym->entry_or_extern = is_ext;
 	sym->name = copy_string(name);
 	sym->attribute = attribute;
 	sym->value = value;
 
+	/* Insert the new symbol into the symbol table */
 	insert(sym_tb, (void *)sym, name);
 	return SUCCESS_CODE;
 }
@@ -334,6 +338,7 @@ int insert_symbol(char *name, int attribute, int is_ext, int value, hashmap_t *s
 int add_data_word(int value, int *data_cap, int **data_image) {
 	int *img_buffer;
 
+	/* Check if the current index (DC) exceeds the capacity */
 	if (DC >= *data_cap) {
 		*data_cap *= 2;
 		img_buffer = realloc(*data_image, *data_cap * sizeof(int));
@@ -343,27 +348,40 @@ int add_data_word(int value, int *data_cap, int **data_image) {
 		}
 		*data_image = img_buffer;
 	}
+	/* Add the value to the data image and increment the global index DC */
 	(*data_image)[DC++] = value;
 	return EXIT_SUCCESS;
 }
 
 int add_string_word(char *string, int *data_cap, int **data_image) {
 	int i, value;
+
+	/* Remove surrounding quotes from the string, if any */
 	remove_quotes(string);
 
+	/* Iterate over each character in the string until the null terminator is reached */
 	for (i = 0; string[i] != '\0'; i++) {
+		/* Convert the current character to its integer representation */
 		value = (int)string[i];
+
 		if (add_data_word(value, data_cap, data_image) == EXIT_FAILURE) {
+			/* Free the allocated memory for the string to avoid memory leaks */
 			free(string);
 			return EXIT_FAILURE;
 		}
 	}
-	/* adding the null terminator */
+
+	/* At this point, i is at the index of the null terminator */
+	/* Add the null terminator to the data image */
 	value = (int)string[i];
+
 	if (add_data_word(value, data_cap, data_image) == EXIT_FAILURE) {
+		/* Free the allocated memory for the string in case of an error */
 		free(string);
 		return EXIT_FAILURE;
 	}
+
+	/* Free the input string as it is no longer needed */
 	free(string);
 	return EXIT_SUCCESS;
 }
@@ -399,7 +417,6 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	if (!inst) return TRUE;
 
 	/* L is the number of info-words */
-	inst->L = L;
 	inst->index = index;
 
 	/* update the instruction based on the operations table. */
@@ -449,10 +466,6 @@ int add_instruction(Line *line, FirstInstruction ***machine_code, hashmap_t *sym
 	return found_error;
 }
 
-/*
- * Find the index of an opcode in the OPCODES array
- * Returns the index if found, OEPRATION_NOT_FOUND otherwise
- */
 int find_in_opcode(char *string) {
 	int i;
 	const int num_opcodes = ARRAY_SIZE(OPCODES);
@@ -461,6 +474,7 @@ int find_in_opcode(char *string) {
 		return OPCODE_NOT_FOUND;
 	}
 
+	/* Check for an extra comma at the end of the string */
 	if (string[strlen(string) - 1] == ',') return EXTRA_COMMA_AFTER_COMMAND;
 
 	for (i = 0; i < num_opcodes; i++) {
@@ -481,7 +495,7 @@ int check_arg_count(char **args, int index, int required_arg_count) {
 
 	while (args[actual_arg_count]) actual_arg_count++;
 
-	/* Checking if an index is given, otherwise uses the given arg_count */
+	/* Use OPCODES[index].args_num if index is provided; otherwise, use required_arg_count */
 	expected_arg_count = (index != NO_INDEX) ? OPCODES[index].args_num : required_arg_count;
 
 	if (actual_arg_count > expected_arg_count) return TOO_MANY_ARGS;
@@ -491,23 +505,31 @@ int check_arg_count(char **args, int index, int required_arg_count) {
 }
 
 int find_addressing_method(char *operand) {
+	/* Check if operand is NULL or empty */
+	if (!operand || isEmpty(operand))
+		return EXTRA_COMMA_AFTER_PARAM;
 
-	if (!operand || isEmpty(operand)) return EXTRA_COMMA_AFTER_PARAM;
-
+	/* Immediate addressing: operand starts with '#' */
 	if (*operand == '#') {
-		if (check_valid_number((operand + 1))) return NOT_AN_INT_WHEN_USING_IMMEDIATE;
+		if (check_valid_number((operand + 1)))
+			return NOT_AN_INT_WHEN_USING_IMMEDIATE;
 		return IMMEDIATE;
 	}
 
-	if (is_register(operand)) return REGISTER_DIRECT;
+	/* Register direct addressing */
+	if (is_register(operand))
+		return REGISTER_DIRECT;
 
-	if (*operand == '&') return RELATIVE;
+	/* Relative addressing: operand starts with '&' */
+	if (*operand == '&')
+		return RELATIVE;
 
+	/* Default: direct addressing (cannot check for symbols in the first pass)*/
 	return DIRECT;
 }
 
 int count_info_words_required(char **args) {
-	int L = 1; /* At least 1 is required */
+	int L = 1; /* At least 1 info word is always required */
 	int i, arg_count, addressing_method;
 	char *cur_arg;
 
@@ -525,7 +547,7 @@ int count_info_words_required(char **args) {
 			L += 1;
 			break;
 		case REGISTER_DIRECT:
-			break;
+			break; /* No extra info word required */
 		case RELATIVE:
 			L += 1;
 			break;
@@ -543,7 +565,8 @@ void set_data_to_icf(hashmap_t *sym_tb, int ICF) {
 	HashNode *node, *temp;
 	Symbol *sym;
 
-	if (sym_tb == NULL) return;
+	if (sym_tb == NULL)
+		return; /* Return early if symbol table is NULL */
 
 	for (i = 0; i < sym_tb->size; i++) {
 		node = sym_tb->table[i];
@@ -554,6 +577,7 @@ void set_data_to_icf(hashmap_t *sym_tb, int ICF) {
 
 			sym = (Symbol *)temp->value;
 
+			/* Update symbol value if attribute is DATA */
 			if (sym->attribute == DATA) {
 				sym->value += ICF;
 			}
@@ -563,16 +587,16 @@ void set_data_to_icf(hashmap_t *sym_tb, int ICF) {
 
 void free_symbol(Symbol *sym) {
 	if (sym->name != NULL) {
-		free(sym->name);
+		free(sym->name); /* Free allocated symbol name */
 	}
-	free(sym);
+	free(sym); /* Free the symbol structure */
 }
 
 int process_argument(char *arg, int line_num, int *reg, int *addr, char **operand, int *value) {
 	int num;
 	char *cur_arg = clean_arg(arg);
 
-	/* Check for errors with commas */
+	/* Check for errors with commas in the argument */
 	if ((num = check_for_commas(arg)) < SUCCESS_CODE) {
 		free(cur_arg);
 		printerror(line_num, num);
@@ -580,7 +604,7 @@ int process_argument(char *arg, int line_num, int *reg, int *addr, char **operan
 		return FAIL_CODE;
 	}
 
-	/* Check if the argument is a register */
+	/* Check if the argument represents a register */
 	if ((num = is_register(cur_arg)) != FALSE) {
 		free(cur_arg);
 		*reg = num;
@@ -592,25 +616,25 @@ int process_argument(char *arg, int line_num, int *reg, int *addr, char **operan
 		if (num < SUCCESS_CODE) {
 			free(cur_arg);
 			printerror(line_num, num);
-			*addr = num; /* Store the error code in the addressing field */
+			*addr = num; /* Store error code in addressing field */
 			return FAIL_CODE;
 		}
 		*addr = num;
 
-		/* Check which addressing method is used for the operand */
+		/* Process operand based on the addressing method */
 		switch (num) {
 		case IMMEDIATE:
-			*value = atoi(cur_arg + 1); /* +1 to skip '#' */
+			*value = atoi(cur_arg + 1); /* Skip '#' and convert to integer */
 			free(cur_arg);
-			operand = NULL;
+			operand = NULL; /* Operand is not used for immediate addressing */
 			break;
 		case RELATIVE:
-			*operand = (cur_arg + 1); /* + 1 to skip '&' */
-			value = 0;
+			*operand = (cur_arg + 1); /* Skip '&' for relative addressing */
+			value = 0;				  /* Immediate value not used */
 			break;
 		case DIRECT:
-			*operand = cur_arg;
-			value = 0;
+			*operand = cur_arg; /* Use the entire string for direct addressing */
+			value = 0;			/* Immediate value not used */
 			break;
 		}
 
@@ -630,11 +654,13 @@ void free_everything(int *data_image, FirstInstruction **machine_code, int machi
 				cur_inst = machine_code[i];
 
 				if (cur_inst->src_operand) {
-					if (cur_inst->src_addressing == RELATIVE) cur_inst->src_operand--; /* if relative addressing, offset the operand back by 1 */
+					/* If relative addressing was used, adjust the pointer back by one */
+					if (cur_inst->src_addressing == RELATIVE) cur_inst->src_operand--;
 					free(cur_inst->src_operand);
 				}
 				if (machine_code[i]->dest_operand) {
-					if (cur_inst->dest_addressing == RELATIVE) cur_inst->dest_operand--; /* if relative addressing, offset the operand back by 1 */
+					/* If relative addressing was used, adjust the pointer back by one */
+					if (cur_inst->dest_addressing == RELATIVE) cur_inst->dest_operand--;
 					free(cur_inst->dest_operand);
 				}
 
@@ -666,6 +692,7 @@ int validate_arguments(char **args, int index) {
 	char *cur_arg;
 
 	if (OPCODES[index].is_source) {
+		/* Validate source operand addressing method */
 		cur_arg = clean_arg(args[arg_index++]);
 
 		addr = find_addressing_method(cur_arg);
@@ -682,6 +709,7 @@ int validate_arguments(char **args, int index) {
 		if (!found) return INCORRECT_PARAM_TYPE;
 	}
 	if (OPCODES[index].is_dest) {
+		/* Validate destination operand addressing method */
 		cur_arg = clean_arg(args[arg_index]);
 
 		addr = find_addressing_method(cur_arg);

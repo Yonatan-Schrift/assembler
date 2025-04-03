@@ -1,6 +1,7 @@
 #include "../h/string_funcs.h"
 #include "../h/error.h"
 #include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

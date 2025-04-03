@@ -21,16 +21,6 @@ FILE *open_file(const char *filename, const char *extension, const char *mode) {
 	return file;
 }
 
-/**
- * @brief Changes the extension of a filename.
- *
- * This function takes a filename and adds the given extension to the filename
- *
- * @param filename The original filename whose extension needs to be changed
- * @param extension The new extension
- * @return A pointer to a newly allocated string containing the filename with the new extension.
- *         The caller is responsible for freeing this memory.
- */
 char *change_extension(const char *filename, const char *extension) {
 	char *new_filename;
 	size_t len;
