@@ -1,4 +1,4 @@
-; Example Fibonacci program in custom assembly language
+; Fibonacci !
 
          ; Initialize registers:
          ; r1 will hold the current Fibonacci number (fib0)
