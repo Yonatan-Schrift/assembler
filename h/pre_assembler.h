@@ -1,13 +1,10 @@
 #ifndef PRE_ASSEMBLER_H
 #define PRE_ASSEMBLER_H
 
-
-
 #include "hashmap.h"
 #include "macro.h"
 
 #define NOT_A_MACRO 999
-
 
 #define INITIAL_MACRO_SIZE 256 
 #define MACRO_GROWTH_FACTOR 2

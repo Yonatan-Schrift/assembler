@@ -1,7 +1,3 @@
-/**
- * File: macro.c
- * Description: Module for macro processing in the Assembler project.
- */
 #include "../h/macro.h"
 
 void init_macro(Macro *mcro) {

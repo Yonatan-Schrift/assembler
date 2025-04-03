@@ -1,9 +1,3 @@
-/**
- *
- * @file assembler.c
- * @brief Main file for the assembler program 
- *
- */
 
 #include "../h/assembler.h"
 #include "../h/first_pass.h"

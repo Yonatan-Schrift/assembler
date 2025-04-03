@@ -1,9 +1,3 @@
-/**
- *
- * @file assembler.h
- * @brief Main header file for the assembler program
- * 
- */
 
 #ifndef ASSEMBLER_H
 #define ASSEMBLER_H

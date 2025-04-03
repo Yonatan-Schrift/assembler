@@ -9,15 +9,15 @@
 #define MACRO_END_STRING "mcroend"
 #define MAX_MCRO_NAME_LENGTH 31
 
+
 /**
- * struct Macro - Represents a macro definition used by the pre-assembler.
- *
- * This data structure stores information about a macro including its name and
- * the corresponding replacement text (body).
- *
- * Members:
- *   name - A pointer to a string containing the macro's name.
- *   body - A pointer to a string containing the macro's body.
+ * @brief Represents a macro definition in the assembly source code.
+ * 
+ * This structure stores information about a macro, including its name
+ * and the body content that will replace the macro when encountered.
+ * 
+ * @param name Pointer to a string containing the macro's identifier.
+ * @param body Pointer to a string containing the macro's replacement text.
  */
 typedef struct Macro {
     char *name;

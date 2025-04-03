@@ -1,6 +1,5 @@
 
-
-#include "../h/second_pass.h" /*  */
+#include "../h/second_pass.h" 
 #include "../h/file_funcs.h"  /* used for open_file, close_mult_files and WRITE_MODE */
 #include "../h/first_pass.h"  /* Used for symbol and instructions */
 #include "../h/globals.h"	  /* globals */
