@@ -11,8 +11,7 @@ prn #62
 mcroend
 
 mcro a_mc
-;duplicate macro
-prn #566
+prn #566 ;duplicate macro
 mcroend
 
         .data 5, 10, 15
