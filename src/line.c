@@ -94,7 +94,11 @@ int split_line(char *line, Line *output) {
 			}
 			args = args_buffer;
 		}
-		args[i] = token;
+		/* Check for extra whitespaces after a string */
+		if (!isEmpty(token))
+			args[i] = token;
+		else
+			i--;
 	}
 
 	/* NULL TERMINATE THE ARRAY */
@@ -145,7 +149,7 @@ int is_in_array(char *name, char **array) {
 			return i;
 		}
 	}
-	return FALSE;
+	return FAIL_CODE;
 }
 
 int isEmpty(char *line) {
@@ -169,7 +173,7 @@ int is_op_name(char *name) {
 	char *array[] = OP_NAMES;
 
 	if (name == NULL) {
-		return FALSE;
+		return FAIL_CODE;
 	}
 
 	return is_in_array(name, array);
@@ -179,7 +183,8 @@ int is_register(char *name) {
 	char *array[] = REGISTERS;
 
 	if (name == NULL) {
-		return FALSE;
+		/* using FAIL_CODE instead of FALSE since there is register 0 */
+		return FAIL_CODE;
 	}
 
 	return is_in_array(name, array);
@@ -189,7 +194,7 @@ int is_instruction(char *name) {
 	char *array[] = INSTRUCTIONS;
 
 	if (name == NULL) {
-		return FALSE;
+		return FAIL_CODE;
 	}
 
 	return is_in_array(name, array);

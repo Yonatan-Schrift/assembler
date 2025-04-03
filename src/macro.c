@@ -10,7 +10,7 @@ int is_reserved_name(char *name) {
 		return MCRO_DEFINITION_WITH_NO_NAME;
 
 	/* Check if the name is a reserved name */
-	if (is_op_name(name) || is_register(name) || is_instruction(name) || strcmp(name, "mcro") == STRCMP_SUCCESS || strcmp(name, "mcroend") == STRCMP_SUCCESS)
+	if (is_op_name(name) != FAIL_CODE || is_register(name) != FAIL_CODE|| is_instruction(name) != FAIL_CODE|| strcmp(name, "mcro") == STRCMP_SUCCESS || strcmp(name, "mcroend") == STRCMP_SUCCESS)
 		return RESERVED_NAME;
 	
 	if (isalpha(*name) == FALSE && *name != '_') /* Check if the first character is alphabetic or underscore */

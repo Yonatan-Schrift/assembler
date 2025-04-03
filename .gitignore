@@ -8,3 +8,4 @@
 # Assembler outputs
 *.ob
 *.ent
+*.am

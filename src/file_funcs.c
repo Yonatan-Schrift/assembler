@@ -47,8 +47,8 @@ char *find_extension(const char *filename) {
 
 	/* Find the last occurrence of '.' in the filename */
 	ext = strrchr(filename, '.');
-
-	if (ext != NULL && *(ext + 1) != '\0') {
+	
+	if (ext != NULL && *(ext + 1) != '\0' && *(ext + 1) != '/') {
 		ext++;
 	} else {
 		/* No extension found */
@@ -106,28 +106,28 @@ void delete_mult_files(char *base_file_path, char *ext1, char *ext2, char *ext3)
 }
 
 int is_file_empty(FILE *fp) {
-    long size;
+	long size;
 
-    if (fp == NULL) {
-        return COULD_NOT_OPEN_FILE;  /* Could not open file */
-    }
+	if (fp == NULL) {
+		return COULD_NOT_OPEN_FILE; /* Could not open file */
+	}
 
-    if (fseek(fp, 0, SEEK_END) != 0) {
-        fclose(fp);
-        return COULD_NOT_OPEN_FILE;  /* Error while seeking */
-    }
+	if (fseek(fp, 0, SEEK_END) != 0) {
+		fclose(fp);
+		return COULD_NOT_OPEN_FILE; /* Error while seeking */
+	}
 
-    size = ftell(fp);
+	size = ftell(fp);
 
-    return (size == 0);
+	return (size == 0);
 }
 
 void delete_if_empty(FILE *fp, char *src_path, char *extension) {
-    if (fp == NULL || src_path == NULL || extension == NULL) {
-        return;
-    }
+	if (fp == NULL || src_path == NULL || extension == NULL) {
+		return;
+	}
 
-    if (is_file_empty(fp)) {
-        delete_mult_files(src_path, extension, NULL, NULL);
-    }
+	if (is_file_empty(fp)) {
+		delete_mult_files(src_path, extension, NULL, NULL);
+	}
 }

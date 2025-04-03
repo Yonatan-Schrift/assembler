@@ -77,8 +77,11 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 					continue;
 				}
 			}
+
 		}
 	}
+	free_line(&parsed_line);
+	
 	/* check for errors before building the files */
 	if (error_flag == TRUE) {
 		printf("\n\n>>> ERRORS WERE FOUND DURING THE SECOND PASS!\n\n");
@@ -118,8 +121,6 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 	delete_if_empty(file_ent, src_path, ".ent");
 	delete_if_empty(file_ext, src_path, ".ext");
 	delete_if_empty(file_ob, src_path, ".ob");
-
-	free_line(&parsed_line);
 
 	printf(">>> Finished second pass successfully\n");
 

@@ -1,0 +1,76 @@
+
+Working on file: ./inputs/invalid_inputs/bad_in_1
+>>> Error in line 9: Macro / Label uses unallowed characters
+>>> Error in line 15: Macro already exists
+
+File: ./inputs/invalid_inputs/bad_in_1 failed pre-proccessing
+
+Working on file: ./inputs/invalid_inputs/bad_in_2
+>>> Error in line 2: Extra comma after parameter - found during the pre-assembler
+>>> Error in line 4: Extra comma after parameter - found during the pre-assembler
+
+File: ./inputs/invalid_inputs/bad_in_2 failed pre-proccessing
+
+Working on file: ./inputs/invalid_inputs/bad_macro_name
+>>> Error in line 7: Macro / Symbol using reserved name
+
+File: ./inputs/invalid_inputs/bad_macro_name failed pre-proccessing
+
+Working on file: ./inputs/invalid_inputs/ban_in_3
+>>> Error: Could not open the file, check that it exists
+
+File: ./inputs/invalid_inputs/ban_in_3 failed pre-proccessing
+
+Working on file: ./inputs/valid_inputs/fibonacci_final
+
+>>> Finished pre-compiling successfully
+>>> Finished first pass successfully 
+>>> Finished second pass successfully
+
+Successfully compiled file ./inputs/valid_inputs/fibonacci_final
+
+
+Working on file: ./inputs/valid_inputs/fibonacci_only_registers
+
+>>> Finished pre-compiling successfully
+>>> Finished first pass successfully 
+>>> Finished second pass successfully
+
+Successfully compiled file ./inputs/valid_inputs/fibonacci_only_registers
+
+
+Working on file: ./inputs/valid_inputs/good_in
+
+>>> Finished pre-compiling successfully
+>>> Finished first pass successfully 
+>>> Finished second pass successfully
+
+Successfully compiled file ./inputs/valid_inputs/good_in
+
+
+Working on file: ./inputs/valid_inputs/input
+
+>>> Finished pre-compiling successfully
+>>> Finished first pass successfully 
+>>> Finished second pass successfully
+
+Successfully compiled file ./inputs/valid_inputs/input
+
+
+Working on file: ./inputs/valid_inputs/more_than_one_macro
+
+>>> Finished pre-compiling successfully
+>>> Finished first pass successfully 
+>>> Finished second pass successfully
+
+Successfully compiled file ./inputs/valid_inputs/more_than_one_macro
+
+
+Working on file: ./inputs/valid_inputs/ps
+
+>>> Finished pre-compiling successfully
+>>> Finished first pass successfully 
+>>> Finished second pass successfully
+
+Successfully compiled file ./inputs/valid_inputs/ps
+

@@ -102,10 +102,11 @@ int is_op_name(char *name);
 /**
  * @brief Checks if the given name is a register name.
  * @note Compares the provided name against the REGISTERS array.
+ * @note Uses FAIL_CODE because FALSE=0 and there is a register 0.
  *
  * @param name The string to check.
  *
- * @return The index of the name in the REGISTERS array if found; otherwise, FALSE.
+ * @return The index of the name in the REGISTERS array if found; otherwise, FAIL_CODE.
  */
 int is_register(char *name);
 

@@ -494,7 +494,7 @@ int check_arg_count(char **args, int index, int required_arg_count) {
 			actual_arg_count++;
 		free(cur_arg);
 	}
-	
+
 	/* Use OPCODES[index].args_num if index is provided; otherwise, use required_arg_count */
 	expected_arg_count = (index != NO_INDEX) ? OPCODES[index].args_num : required_arg_count;
 
@@ -517,7 +517,7 @@ int find_addressing_method(char *operand) {
 	}
 
 	/* Register direct addressing */
-	if (is_register(operand))
+	if (is_register(operand) != FAIL_CODE)
 		return REGISTER_DIRECT;
 
 	/* Relative addressing: operand starts with '&' */
@@ -605,7 +605,7 @@ int process_argument(char *arg, int line_num, int *reg, int *addr, char **operan
 	}
 
 	/* Check if the argument represents a register */
-	if ((num = is_register(cur_arg)) != FALSE) {
+	if ((num = is_register(cur_arg)) != FAIL_CODE) {
 		free(cur_arg);
 		*reg = num;
 		*addr = REGISTER_DIRECT;
