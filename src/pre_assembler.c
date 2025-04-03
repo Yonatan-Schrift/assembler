@@ -184,14 +184,14 @@ int parse_macro(char *input, int *line_count, FILE *file, Macro *mcro) {
 			macro_body = new_macro_body;
 		}
 
-		/* Append new line */
+		/* Append the current input line to the macro body */
 		strcpy(macro_body + total_length, input);
 		total_length += line_length;
 		macro_body[total_length++] = '\n'; /* Preserve line breaks */
 		macro_body[total_length] = '\0';   /* Null terminate */
 	}
 
-	/* A check for an empty macro */
+	/* If no lines were added, ensure macro_body is an empty string */
 	if (total_length == 0) *macro_body = '\0';
 
 	free_line(&line);

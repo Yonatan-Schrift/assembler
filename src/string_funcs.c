@@ -35,10 +35,6 @@ void remove_quotes(char *string) {
 	}
 }
 
-/**
- *  This method removes everything after a character in a string.
- *  This is used for removing comments while proccessing the code.
- */
 void remove_after_delim(char *origin, char delim) {
 	char *pos;
 	pos = strchr(origin, delim);
@@ -58,17 +54,23 @@ int string_array_len(char **args) {
 }
 
 int check_for_commas(char *string) {
-	if (!string) return FAIL_CODE;
+	if (!string)
+		return FAIL_CODE;
 
-	/* Check for commas before and after each param */
-	if (*(string + 1))
-		if ((string[strlen(string) - 1]) == ',') {
+	/* Check if the string ends with a comma */
+	if (*(string + 1)) {
+		if (string[strlen(string) - 1] == ',') {
 			return EXTRA_COMMA_AFTER_PARAM;
 		}
-	if (*(string - 1))
-		if ((*string) == ','){
+	}
+
+	/* Check if the string starts with a comma */
+	if (*(string - 1)) {
+		if (*string == ',') {
 			return EXTRA_COMMA_BEFORE_PARAM;
 		}
+	}
+
 	return EXIT_SUCCESS;
 }
 
@@ -81,7 +83,7 @@ int check_valid_number(char *string) {
 
 	/* Check if string is empty */
 	if (string[0] == '\0') return FAIL_CODE;
-	
+
 	copy = clean_arg(string);
 
 	if (*copy == '\0') {
@@ -108,50 +110,50 @@ int check_valid_number(char *string) {
 int find_quotes(char *string) {
 	int i, ret = -1, count = 0;
 
-	/* Check if string is valid */
+	/* Check if the input string is valid */
 	if (!string) return FAIL_CODE;
 
-	/* Search for the first quote character */
+	/* Search for quotation marks and track their count and position */
 	for (i = 0; string[i] != '\0'; i++) {
 		if (string[i] == '"') {
 			count++;
-			/* save the index of the first quote */
-			if (ret == -1) ret = i;
+			if (ret == -1)
+				ret = i; /* Save the index of the first quote */
 		}
 	}
 
-	/* If found exactly 2 quotes return the index of the first one */
+	/* Validate quote usage */
 	if (count == 2) {
-		if (string[i - 1] == '"') return ret;
+		/* Exactly two quotes */
+		if (string[i - 1] == '"')
+			return ret;
 		return EXTRA_TEXT_AFTER_STRING;
-	}
-	/* If found more than 2, there's (at least) one extra quote */
-	else if (count > 2) {
+	} else if (count > 2) {
+		/* More than two quotes indicates extra marks */
 		return EXTRA_QUOTATION_MARK;
-	}
-	/* If found exactly 1 quote, there's missing a quotation mark */
-	else if (count == 1) {
+	} else if (count == 1) {
+		/* One quote: check if it's opening or closing */
 		return (string[i - 1] == '"') ? MISSING_OPENING_QUOTE : MISSING_CLOSING_QUOTE;
 	}
 
-	/* No quote found */
+	/* No quotes found */
 	return MISSING_ARGS;
 }
 
 char *find_last_occurrence(const char *haystack, const char *needle) {
-    char *result = NULL;
-    char *temp = (char *)haystack;
-    
-    /* Edge case: if needle is an empty string, return haystack */
-    if (*needle == '\0') {
-        return (char *)haystack;
-    }
+	char *result = NULL;
+	char *temp = (char *)haystack;
 
-    while ((temp = strstr(temp, needle)) != NULL) {
-        result = temp;
-        temp++;  /* Advance pointer to search for further occurrences */
-    }
-    return result;
+	/* Edge case: if needle is an empty string, return haystack */
+	if (*needle == '\0') {
+		return (char *)haystack;
+	}
+
+	while ((temp = strstr(temp, needle)) != NULL) {
+		result = temp;
+		temp++; /* Advance pointer to search for further occurrences */
+	}
+	return result;
 }
 
 char *clean_arg(char *arg) {

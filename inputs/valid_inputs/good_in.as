@@ -1,34 +1,31 @@
-MACRO1: .macro
-mov R1, R2
-add #5, R3
-sub R4, R5
-
-MACRO1
+mov r1, r2
+add #5, r3
+sub r4, r5
 
 .data 5, 10, 15, 20, 25, 30
 .data -5, -10, -15
 .string "Hello, World!"
 .string "Test Input"
 
-LABEL1: mov R3, R4
-add R1, LABEL1
-LABEL2: sub R2, R6
+LABEL1: mov r3, r4
+add r1, LABEL1
+LABEL2: sub r2, r6
 jmp LABEL2
 
 .extern EXTERNAL_LABEL
 .entry ENTRY_LABEL
 
-mov EXTERNAL_LABEL, R5
-add EXTERNAL_LABEL, R6
+mov EXTERNAL_LABEL, r5
+add EXTERNAL_LABEL, r6
 
-ENTRY_LABEL: sub R2, R6
-red R7
+ENTRY_LABEL: sub r2, r6
+red r7
 prn #42
 
-clr R1
-not R2
-inc R3
-dec R4
+clr r1
+not r2
+inc r3
+dec r4
 jmp LABEL1
 bne LABEL2
 jsr ENTRY_LABEL

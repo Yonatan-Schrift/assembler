@@ -111,7 +111,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				error_flag = TRUE;
 				continue;
 			}
-			
+
 			/* check if the instruction stores data in the memory */
 			if (IS_STORE_INST(parsed_line.command)) {
 				if (is_symbol) {
@@ -205,7 +205,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				}
 			}
 
-			
 			/* Is an instructive statement */
 			else {
 				if (is_symbol) {
@@ -216,7 +215,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					}
 				}
 
-				
 				/* find the opcode */
 				opcode_index = find_in_opcode(parsed_line.command);
 				/* Saving the opcode and checking if it failed. */
@@ -242,7 +240,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					continue;
 				}
 
-				
 				/* Add the instruction */
 				current_error = add_instruction(&parsed_line, &machine_code, &sym_table, L, line_count, &machine_code_size);
 				if (current_error != SUCCESS_CODE) {
@@ -273,7 +270,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 		return FAIL_CODE;
 	}
-	
+
 	/* save ICF and DCF */
 	ICF = IC;
 	DCF = DC;
@@ -484,14 +481,20 @@ int find_in_opcode(char *string) {
 }
 
 int check_arg_count(char **args, int index, int required_arg_count) {
-	int actual_arg_count = 0;
+	int actual_arg_count = 0, i;
 	int expected_arg_count;
+	char *cur_arg;
 
 	if (!args)
 		return FAIL_CODE;
 
-	while (args[actual_arg_count]) actual_arg_count++;
-
+	for (i = 0; args[i] != NULL; i++) {
+		cur_arg = clean_arg(args[i]);
+		if (!isEmpty(cur_arg))
+			actual_arg_count++;
+		free(cur_arg);
+	}
+	
 	/* Use OPCODES[index].args_num if index is provided; otherwise, use required_arg_count */
 	expected_arg_count = (index != NO_INDEX) ? OPCODES[index].args_num : required_arg_count;
 

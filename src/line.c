@@ -194,16 +194,3 @@ int is_instruction(char *name) {
 
 	return is_in_array(name, array);
 }
-
-void remove_special_chars(char *str) {
-	char *dst = str; /* Destination pointer */
-
-	while (*str) {
-		if (isalnum(*str) || isspace(*str) || *str == '_') {
-			*dst++ = *str;
-		}
-		str++;
-	}
-	/* Null-terminate the modified string. */
-	*dst = '\0';
-}

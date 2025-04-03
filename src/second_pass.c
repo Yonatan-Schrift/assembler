@@ -7,9 +7,6 @@
 #include "../h/hashmap.h"	  /* used as the data structure for the symbol table */
 #include "../h/line.h"		  /* Used for processing lines in the source */
 
-#define COMPARE_STR(a, b) (strcmp(a, b) == STRCMP_SUCCESS)
-/* temp macro */
-
 int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_size, FirstInstruction **machine_code, int machine_code_size, int ICF, int DCF) {
 	char line[MAX_LINE_LENGTH + 1];
 	FILE *file_ob, *file_ent, *file_ext, *file_am;
@@ -33,9 +30,13 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 	fprintf(file_ob, "     %d %d\n", ICF - 100, DCF);
 
 	while ((current_error = read_line(file_am, line)) != EXIT_FAILURE) {
-		/* For iterations after the first, free the memory allocated for the previous line.
+
+		/*  For iterations after the first, free the memory allocated for the previous line.
 		 * (On the first iteration, no memory has been allocated yet.) */
-		if (line_count > 0) free_line(&parsed_line);
+		if (line_count > 0) {
+			free_line(&parsed_line);
+		}
+
 		/* Reinitialize parsed_line to prepare for processing the next line. */
 		init_line(&parsed_line);
 
@@ -117,7 +118,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 	/* Checking if the output files are empty and removing them if so */
 	delete_if_empty(file_ent, src_path, ".ent");
 	delete_if_empty(file_ext, src_path, ".ext");
-	delete_if_empty(file_ob, src_path, ".ob");	
+	delete_if_empty(file_ob, src_path, ".ob");
 
 	free_line(&parsed_line);
 
@@ -129,6 +130,7 @@ int second_pass(char *src_path, hashmap_t *sym_tb, int *data_image, int data_siz
 int build_instruction_word(int opcode, int source_addressing, int source_register, int des_addressing, int des_register, int funct, int are) {
 	int instruction = 0;
 
+	/* Combine the fields into a single instruction word */
 	instruction |= (opcode << 18);
 	instruction |= (source_addressing << 16);
 	instruction |= (source_register << 13);
@@ -143,6 +145,7 @@ int build_instruction_word(int opcode, int source_addressing, int source_registe
 int build_info_word(int value, int addressing_method, int type) {
 	int info_word = 0, ARE;
 
+	/* Shift the value left to leave space for ARE bits */
 	info_word = (value << 3);
 
 	switch (addressing_method) {
@@ -151,16 +154,19 @@ int build_info_word(int value, int addressing_method, int type) {
 
 		break;
 	case DIRECT:
-		ARE = (type == EXTERNAL) ? ARE_EXTERNAL : ARE_RELOCATEABLE; /* 001 for external addresses, 010 for internal addresses */
+		/* Use ARE_EXTERNAL if type is EXTERNAL, otherwise ARE_RELOCATEABLE */
+		ARE = (type == EXTERNAL) ? ARE_EXTERNAL : ARE_RELOCATEABLE;
 		break;
 	case RELATIVE:
 		ARE = ARE_ABSOLUTE; /* (A=1, R=0, E=0) */
 		break;
 	default:
-		return FAIL_CODE; /* Generic error code as there shouldn't be any errors heres */
+		/* Return an error code for an unrecognized addressing method */
+		return FAIL_CODE;
 		break;
 	}
 
+	/* Combine the shifted value with the ARE bits */
 	info_word = info_word | ARE;
 
 	return info_word;
@@ -209,7 +215,7 @@ int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *fi
 	if (!sym_tb || !file_ob) return FAIL_CODE;
 	if (!code) return SUCCESS_CODE;
 
-	/* Building the first word */
+    /* Build the first word of the instruction */
 	word = build_instruction_word(code->opcode, code->src_addressing,
 								  code->src_register, code->dest_addressing,
 								  code->dest_register, code->funct, code->are);
@@ -217,7 +223,7 @@ int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *fi
 	fprintf(file_ob, "%07d %06x\n", *ic, word & 0xFFFFFF);
 	fflush(file_ob);
 
-	/* Process source operand if required */
+    /* Process source operand if required and not register direct */
 	if (OPCODES[code->index].is_source && code->src_addressing != REGISTER_DIRECT) {
 		(*ic)++;
 		ret = process_operand(code->src_operand, code->src_addressing, code->immediate_value, sym_tb, file_ob, ic, file_ext);
@@ -225,7 +231,7 @@ int build_binary_instruction(FirstInstruction *code, hashmap_t *sym_tb, FILE *fi
 			return ret;
 	}
 
-	/* Process destination operand if required */
+    /* Process destination operand if required and not register direct */
 	if (OPCODES[code->index].is_dest && code->dest_addressing != REGISTER_DIRECT) {
 		(*ic)++;
 		ret = process_operand(code->dest_operand, code->dest_addressing, code->immediate_value, sym_tb, file_ob, ic, file_ext);
@@ -251,7 +257,7 @@ void write_symbols_to_files(hashmap_t *sym_tb, FILE *file_ent) {
 		return;
 	}
 
-	/* Collect all Symbol* pointers into array */
+	/* Collect all Symbol pointers into array */
 	for (i = 0; i < sym_tb->size; i++) {
 		node = sym_tb->table[i];
 		while (node) {
@@ -271,7 +277,7 @@ void write_symbols_to_files(hashmap_t *sym_tb, FILE *file_ent) {
 	/* Sort by symbol value */
 	qsort(symbols, count, sizeof(Symbol *), compare_symbols_by_value);
 
-	/* Write sorted symbols */
+	/* Write sorted entry symbols to the entry file */
 	for (i = 0; i < count; i++) {
 		sym = symbols[i];
 		if (sym->entry_or_extern == ENTRY) {
