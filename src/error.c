@@ -1,10 +1,10 @@
 #include "../h/error.h"
-#include <stdio.h>
+#include <stdio.h> /* used for printf */
 
 void printerror(int line_num, int error_code) {
 	const char *error_msg;
 
-    if (error_code == EXIT_SUCCESS)
+    if (error_code == 0)
         return;
     
     switch (error_code) {

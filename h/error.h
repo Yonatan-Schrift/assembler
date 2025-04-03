@@ -1,9 +1,6 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #define ERROR_STRING "ERROR\n"  /* A string used for alerting the program when encountering errors. */
 #define NO_LINE -1            /* A used when an error has no specific line */
 
