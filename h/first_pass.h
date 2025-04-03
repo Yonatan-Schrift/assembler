@@ -29,6 +29,25 @@ enum SymbolType {
 	NO_ATTR
 };
 
+/**
+ * @struct FirstInstruction
+ * @brief Represents an assembly instruction during the first pass of the assembler
+ *
+ * This structure holds all the parsed components and metadata of an assembly instruction
+ * during the first pass of the assembling process.
+ *
+ * @param opcode           The operation code of the instruction
+ * @param src_addressing   The addressing mode for the source operand
+ * @param src_register     The register number used for the source operand
+ * @param dest_addressing  The addressing mode for the destination operand
+ * @param dest_register    The register number used for the destination operand
+ * @param funct            The function code (used with some opcodes)
+ * @param are              The A.R.E. bits (Absolute, Relocatable, External)
+ * @param index            The index of this instruction in the opcodes array
+ * @param src_operand      The source operand string if it's a symbol
+ * @param dest_operand     The destination operand string if it's a symbol
+ * @param immediate_value  The value when immediate addressing mode is used
+ */
 typedef struct FirstInstruction {
 	int opcode;
 	int src_addressing;
@@ -93,6 +112,18 @@ typedef struct Symbol {
 /* Declaring the OPCODES array - 16 for the number of operations*/
 extern const op_code OPCODES[OPERATION_COUNT];
 
+/**
+ * @brief Performs the first pass of the assembly process.
+ * @note Reads the source file, processes each line to build the symbol table,
+ *       data image, and machine code. Handles directives (.data, .string, .extern, .entry)
+ *       and instructive statements. On error, frees allocated resources and returns a failure code.
+ *
+ * @param src_path Path to the source file (without extension).
+ * @param mcro_tb  Pointer to the macro table.
+ *
+ * @return SUCCESS_CODE if the first pass completes successfully;
+ *         FAIL_CODE or EXIT_FAILURE if an error occurs.
+ */
 int first_pass(char *file_path, hashmap_t *mcro_tb);
 
 /**

@@ -1,7 +1,6 @@
 
 #include "../h/hashmap.h"
 
-/* Hash Function */
 unsigned int hash(char *key, int table_size) {
 	unsigned int hash_value = 0;
 	while (*key) {
@@ -11,7 +10,6 @@ unsigned int hash(char *key, int table_size) {
 	return hash_value % table_size;
 }
 
-/* Initialize the hashmap */
 void init_hashmap(hashmap_t *map, int initial_size) {
 	int i;
 
@@ -25,12 +23,13 @@ void init_hashmap(hashmap_t *map, int initial_size) {
 	return;
 }
 
-/* Resize the hashmap when reaching the threshold */
 void resize(hashmap_t *map) {
-	int i;
+	int i, new_size;
+	unsigned int new_index;
+	HashNode *next_node, *node, **new_table;
 
-	int new_size = map->size * 2; /* Double the size of the table */
-	HashNode **new_table = (HashNode **)malloc(sizeof(HashNode *) * new_size);
+	new_size = map->size * 2; /* Double the size of the table */
+	new_table = (HashNode **)malloc(sizeof(HashNode *) * new_size);
 
 	if (new_table == NULL) {
 		return;
@@ -41,10 +40,10 @@ void resize(hashmap_t *map) {
 
 	/* Rehash all existing nodes into the new table */
 	for (i = 0; i < map->size; i++) {
-		HashNode *node = map->table[i];
+		node = map->table[i];
 		while (node) {
-			unsigned int new_index = hash(node->key, new_size);
-			HashNode *next_node = node->next;
+			new_index = hash(node->key, new_size);
+			next_node = node->next;
 
 			node->next = new_table[new_index];
 			new_table[new_index] = node;
@@ -58,12 +57,11 @@ void resize(hashmap_t *map) {
 	map->size = new_size; /* Update the table size */
 }
 
-/* Insert a macro into the hashmap */
 void insert(hashmap_t *map, void *value, char *key) {
 	HashNode *new_node;
 	unsigned int index;
 
-	/* Check if resizing is necessary */
+	/* Resize the hashmap if the load factor threshold is exceeded */
 	if ((float)map->count / map->size > LOAD_FACTOR_THRESHOLD) {
 		resize(map);
 	}
@@ -81,7 +79,6 @@ void insert(hashmap_t *map, void *value, char *key) {
 	map->count++; /* Increment the element count */
 }
 
-/* Lookup a value via key */
 void *lookup(hashmap_t *map, char *key) {
 	unsigned int index;
 	HashNode *node;
@@ -100,7 +97,6 @@ void *lookup(hashmap_t *map, char *key) {
 	return NULL; /* Return NULL if key is not found */
 }
 
-/* Free the hashmap */
 void free_hashmap(hashmap_t *map, void (*free_value)(void *)) {
 	int i;
 	HashNode *node, *temp;
@@ -114,8 +110,7 @@ void free_hashmap(hashmap_t *map, void (*free_value)(void *)) {
 			temp = node;
 			node = node->next;
 
-			/* Freeing the value */
-
+			/* Free the value using the provided function */
 			free_value(temp->value);
 
 			free(temp->key);

@@ -111,7 +111,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				error_flag = TRUE;
 				continue;
 			}
-			/* Stages 5-7 */
+			
 			/* check if the instruction stores data in the memory */
 			if (IS_STORE_INST(parsed_line.command)) {
 				if (is_symbol) {
@@ -180,7 +180,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				}
 			}
 
-			/* Stages 8-10 */
 			/* check if the instruction is an entry or extern variable */
 			else if (IS_ENTRY_OR_EXTERN(parsed_line.command)) {
 				current_error = check_arg_count(parsed_line.arguments, NO_INDEX, REQUIRED_ARGS_FOR_DIRECTIVE);
@@ -206,7 +205,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 				}
 			}
 
-			/* Stage 11 */
+			
 			/* Is an instructive statement */
 			else {
 				if (is_symbol) {
@@ -217,7 +216,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					}
 				}
 
-				/* Stage 12 */
+				
 				/* find the opcode */
 				opcode_index = find_in_opcode(parsed_line.command);
 				/* Saving the opcode and checking if it failed. */
@@ -235,7 +234,6 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					continue;
 				}
 
-				/* Stage 13 */
 				/* find L - the number of info-words required */
 				L = count_info_words_required(parsed_line.arguments);
 				if (L < SUCCESS_CODE) {
@@ -244,8 +242,8 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					continue;
 				}
 
-				/* Stage 15 */
-
+				
+				/* Add the instruction */
 				current_error = add_instruction(&parsed_line, &machine_code, &sym_table, L, line_count, &machine_code_size);
 				if (current_error != SUCCESS_CODE) {
 					/* error is printed in the function */
@@ -253,7 +251,7 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 					continue;
 				}
 
-				/* Stage 16 */
+				/* Update IC with L */
 				IC += L;
 			}
 		}
@@ -275,12 +273,11 @@ int first_pass(char *src_path, hashmap_t *mcro_tb) {
 
 		return FAIL_CODE;
 	}
-
-	/* Stage 18 */
+	
+	/* save ICF and DCF */
 	ICF = IC;
 	DCF = DC;
 
-	/* Stage 19 */
 	/* Update the symbol table with ICF for DATA symbols */
 	set_data_to_icf(&sym_table, ICF);
 
