@@ -6,20 +6,30 @@ Working on file: ./inputs/invalid_inputs/bad_in_1
 File: ./inputs/invalid_inputs/bad_in_1 failed pre-proccessing
 
 Working on file: ./inputs/invalid_inputs/bad_in_2
->>> Error in line 2: Extra comma after parameter - found during the pre-assembler
->>> Error in line 4: Extra comma after parameter - found during the pre-assembler
 
-File: ./inputs/invalid_inputs/bad_in_2 failed pre-proccessing
+>>> Finished pre-compiling successfully
+>>> Error in line 2: Missing arguments
+>>> Error in line 4: Missing arguments
+>>> Error in line 6: Macro / Symbol name doesn't start with a letter or underscore
+>>> Error in line 7: Macro name too long 
+>>> Error in line 9: Macro / Symbol name doesn't start with a letter or underscore
+>>> Error in line 11: Missing arguments
+>>> Error in line 14: Missing arguments
+>>> Error in line 16: Too many arguments
+
+
+>>> ERRORS WERE FOUND DURING THE FIRST PASS!
+
 
 Working on file: ./inputs/invalid_inputs/bad_macro_name
 >>> Error in line 7: Macro / Symbol using reserved name
 
 File: ./inputs/invalid_inputs/bad_macro_name failed pre-proccessing
 
-Working on file: ./inputs/invalid_inputs/ban_in_3
->>> Error: Could not open the file, check that it exists
+Working on file: ./inputs/invalid_inputs/bad_in_3
+>>> Error in line 12: Line too long
 
-File: ./inputs/invalid_inputs/ban_in_3 failed pre-proccessing
+File: ./inputs/invalid_inputs/bad_in_3 failed pre-proccessing
 
 Working on file: ./inputs/valid_inputs/fibonacci_final
 

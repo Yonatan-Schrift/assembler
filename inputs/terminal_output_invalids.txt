@@ -1,0 +1,42 @@
+
+Working on file: ./inputs/invalid_inputs/bad_in_1
+>>> Error in line 9: Macro / Label uses unallowed characters
+>>> Error in line 15: Macro already exists
+
+File: ./inputs/invalid_inputs/bad_in_1 failed pre-proccessing
+
+Working on file: ./inputs/invalid_inputs/bad_in_2
+
+>>> Finished pre-compiling successfully
+>>> Error in line 2: Missing arguments
+>>> Error in line 4: Missing arguments
+>>> Error in line 6: Macro / Symbol name doesn't start with a letter or underscore
+>>> Error in line 7: Macro name too long 
+>>> Error in line 9: Macro / Symbol name doesn't start with a letter or underscore
+>>> Error in line 11: Missing arguments
+>>> Error in line 14: Missing arguments
+>>> Error in line 16: Too many arguments
+
+
+>>> ERRORS WERE FOUND DURING THE FIRST PASS!
+
+
+Working on file: ./inputs/invalid_inputs/bad_macro_name
+>>> Error in line 7: Macro / Symbol using reserved name
+
+File: ./inputs/invalid_inputs/bad_macro_name failed pre-proccessing
+
+Working on file: ./inputs/invalid_inputs/bad_in_3
+>>> Error in line 12: Line too long
+
+File: ./inputs/invalid_inputs/bad_in_3 failed pre-proccessing
+
+Working on file: ./non-existent-file
+>>> Error: Could not open the file, check that it exists
+
+File: ./non-existent-file failed pre-proccessing
+
+Working on file: ./inputs/invalid_input/input_with_extension.as
+>>> Error: File includes an extension, the input should not have an extension
+
+File: ./inputs/invalid_input/input_with_extension.as failed pre-proccessing

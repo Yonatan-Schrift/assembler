@@ -1,0 +1,28 @@
+mov r1, r2
+add #5, r3
+sub r4, r5
+.data 5, 10, 15, 20, 25, 30
+.data -5, -10, -15
+.string "Hello, World!"
+.string "Test Input"
+LABEL1: mov r3, r4
+add r1, LABEL1
+LABEL2: sub r2, r6
+jmp LABEL2
+.extern EXTERNAL_LABEL
+.entry ENTRY_LABEL
+mov EXTERNAL_LABEL, r5
+add EXTERNAL_LABEL, r6
+ENTRY_LABEL: sub r2, r6
+red r7
+prn #42
+clr r1
+not r2
+inc r3
+dec r4
+jmp LABEL1
+bne LABEL2
+jsr ENTRY_LABEL
+.data 100, 200, 300, 400
+.string "End of Valid Input"
+stop

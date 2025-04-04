@@ -1,0 +1,16 @@
+mov r1, r2
+mov r1 
+add #5, r3
+add #5 
+LABEL1: mov r1, r2
+1LABEL: mov r1, r2 
+LABEL_TOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO_LONG: mov r1, r2 
+.extern EXTERNAL_LABEL
+.extern 1EXTERNAL_LABEL 
+.string "Hello, World!"
+.string Hello, World! 
+.data 5, 10, 15
+.data 5, , 15 
+.data 
+stop
+stop EXTRA_OPERAND 

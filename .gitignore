@@ -6,7 +6,7 @@
 *.o
 
 # Assembler outputs
-*.ob
-*.ent
-*.am
-*.ext
+# *.ob
+# *.ent
+# *.am
+# *.ext

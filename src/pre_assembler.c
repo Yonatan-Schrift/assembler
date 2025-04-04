@@ -15,8 +15,8 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 
 	/* Open the input and output files */
 	file_in = open_file(src_path, ".as", READ_MODE);
-	file_out = open_file(src_path, ".am", WRITE_MODE);
-
+	if(file_in) file_out = open_file(src_path, ".am", WRITE_MODE);
+	
 	if (!file_in || !file_out) {
 		delete_mult_files(src_path, ".as", ".am", NULL);
 		free_hashmap(mcro_table, (void (*)(void *))free_macro);
@@ -28,6 +28,7 @@ int pre_comp(char *src_path, hashmap_t *mcro_table) {
 
 		if (current_error < EXIT_SUCCESS) {
 			printerror(line_count, current_error);
+			error_flag = TRUE;
 			continue;
 		}
 
