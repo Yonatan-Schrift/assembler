@@ -4,6 +4,5 @@ It's written in ANSI-C.
 
 The file 'summery_of_everything.txt' has a good summery for the project.
 
-## Authors: 
+## Author:
 - **Yonatan Schrift**
-- **Segev Shinar**
